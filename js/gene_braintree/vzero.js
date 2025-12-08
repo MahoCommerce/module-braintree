@@ -1,31 +1,28 @@
 /**
- * Magento Braintree class to bridge the v.zero JS SDK and Magento
+ * Maho Braintree class to bridge the v.zero JS SDK and Maho
  *
  * @class vZero
- * @author Dave Macaulay <braintreesupport@gene.co.uk>
  */
-var vZero = Class.create();
-vZero.prototype = {
-
+class vZero {
     /**
-     * Initialize all our required variables that we'll need later on
+     * Initialize all required variables
      *
-     * @param code The payment methods code
-     * @param clientToken The client token provided by the server
-     * @param threeDSecure Flag to determine whether 3D secure is active, this is verified server side
-     * @param hostedFields Flag to determine whether we're using hosted fields
-     * @param billingName Billing name used in verification of the card
-     * @param billingPostcode Billing postcode also needed to verify the card
-     * @param quoteUrl The URL to update the quote totals
-     * @param tokenizeUrl The URL to re-tokenize 3D secure cards
-     * @param clientTokenUrl Ajax end point to retrieve client token
+     * @param {string} code The payment methods code
+     * @param {string|boolean} clientToken The client token provided by the server
+     * @param {boolean} threeDSecure Flag to determine whether 3D secure is active
+     * @param {boolean} hostedFields Flag to determine whether we're using hosted fields
+     * @param {string} billingName Billing name used in verification of the card
+     * @param {string} billingPostcode Billing postcode also needed to verify the card
+     * @param {string} quoteUrl The URL to update the quote totals
+     * @param {string} tokenizeUrl The URL to re-tokenize 3D secure cards
+     * @param {string} clientTokenUrl Ajax end point to retrieve client token
      */
-    initialize: function (code, clientToken, threeDSecure, hostedFields, billingName, billingPostcode, quoteUrl, tokenizeUrl, clientTokenUrl) {
+    constructor(code, clientToken, threeDSecure, hostedFields, billingName, billingPostcode, quoteUrl, tokenizeUrl, clientTokenUrl) {
         this.code = code;
         this.clientToken = clientToken || false;
         this.clientTokenUrl = clientTokenUrl;
         this.threeDSecure = threeDSecure;
-        this.hostedFields = hostedFields; /* deprecated, hosted fields is the only option */
+        this.hostedFields = hostedFields;
 
         if (billingName) {
             this.billingName = billingName;
@@ -42,32 +39,25 @@ vZero.prototype = {
         }
 
         this._hostedFieldsTokenGenerated = false;
-
         this.acceptedCards = false;
-
-        // Store whether hosted fields is running or not
         this._hostedFieldsTimeout = false;
-
-        // Store the Ajax request for the updateData
         this._updateDataCallbacks = [];
         this._updateDataTimeout = null;
-
         this.client = false;
-
         this.threeDSpecificCountries = false;
         this.threeDCountries = [];
         this.threeDSecureFailedAction = 0;
-
         this.supportedCards = [];
         this.cardType = false;
+        this._hostedIntegration = false;
 
         this.initEvents();
-    },
+    }
 
     /**
-     * Create our events object, with the various events we support
+     * Create events object with various supported events
      */
-    initEvents: function () {
+    initEvents() {
         this.events = {
             onBeforeUpdateData: [],
             onAfterUpdateData: [],
@@ -85,271 +75,239 @@ vZero.prototype = {
                 onObserveAjaxRequests: []
             }
         };
-    },
+    }
 
     /**
      * Set the Kount data for the data collector
      *
-     * @param environment
-     * @param kountId
+     * @param {string} environment
+     * @param {string} kountId
      */
-    setKount: function (environment, kountId) {
+    setKount(environment, kountId) {
         this.kountEnvironment = environment;
-        if (kountId != '') {
+        if (kountId !== '') {
             this.kountId = kountId;
         }
-    },
+    }
 
     /**
      * Set the supported card types
      *
-     * @param cardTypes
+     * @param {string|Array} cardTypes
      */
-    setSupportedCards: function (cardTypes) {
+    setSupportedCards(cardTypes) {
         if (typeof cardTypes === 'string') {
             cardTypes = cardTypes.split(',');
         }
         this.supportedCards = cardTypes;
-    },
+    }
 
     /**
      * Set the 3D secure specific countries
      *
-     * @param countries
+     * @param {string|Array} countries
      */
-    setThreeDCountries: function (countries) {
+    setThreeDCountries(countries) {
         if (typeof countries === 'string') {
             countries = countries.split(',');
         }
         this.threeDSpecificCountries = true;
         this.threeDCountries = countries;
-    },
+    }
 
     /**
      * Set the action to occur when a 3Ds transactions liability doesn't shift
      *
-     * @param action
+     * @param {number} action
      */
-    setThreeDFailedAction: function (action) {
+    setThreeDFailedAction(action) {
         this.threeDSecureFailedAction = action;
-    },
+    }
 
     /**
      * Add an event into the system
      *
-     * @param paths
-     * @param eventFn
-     * @param params
+     * @param {string|Array} paths
+     * @param {Function} eventFn
+     * @param {Object} params
      */
-    observeEvent: function (paths, eventFn, params) {
+    observeEvent(paths, eventFn, params) {
         if (!Array.isArray(paths)) {
             paths = [paths];
         }
 
-        // Handle multiple paths
-        paths.each(function (path) {
-            var event = this._resolveEvent(path);
+        paths.forEach((path) => {
+            const event = this._resolveEvent(path);
             if (event === undefined) {
                 console.warn('Event for ' + path + ' does not exist.');
             } else {
-                event.push({fn: eventFn, params: params});
+                event.push({ fn: eventFn, params: params });
             }
-        }.bind(this));
-    },
+        });
+    }
 
     /**
      * Fire an event
      *
-     * @param caller
-     * @param path
-     * @param params
+     * @param {Object} caller
+     * @param {string} path
+     * @param {Object} params
      */
-    fireEvent: function (caller, path, params) {
-        var events = this._resolveEvent(path);
-        if (events !== undefined) {
-            if (events.length > 0) {
-                events.each(function (event) {
-                    if (typeof event.fn === 'function') {
-                        var arguments = [params];
-                        if (typeof event.params === 'object') {
-                            arguments.push(event.params);
-                        }
-                        event.fn.apply(caller, arguments);
+    fireEvent(caller, path, params) {
+        const events = this._resolveEvent(path);
+        if (events !== undefined && events.length > 0) {
+            events.forEach((event) => {
+                if (typeof event.fn === 'function') {
+                    const args = [params];
+                    if (typeof event.params === 'object') {
+                        args.push(event.params);
                     }
-                });
-            }
+                    event.fn.apply(caller, args);
+                }
+            });
         }
-    },
+    }
 
     /**
      * Resolve an event by a path
      *
-     * @param path
+     * @param {string} path
      * @returns {*}
      * @private
      */
-    _resolveEvent: function (path) {
-        return path.split('.').reduce(function(prev, curr) {
-            return prev ? prev[curr] : undefined
-        }, this.events)
-    },
+    _resolveEvent(path) {
+        return path.split('.').reduce((prev, curr) => {
+            return prev ? prev[curr] : undefined;
+        }, this.events);
+    }
 
     /**
      * Retrieve the client token
      *
-     * @param callbackFn
+     * @param {Function} callbackFn
      * @returns {*}
      */
-    getClientToken: function (callbackFn) {
+    async getClientToken(callbackFn) {
         if (this.clientToken !== false) {
             return callbackFn(this.clientToken);
         } else if (window.braintreeClientToken) {
             return callbackFn(window.braintreeClientToken);
         } else {
-            new Ajax.Request(
-                this.clientTokenUrl,
-                {
-                    method: 'get',
-                    onSuccess: function (transport) {
-                        // Verify we have some response text
-                        if (transport && (transport.responseJSON || transport.responseText)) {
-                            // Parse the response from the server
-                            var response = this._parseTransportAsJson(transport);
-                            if (response.success == true && typeof response.client_token === 'string') {
-                                this.clientToken = response.client_token;
-                                window.braintreeClientToken = response.client_token;
-                                return callbackFn(this.clientToken);
-                            } else {
-                                console.error('We were unable to retrieve a client token from the server to initialize the Braintree flow.');
-                                if (response.error) {
-                                    console.error(response.error);
-                                }
-                            }
-                        }
-                    }.bind(this),
-                    onFailure: function () {
-                        console.error('We were unable to retrieve a client token from the server to initialize the Braintree flow.');
-                    }.bind(this)
+            try {
+                const response = await mahoFetch(this.clientTokenUrl, {
+                    method: 'GET',
+                    loaderArea: false
+                });
+                if (response.success === true && typeof response.client_token === 'string') {
+                    this.clientToken = response.client_token;
+                    window.braintreeClientToken = response.client_token;
+                    return callbackFn(this.clientToken);
+                } else {
+                    console.error('We were unable to retrieve a client token from the server to initialize the Braintree flow.');
+                    if (response.error) {
+                        console.error(response.error);
+                    }
                 }
-            );
+            } catch (error) {
+                console.error('We were unable to retrieve a client token from the server to initialize the Braintree flow.');
+            }
         }
-    },
+    }
 
     /**
-     * Retrieve the client from the class, or initialize the client if not already present
+     * Retrieve the client from the class, or initialize if not already present
      *
-     * @param callbackFn
+     * @param {Function} callbackFn
      */
-    getClient: function (callbackFn) {
+    getClient(callbackFn) {
         if (this.client !== false) {
             if (typeof callbackFn === 'function') {
                 callbackFn(this.client);
             }
         } else {
-            // Retrieve a client token
-            this.getClientToken(function (clientToken) {
-                // Create a new braintree client instance
+            this.getClientToken((clientToken) => {
                 braintree.client.create({
                     authorization: clientToken
-                }, function (clientErr, clientInstance) {
+                }, (clientErr, clientInstance) => {
                     if (clientErr) {
-                        // Handle error in client creation
                         console.error(clientErr);
                         return;
                     }
-
                     this.client = clientInstance;
                     callbackFn(this.client);
-                }.bind(this));
+                });
             });
         }
-    },
+    }
 
     /**
      * Init the hosted fields system
      *
-     * @param integration
+     * @param {Object} integration
      */
-    initHostedFields: function (integration) {
-
-        // If the hosted field number element exists hosted fields is on the page and working!
-        if ($$('iframe[name^="braintree-"]').length > 0) {
+    initHostedFields(integration) {
+        if (document.querySelectorAll('iframe[name^="braintree-"]').length > 0) {
             return false;
         }
 
-        // If it's already running there's no need to start another instance
-        // Also block the function if braintree-hosted-submit isn't yet on the page
-        if ($('braintree-hosted-submit') === null) {
+        const submitBtn = document.getElementById('braintree-hosted-submit');
+        if (submitBtn === null) {
             return false;
         }
 
-        // Pass the integration through to hosted fields
         this.integration = integration;
-
         this._hostedFieldsTokenGenerated = false;
 
-        // Utilise a 50ms timeout to ensure the last call of HF is ran
         clearTimeout(this._hostedFieldsTimeout);
-        this._hostedFieldsTimeout = setTimeout(function () {
-
+        this._hostedFieldsTimeout = setTimeout(() => {
             if (this._hostedIntegration !== false) {
                 try {
-                    this._hostedIntegration.teardown(function () {
+                    this._hostedIntegration.teardown(() => {
                         this._hostedIntegration = false;
-                        // Setup the hosted fields client
                         this.setupHostedFieldsClient();
-                    }.bind(this));
+                    });
                 } catch (e) {
                     this.setupHostedFieldsClient();
                 }
             } else {
-                // Setup the hosted fields client
                 this.setupHostedFieldsClient();
             }
-
-        }.bind(this), 50);
-    },
+        }, 50);
+    }
 
     /**
      * Tear down hosted fields
      *
-     * @param callbackFn
+     * @param {Function} callbackFn
      */
-    teardownHostedFields: function (callbackFn) {
+    teardownHostedFields(callbackFn) {
         if (typeof this._hostedIntegration !== 'undefined' && this._hostedIntegration !== false) {
-            this._hostedIntegration.teardown(function () {
+            this._hostedIntegration.teardown(() => {
                 this._hostedIntegration = false;
-
                 if (typeof callbackFn === 'function') {
                     callbackFn();
                 }
-            }.bind(this));
+            });
         } else {
             if (typeof callbackFn === 'function') {
                 callbackFn();
             }
         }
-    },
+    }
 
     /**
      * Setup the hosted fields client utilising the Braintree JS SDK
      */
-    setupHostedFieldsClient: function () {
-
-        // If there are iframes within the fields already, don't run again!
-        // This function has a delay from the original call so we need to verify everything is still good to go!
-        if ($$('iframe[name^="braintree-"]').length > 0) {
+    setupHostedFieldsClient() {
+        if (document.querySelectorAll('iframe[name^="braintree-"]').length > 0) {
             return false;
         }
 
         this._hostedIntegration = false;
-
         this.checkSubmitAfterPayment();
 
-        // Retrieve the client from the class
-        this.getClient(function (clientInstance) {
-            // Build our hosted fields options
-            var options = {
+        this.getClient((clientInstance) => {
+            const options = {
                 client: clientInstance,
                 styles: this.getHostedFieldsStyles(),
                 fields: {
@@ -368,92 +326,80 @@ vZero.prototype = {
                 }
             };
 
-            // Include the CVV field with the request
-            if ($('cvv') !== null) {
+            const cvvField = document.getElementById('cvv');
+            if (cvvField !== null) {
                 options.fields.cvv = {
                     selector: "#cvv"
                 };
             }
 
-            // Create a new instance of hosted fields
-            braintree.hostedFields.create(options, function (hostedFieldsErr, hostedFieldsInstance) {
-                // Handle hosted fields errors
+            braintree.hostedFields.create(options, (hostedFieldsErr, hostedFieldsInstance) => {
                 if (hostedFieldsErr) {
-                    // Duplicate IFRAME error can occur with certain checkouts implementations
-                    if (hostedFieldsErr.code == 'HOSTED_FIELDS_FIELD_DUPLICATE_IFRAME') {
+                    if (hostedFieldsErr.code === 'HOSTED_FIELDS_FIELD_DUPLICATE_IFRAME') {
                         return;
                     }
-
-                    // Handle error in Hosted Fields creation
                     console.error(hostedFieldsErr);
                     return;
                 }
-
-                // Run on ready function
                 return this.hostedFieldsOnReady(hostedFieldsInstance);
-            }.bind(this));
-        }.bind(this));
-    },
+            });
+        });
+    }
 
     /**
      * Called when Hosted Fields integration is ready
      *
-     * @param integration
+     * @param {Object} integration
      */
-    hostedFieldsOnReady: function (integration) {
+    hostedFieldsOnReady(integration) {
         this._hostedIntegration = integration;
 
-        // Unset the loading state if it's present
-        if ($$('#credit-card-form.loading').length) {
-            $$('#credit-card-form.loading').first().removeClassName('loading');
+        const loadingForm = document.querySelector('#credit-card-form.loading');
+        if (loadingForm) {
+            loadingForm.classList.remove('loading');
         }
 
         this.checkSubmitAfterPayment();
-
-        // Handle card type changes
         integration.on('cardTypeChange', this.hostedFieldsCardTypeChange.bind(this));
-    },
+    }
 
     /**
      * Check if the submit after payment should be present on the page
      */
-    checkSubmitAfterPayment: function () {
-        // Will this checkout submit the payment after the "payment" step. This is typically used in non one step checkouts
-        // which contains a review step.
+    checkSubmitAfterPayment() {
+        const paymentForm = document.getElementById('payment_form_gene_braintree_creditcard');
         if (this.integration.submitAfterPayment) {
-            if ($('braintree-submit-after-payment') == null) {
-                var input = new Element('input', {type: 'hidden', name: 'payment[submit_after_payment]', value: 1, id: 'braintree-submit-after-payment'});
-                $('payment_form_gene_braintree_creditcard').insert(input);
+            if (document.getElementById('braintree-submit-after-payment') === null && paymentForm) {
+                const input = document.createElement('input');
+                input.type = 'hidden';
+                input.name = 'payment[submit_after_payment]';
+                input.value = '1';
+                input.id = 'braintree-submit-after-payment';
+                paymentForm.appendChild(input);
             }
         } else {
-            if ($('braintree-submit-after-payment')) {
-                $('braintree-submit-after-payment').remove();
+            const submitAfterPayment = document.getElementById('braintree-submit-after-payment');
+            if (submitAfterPayment) {
+                submitAfterPayment.remove();
             }
         }
-    },
+    }
 
     /**
      * Return the hosted field styles
-     * See: https://developers.braintreepayments.com/guides/hosted-fields/styling/javascript/v2
      *
-     * @returns {*}
+     * @returns {Object}
      */
-    getHostedFieldsStyles: function () {
-
-        // Does the integration provide it's own styling options for hosted fields?
+    getHostedFieldsStyles() {
         if (typeof this.integration.getHostedFieldsStyles === 'function') {
             return this.integration.getHostedFieldsStyles();
         }
 
-        // Return some default styles if all else fails
         return {
-            // Style all elements
             "input": {
                 "font-size": "14pt",
                 "color": "#3A3A3A"
             },
-
-            // Styling element state
             ":focus": {
                 "color": "black"
             },
@@ -464,16 +410,16 @@ vZero.prototype = {
                 "color": "red"
             }
         };
-    },
+    }
 
     /**
      * Update the card type on field event
      *
-     * @param event
+     * @param {Object} event
      */
-    hostedFieldsCardTypeChange: function (event) {
+    hostedFieldsCardTypeChange(event) {
         if (typeof event.cards !== 'undefined') {
-            var cardMapping = {
+            const cardMapping = {
                 'visa': 'VI',
                 'american-express': 'AE',
                 'master-card': 'MC',
@@ -481,12 +427,11 @@ vZero.prototype = {
                 'jcb': 'JCB',
                 'maestro': 'ME'
             };
-            if (typeof cardMapping[event.cards[0].type] !== undefined) {
+            if (typeof cardMapping[event.cards[0].type] !== 'undefined') {
                 this.cardType = cardMapping[event.cards[0].type];
                 this.updateCardType(false, this.cardType);
 
-                // Detect whether or not the card is supported
-                if (this.supportedCards.indexOf(this.cardType) == -1) {
+                if (this.supportedCards.indexOf(this.cardType) === -1) {
                     this.showCardUnsupported();
                 } else {
                     this.removeCardUnsupported();
@@ -497,42 +442,42 @@ vZero.prototype = {
                 this.updateCardType(false, 'card');
             }
         }
-    },
+    }
 
     /**
      * Show the card unsupported message by the card field
      */
-    showCardUnsupported: function () {
-        if ($$('.braintree-card-input-field').length > 0) {
-            var parentElement = $$('.braintree-card-input-field').first().up();
-            if (parentElement.select('.braintree-card-unsupported').length == 0) {
-                var error = new Element('div', {class: 'braintree-card-unsupported'}).update(
-                    Translator.translate('We\'re currently unable to process this card type, please try another card or payment method.')
-                );
-                parentElement.insert(error);
+    showCardUnsupported() {
+        const cardInput = document.querySelector('.braintree-card-input-field');
+        if (cardInput) {
+            const parentElement = cardInput.parentElement;
+            if (!parentElement.querySelector('.braintree-card-unsupported')) {
+                const error = document.createElement('div');
+                error.className = 'braintree-card-unsupported';
+                error.textContent = Translator.translate('We\'re currently unable to process this card type, please try another card or payment method.');
+                parentElement.appendChild(error);
             }
         }
-    },
+    }
 
     /**
      * Remove the card unsupported message
      */
-    removeCardUnsupported: function () {
-        if ($$('.braintree-card-unsupported').length > 0) {
-            $$('.braintree-card-unsupported').each(function (ele) {
-                ele.remove();
-            })
-        }
-    },
+    removeCardUnsupported() {
+        document.querySelectorAll('.braintree-card-unsupported').forEach((ele) => {
+            ele.remove();
+        });
+    }
 
     /**
      * Retrieve the billing country ID
      *
-     * @returns {*}
+     * @returns {string|boolean}
      */
-    getBillingCountryId: function () {
-        if ($('billing-address-select') == null || $('billing-address-select').value == '') {
-            var billing = this.getBillingAddress();
+    getBillingCountryId() {
+        const billingSelect = document.getElementById('billing-address-select');
+        if (billingSelect === null || billingSelect.value === '') {
+            const billing = this.getBillingAddress();
             if (typeof billing['billing[country_id]'] !== 'undefined') {
                 return billing['billing[country_id]'];
             }
@@ -543,101 +488,92 @@ vZero.prototype = {
         }
 
         return false;
-    },
+    }
 
     /**
      * Should we invoke the 3Ds flow
      *
-     * @returns {*}
+     * @returns {boolean}
      */
-    shouldInvokeThreeDSecure: function () {
-        // Are we invoking 3D secure for specific countries only?
+    shouldInvokeThreeDSecure() {
         if (this.threeDSpecificCountries && this.threeDCountries.length > 0) {
-            var countryId;
-            if (countryId = this.getBillingCountryId()) {
+            const countryId = this.getBillingCountryId();
+            if (countryId) {
                 return this.threeDCountries.indexOf(countryId) !== -1;
             }
         }
-
         return this.threeDSecure;
-    },
+    }
 
     /**
      * Once the nonce has been received update the field
      *
-     * @param nonce
-     * @param options
+     * @param {Object} payload
+     * @param {Object} options
      */
-    hostedFieldsNonceReceived: function (payload, options) {
-
+    hostedFieldsNonceReceived(payload, options) {
         if (this.shouldInvokeThreeDSecure()) {
-            // Show the loading state
             if (typeof this.integration.setLoading === 'function') {
                 this.integration.setLoading();
             }
 
-
-            // Verify the nonce through 3Ds
             this.verify3dSecureNonce(payload.nonce, {
-                onSuccess: function (response) {
+                onSuccess: (response) => {
                     this.updateNonce(response.nonce);
-
                     if (typeof options.onSuccess === 'function') {
                         options.onSuccess();
                     }
-                }.bind(this),
-                onFailure: function () {
+                },
+                onFailure: () => {
                     if (typeof options.onFailure === 'function') {
                         options.onFailure();
                     }
-                }.bind(this)
+                }
             });
         } else {
             this.updateNonce(payload.nonce);
-
             if (typeof options.onSuccess === 'function') {
                 options.onSuccess();
             }
         }
-    },
+    }
 
     /**
      * Update the nonce in the form
      *
-     * @param nonce
+     * @param {string} nonce
      */
-    updateNonce: function (nonce) {
-        $('creditcard-payment-nonce').value = nonce;
-        $('creditcard-payment-nonce').setAttribute('value', nonce);
+    updateNonce(nonce) {
+        const nonceField = document.getElementById('creditcard-payment-nonce');
+        if (nonceField) {
+            nonceField.value = nonce;
+            nonceField.setAttribute('value', nonce);
+        }
 
         if (typeof this.integration.resetLoading === 'function') {
             this.integration.resetLoading();
         }
 
         this._hostedFieldsTokenGenerated = true;
-    },
+    }
 
     /**
      * Handle hosted fields throwing an error
      *
-     * @param response
+     * @param {Object} response
      * @returns {boolean}
      */
-    hostedFieldsError: function (response) {
-
+    hostedFieldsError(response) {
         if (typeof this.integration.resetLoading === 'function') {
             this.integration.resetLoading();
         }
 
-        // Stop any "Cannot place two elements in #xxx" messages being shown to the user
-        // These are non critical errors and the functionality will still work as expected
         if (
             typeof response.message !== 'undefined' &&
-            response.message.indexOf('Cannot place two elements in') == -1 &&
-            response.message.indexOf('Unable to find element with selector') == -1 &&
-            response.message.indexOf('User did not enter a payment method') == -1
+            response.message.indexOf('Cannot place two elements in') === -1 &&
+            response.message.indexOf('Unable to find element with selector') === -1 &&
+            response.message.indexOf('User did not enter a payment method') === -1
         ) {
-            // Let the user know what went wrong
             alert(response.message);
         }
 
@@ -648,491 +584,480 @@ vZero.prototype = {
         }
 
         return false;
-
-    },
+    }
 
     /**
      * Is the customer attempting to use a saved card?
      *
      * @returns {boolean}
      */
-    usingSavedCard: function () {
-        return ($('creditcard-saved-accounts') != undefined
-            && $$('#creditcard-saved-accounts input:checked[type=radio]').first() != undefined
-            && $$('#creditcard-saved-accounts input:checked[type=radio]').first().value !== 'other');
-    },
+    usingSavedCard() {
+        const savedAccounts = document.getElementById('creditcard-saved-accounts');
+        const checkedRadio = document.querySelector('#creditcard-saved-accounts input:checked[type=radio]');
+        return (savedAccounts !== null && checkedRadio !== null && checkedRadio.value !== 'other');
+    }
 
     /**
      * Detect a saved card with 3Ds enabled
-     * @returns {*|boolean}
+     *
+     * @returns {boolean}
      */
-    usingSavedThreeDCard: function () {
-        return this.usingSavedCard() && $$('#creditcard-saved-accounts input:checked[type=radio]').first().hasAttribute('data-threedsecure-nonce');
-    },
+    usingSavedThreeDCard() {
+        const checkedRadio = document.querySelector('#creditcard-saved-accounts input:checked[type=radio]');
+        return this.usingSavedCard() && checkedRadio && checkedRadio.hasAttribute('data-threedsecure-nonce');
+    }
 
     /**
      * Set the 3Ds flag
      *
-     * @param flag a boolean value
+     * @param {boolean} flag
      */
-    setThreeDSecure: function (flag) {
+    setThreeDSecure(flag) {
         this.threeDSecure = flag;
-    },
+    }
 
     /**
-     * Set the amount within the checkout, this is only used in the default integration
-     * For any other checkouts see the updateData method, this is used by 3D secure
+     * Set the amount within the checkout
      *
-     * @param amount The grand total of the order
+     * @param {number|string} amount
      */
-    setAmount: function (amount) {
+    setAmount(amount) {
         this.amount = parseFloat(amount);
-    },
+    }
 
     /**
-     * We sometimes need to set the billing name later on in the process
+     * Set the billing name
      *
-     * @param billingName
+     * @param {string} billingName
      */
-    setBillingName: function (billingName) {
+    setBillingName(billingName) {
         this.billingName = billingName;
-    },
+    }
 
     /**
      * Return the billing name
      *
-     * @returns {*}
+     * @returns {string}
      */
-    getBillingName: function () {
-
-        // If billingName is an object we're wanting to grab the data from elements
-        if (typeof this.billingName == 'object') {
-
-            // Combine them with a space
+    getBillingName() {
+        if (typeof this.billingName === 'object') {
             return this.combineElementsValues(this.billingName);
-
         } else {
-
-            // Otherwise we can presume that the billing name is a string
             return this.billingName;
         }
-    },
+    }
 
     /**
-     * Same for billing postcode
+     * Set billing postcode
      *
-     * @param billingPostcode
+     * @param {string} billingPostcode
      */
-    setBillingPostcode: function (billingPostcode) {
+    setBillingPostcode(billingPostcode) {
         this.billingPostcode = billingPostcode;
-    },
+    }
 
     /**
      * Return the billing post code
      *
-     * @returns {*}
+     * @returns {string|null}
      */
-    getBillingPostcode: function () {
-
-        if (typeof this.billingPostcode == 'string') {
+    getBillingPostcode() {
+        if (typeof this.billingPostcode === 'string') {
             return this.billingPostcode;
-        } else if (typeof this.billingPostcode == 'object') {
-            // If billingName is an object we're wanting to grab the data from elements
-
-            // Combine them with a space
+        } else if (typeof this.billingPostcode === 'object') {
             return this.combineElementsValues(this.billingPostcode);
         } else {
-            var billing = this.getBillingAddress();
+            const billing = this.getBillingAddress();
             if (typeof billing['billing[postcode]'] !== 'undefined') {
                 return billing['billing[postcode]'];
             }
-
             return null;
         }
-    },
+    }
 
     /**
      * Push through the selected accepted cards from the admin
      *
-     * @param cards an array of accepted cards
+     * @param {Array} cards
      */
-    setAcceptedCards: function (cards) {
+    setAcceptedCards(cards) {
         this.acceptedCards = cards;
-    },
+    }
 
     /**
-     * Return the full billing address, if we cannot just serialize the billing address serialize everything
+     * Return the full billing address
      *
-     * @returns {array}
+     * @returns {Object}
      */
-    getBillingAddress: function () {
-
-        // Is there a function in the integration for this action?
+    getBillingAddress() {
         if (typeof this.integration.getBillingAddress === 'function') {
             return this.integration.getBillingAddress();
         }
 
-        var billingAddress = {};
+        let billingAddress = {};
+        const coBillingForm = document.getElementById('co-billing-form');
+        const billingFirstname = document.getElementById('billing:firstname');
 
-        // If not try something generic
-        if ($('co-billing-form') !== null) {
-            if ($('co-billing-form').tagName == 'FORM') {
-                billingAddress = $('co-billing-form').serialize(true);
+        if (coBillingForm !== null) {
+            if (coBillingForm.tagName === 'FORM') {
+                billingAddress = this._serializeForm(coBillingForm);
             } else {
-                billingAddress = this.extractBilling($('co-billing-form').up('form').serialize(true));
+                const parentForm = coBillingForm.closest('form');
+                if (parentForm) {
+                    billingAddress = this.extractBilling(this._serializeForm(parentForm));
+                }
             }
-        } else if ($('billing:firstname') !== null) {
-            billingAddress = this.extractBilling($('billing:firstname').up('form').serialize(true));
+        } else if (billingFirstname !== null) {
+            const parentForm = billingFirstname.closest('form');
+            if (parentForm) {
+                billingAddress = this.extractBilling(this._serializeForm(parentForm));
+            }
         }
 
-        if (billingAddress) {
-            return billingAddress;
-        }
-    },
+        return billingAddress;
+    }
 
     /**
      * Extract only the serialized values that start with "billing"
      *
-     * @param formData
-     * @returns {{}}
+     * @param {Object} formData
+     * @returns {Object}
      */
-    extractBilling: function (formData) {
-        var billing = {};
-        $H(formData).each(function (data) {
-            // Only include billing details, excluding passwords
-            if (data.key.indexOf('billing') == 0 && data.key.indexOf('password') == -1) {
-                billing[data.key] = data.value;
+    extractBilling(formData) {
+        const billing = {};
+        Object.entries(formData).forEach(([key, value]) => {
+            if (key.indexOf('billing') === 0 && key.indexOf('password') === -1) {
+                billing[key] = value;
             }
         });
         return billing;
-    },
+    }
 
-    getShippingAddress: function () {
-        // Is there a function in the integration for this action?
+    /**
+     * Return the full shipping address
+     *
+     * @returns {Object}
+     */
+    getShippingAddress() {
         if (typeof this.integration.getShippingAddress === 'function') {
             return this.integration.getShippingAddress();
         }
 
-        var shippingAddress = {};
+        let shippingAddress = {};
+        const coShippingForm = document.getElementById('co-shipping-form');
+        const shippingFirstname = document.getElementById('shipping:firstname');
 
-        // If not try something generic
-        if ($('co-shipping-form') !== null) {
-            if ($('co-shipping-form').tagName == 'FORM') {
-                shippingAddress = $('co-shipping-form').serialize(true);
+        if (coShippingForm !== null) {
+            if (coShippingForm.tagName === 'FORM') {
+                shippingAddress = this._serializeForm(coShippingForm);
             } else {
-                shippingAddress = this.extractShipping($('co-shipping-form').up('form').serialize(true));
+                const parentForm = coShippingForm.closest('form');
+                if (parentForm) {
+                    shippingAddress = this.extractShipping(this._serializeForm(parentForm));
+                }
             }
-        } else if ($('shipping:firstname') !== null) {
-            shippingAddress = this.extractShipping($('shipping:firstname').up('form').serialize(true));
+        } else if (shippingFirstname !== null) {
+            const parentForm = shippingFirstname.closest('form');
+            if (parentForm) {
+                shippingAddress = this.extractShipping(this._serializeForm(parentForm));
+            }
         }
 
-        if (shippingAddress) {
-            return shippingAddress;
-        }
-    },
+        return shippingAddress;
+    }
 
-    extractShipping: function (formData) {
-        var shipping = {};
-        $H(formData).each(function (data) {
-            // Only include billing details, excluding passwords
-            if (data.key.indexOf('shipping') === 0 && data.key.indexOf('password') === -1) {
-                shipping[data.key] = data.value;
+    /**
+     * Extract only the serialized values that start with "shipping"
+     *
+     * @param {Object} formData
+     * @returns {Object}
+     */
+    extractShipping(formData) {
+        const shipping = {};
+        Object.entries(formData).forEach(([key, value]) => {
+            if (key.indexOf('shipping') === 0 && key.indexOf('password') === -1) {
+                shipping[key] = value;
             }
         });
         return shipping;
-    },
+    }
+
+    /**
+     * Serialize form to object (replacement for Prototype's serialize(true))
+     *
+     * @param {HTMLFormElement} form
+     * @returns {Object}
+     * @private
+     */
+    _serializeForm(form) {
+        const result = {};
+        const formData = new FormData(form);
+
+        for (const [key, value] of formData.entries()) {
+            if (result[key]) {
+                if (!Array.isArray(result[key])) {
+                    result[key] = [result[key]];
+                }
+                result[key].push(value);
+            } else {
+                result[key] = value;
+            }
+        }
+
+        return result;
+    }
 
     /**
      * Return the accepted cards
      *
-     * @returns {boolean|*}
+     * @returns {boolean|Array}
      */
-    getAcceptedCards: function () {
+    getAcceptedCards() {
         return this.acceptedCards;
-    },
-
+    }
 
     /**
      * Combine elements values into a string
      *
-     * @param elements
-     * @param seperator
+     * @param {Array} elements
+     * @param {string} separator
      * @returns {string}
      */
-    combineElementsValues: function (elements, seperator) {
-
-        // If no seperator is set use a space
-        if (!seperator) {
-            seperator = ' ';
+    combineElementsValues(elements, separator) {
+        if (!separator) {
+            separator = ' ';
         }
 
-        // Loop through the elements and build up an array
-        var response = [];
-        elements.each(function (element, index) {
-            if ($(element) !== undefined) {
-                response[index] = $(element).value;
+        const response = [];
+        elements.forEach((elementId, index) => {
+            const element = document.getElementById(elementId);
+            if (element) {
+                response[index] = element.value;
             }
         });
 
-        // Join with a space
-        return response.join(seperator);
-
-    },
+        return response.join(separator);
+    }
 
     /**
      * Update the card type from a card number
      *
-     * @param cardNumber The card number that the user has entered
-     * @param cardType The card type, if already known
+     * @param {string|boolean} cardNumber
+     * @param {string} cardType
      */
-    updateCardType: function (cardNumber, cardType) {
-
-        // Check the image exists on the page
-        if ($('card-type-image') != undefined) {
-
-            // Grab the skin image URL without the last part
-            var skinImageUrl = $('card-type-image').src.substring(0, $('card-type-image').src.lastIndexOf("/"));
-
-            // Rebuild the URL with the card type included, all card types are stored as PNG's
-            $('card-type-image').setAttribute('src', skinImageUrl + "/" + cardType + ".png");
-
+    updateCardType(cardNumber, cardType) {
+        const cardTypeImage = document.getElementById('card-type-image');
+        if (cardTypeImage) {
+            const skinImageUrl = cardTypeImage.src.substring(0, cardTypeImage.src.lastIndexOf("/"));
+            cardTypeImage.setAttribute('src', skinImageUrl + "/" + cardType + ".png");
         }
-
-    },
+    }
 
     /**
-     * Observe all Ajax requests, this is needed on certain checkouts
-     * where we're unable to easily inject into methods
+     * Observe all Ajax requests
      *
-     * @param callback A defined callback function if needed
-     * @param ignore An array of indexOf paths to ignore
+     * @param {Function} callback
+     * @param {Array} ignore
      */
-    observeAjaxRequests: function (callback, ignore) {
-
-        // Only allow one initialization of this function
-        if (vZero.prototype.observingAjaxRequests) {
+    observeAjaxRequests(callback, ignore) {
+        if (vZero.observingAjaxRequests) {
             return false;
         }
-        vZero.prototype.observingAjaxRequests = true;
+        vZero.observingAjaxRequests = true;
 
-        // For every ajax request on complete update various Braintree things
-        Ajax.Responders.register({
-            onComplete: function (transport) {
-                return this.handleAjaxRequest(transport.url, callback, ignore);
-            }.bind(this)
-        });
+        // Override native fetch
+        const originalFetch = window.fetch;
+        window.fetch = async (...args) => {
+            const response = await originalFetch.apply(window, args);
+            const url = typeof args[0] === 'string' ? args[0] : args[0].url;
+            this.handleAjaxRequest(url, callback, ignore);
+            return response;
+        };
 
-        // Is jQuery present on the page
+        // Override XMLHttpRequest for legacy code
+        const originalXHROpen = XMLHttpRequest.prototype.open;
+        XMLHttpRequest.prototype.open = function(method, url, ...rest) {
+            this._url = url;
+            return originalXHROpen.apply(this, [method, url, ...rest]);
+        };
+
+        const originalXHRSend = XMLHttpRequest.prototype.send;
+        const self = this;
+        XMLHttpRequest.prototype.send = function(...args) {
+            this.addEventListener('load', function() {
+                self.handleAjaxRequest(this._url, callback, ignore);
+            });
+            return originalXHRSend.apply(this, args);
+        };
+
+        // jQuery support
         if (window.jQuery) {
-            jQuery(document).ajaxComplete(function (event, xhr, settings) {
-                return this.handleAjaxRequest(settings.url, callback, ignore)
-            }.bind(this));
+            jQuery(document).ajaxComplete((event, xhr, settings) => {
+                return this.handleAjaxRequest(settings.url, callback, ignore);
+            });
         }
-
-    },
+    }
 
     /**
-     * Handle the ajax request form the observer above
+     * Handle the ajax request from the observer
      *
-     * @param url
-     * @param callback
-     * @param ignore
+     * @param {string} url
+     * @param {Function} callback
+     * @param {Array} ignore
      * @returns {boolean}
      */
-    handleAjaxRequest: function (url, callback, ignore) {
-
-        // Let's check the ignore variable
-        if (typeof ignore !== 'undefined' && ignore instanceof Array && ignore.length > 0) {
-
-            // Determine whether we should ignore this request?
-            var shouldIgnore = false;
-            ignore.each(function (element) {
-                if (url && url.indexOf(element) != -1) {
+    handleAjaxRequest(url, callback, ignore) {
+        if (typeof ignore !== 'undefined' && Array.isArray(ignore) && ignore.length > 0) {
+            let shouldIgnore = false;
+            ignore.forEach((element) => {
+                if (url && url.indexOf(element) !== -1) {
                     shouldIgnore = true;
                 }
             });
 
-            // If so, stop here!
             if (shouldIgnore === true) {
                 return false;
             }
         }
 
-        // Check the transport object has a URL and that it wasn't to our own controller
-        if (url && url.indexOf('/braintree/') == -1) {
+        if (url && url.indexOf('/braintree/') === -1) {
+            this.fireEvent(this, 'onHandleAjaxRequest', { url: url });
 
-            this.fireEvent(this, 'onHandleAjaxRequest', {url: url});
-
-            // Some checkout implementations may require custom callbacks
             if (callback) {
                 callback(url);
             } else {
                 this.updateData();
             }
         }
-
-    },
+    }
 
     /**
-     * Make an Ajax request to the server and request up to date information regarding the quote
+     * Make an Ajax request to the server for quote information
      *
-     * @param callback A defined callback function if needed
-     * @param params any extra data to be passed to the controller
+     * @param {Function} callback
+     * @param {Object} params
      */
-    updateData: function (callback, params) {
+    updateData(callback, params) {
         this._updateDataCallbacks.push(callback);
 
         clearTimeout(this._updateDataTimeout);
-        this._updateDataTimeout = setTimeout(function () {
-            var callbacks = this._updateDataCallbacks;
+        this._updateDataTimeout = setTimeout(async () => {
+            const callbacks = this._updateDataCallbacks;
             this._updateDataCallbacks = [];
 
-            this.fireEvent(this, 'onBeforeUpdateData', {params: params});
+            this.fireEvent(this, 'onBeforeUpdateData', { params: params });
 
-            // Make a new ajax request to the server
-            new Ajax.Request(
-                this.quoteUrl,
-                {
-                    method: 'post',
-                    parameters: params,
-                    onSuccess: function (transport) {
-                        // Verify we have some response text
-                        if (transport && (transport.responseJSON || transport.responseText)) {
-
-                            // Parse the response from the server
-                            var response = this._parseTransportAsJson(transport);
-
-                            if (response.billingName != undefined) {
-                                this.billingName = response.billingName;
-                            }
-                            if (response.billingPostcode != undefined) {
-                                this.billingPostcode = response.billingPostcode;
-                            }
-                            if (response.billingCountryId != undefined) {
-                                this.billingCountryId = response.billingCountryId;
-                            }
-                            if (response.grandTotal != undefined) {
-                                this.amount = response.grandTotal;
-                            }
-                            if (response.threeDSecure != undefined) {
-                                this.setThreeDSecure(response.threeDSecure);
-                            }
-
-                            // If PayPal is active update it
-                            if (typeof vzeroPaypal != "undefined") {
-                                // Update the totals within the PayPal system
-                                if (response.grandTotal != undefined && response.currencyCode != undefined) {
-                                    vzeroPaypal.setPricing(response.grandTotal, response.currencyCode);
-                                }
-                            }
-
-                            // Run any callbacks that have been stored
-                            if (callbacks.length > 0) {
-                                callbacks.each(function (callback) {
-                                    callback(response);
-                                }.bind(this));
-                            }
-
-                            this.fireEvent(this, 'onAfterUpdateData', {response: response});
-                        }
-                    }.bind(this),
-                    onFailure: function () {
-
-                        // Update Data failed
-
-                    }.bind(this)
-                }
-            );
-        }.bind(this), 250);
-    },
-
-    /**
-     * If the user attempts to use a 3D secure vaulted card and then cancels the 3D
-     * window the nonce associated with that card will become invalid, due to this
-     * we have to tokenize all the 3D secure cards again
-     *
-     * @param callback A defined callback function if needed
-     */
-    tokenize3dSavedCards: function (callback) {
-
-        // Check 3D is enabled
-        if (this.threeDSecure) {
-
-            // Verify we have elements with data-token
-            if ($$('[data-token]').first() !== undefined) {
-
-                // Gather our tokens
-                var tokens = [];
-                $$('[data-token]').each(function (element, index) {
-                    tokens[index] = element.getAttribute('data-token');
+            try {
+                const body = new URLSearchParams(params || {});
+                const response = await mahoFetch(this.quoteUrl, {
+                    method: 'POST',
+                    body: body,
+                    loaderArea: false
                 });
 
-                // Make a new ajax request to the server
-                new Ajax.Request(
-                    this.tokenizeUrl,
-                    {
-                        method: 'post',
-                        onSuccess: function (transport) {
+                if (response.billingName !== undefined) {
+                    this.billingName = response.billingName;
+                }
+                if (response.billingPostcode !== undefined) {
+                    this.billingPostcode = response.billingPostcode;
+                }
+                if (response.billingCountryId !== undefined) {
+                    this.billingCountryId = response.billingCountryId;
+                }
+                if (response.grandTotal !== undefined) {
+                    this.amount = response.grandTotal;
+                }
+                if (response.threeDSecure !== undefined) {
+                    this.setThreeDSecure(response.threeDSecure);
+                }
 
-                            // Verify we have some response text
-                            if (transport && (transport.responseJSON || transport.responseText)) {
-
-                                // Parse as an object
-                                var response = this._parseTransportAsJson(transport);
-
-                                // Check the response was successful
-                                if (response.success) {
-
-                                    // Loop through the returned tokens
-                                    $H(response.tokens).each(function (element) {
-
-                                        // If the token exists update it's nonce
-                                        if ($$('[data-token="' + element.key + '"]').first() != undefined) {
-                                            $$('[data-token="' + element.key + '"]').first().setAttribute('data-threedsecure-nonce', element.value);
-                                        }
-                                    });
-                                }
-
-                                if (callback) {
-                                    callback(response);
-                                }
-                            }
-                        }.bind(this),
-                        parameters: {'tokens': Object.toJSON(tokens)}
+                if (typeof vzeroPaypal !== "undefined") {
+                    if (response.grandTotal !== undefined && response.currencyCode !== undefined) {
+                        vzeroPaypal.setPricing(response.grandTotal, response.currencyCode);
                     }
-                );
-            } else {
-                callback();
+                }
+
+                if (callbacks.length > 0) {
+                    callbacks.forEach((cb) => {
+                        if (typeof cb === 'function') {
+                            cb(response);
+                        }
+                    });
+                }
+
+                this.fireEvent(this, 'onAfterUpdateData', { response: response });
+            } catch (error) {
+                console.error('Update data failed:', error);
+            }
+        }, 250);
+    }
+
+    /**
+     * Tokenize 3D secure saved cards
+     *
+     * @param {Function} callback
+     */
+    async tokenize3dSavedCards(callback) {
+        if (!this.threeDSecure) {
+            callback();
+            return;
+        }
+
+        const tokenElements = document.querySelectorAll('[data-token]');
+        if (tokenElements.length === 0) {
+            callback();
+            return;
+        }
+
+        const tokens = Array.from(tokenElements).map((el) => el.getAttribute('data-token'));
+
+        try {
+            const body = new URLSearchParams({ tokens: JSON.stringify(tokens) });
+            const response = await mahoFetch(this.tokenizeUrl, {
+                method: 'POST',
+                body: body,
+                loaderArea: false
+            });
+
+            if (response.success) {
+                Object.entries(response.tokens).forEach(([key, value]) => {
+                    const element = document.querySelector('[data-token="' + key + '"]');
+                    if (element) {
+                        element.setAttribute('data-threedsecure-nonce', value);
+                    }
+                });
             }
 
-        } else {
+            if (callback) {
+                callback(response);
+            }
+        } catch (error) {
+            console.error('Tokenize 3D saved cards failed:', error);
             callback();
         }
-    },
+    }
 
     /**
      * Verify a nonce through 3ds
      *
-     * @param nonce
-     * @param options
+     * @param {string} nonce
+     * @param {Object} options
      */
-    verify3dSecureNonce: function (nonce, options) {
-
-        // Create a new instance of the threeDSecure library
-        this.getClient(function (clientInstance) {
+    verify3dSecureNonce(nonce, options) {
+        this.getClient((clientInstance) => {
             braintree.threeDSecure.create({
                 version: 2,
                 client: clientInstance
-            }, function (threeDSecureError, threeDSecureInstance) {
+            }, (threeDSecureError, threeDSecureInstance) => {
                 if (threeDSecureError) {
                     console.error(threeDSecureError);
                     return;
                 }
 
-                var billingAddressDetails = this.getBillingAddress();
-                var shippingAddressDetails = this.getShippingAddress();
+                const billingAddressDetails = this.getBillingAddress();
+                const shippingAddressDetails = this.getShippingAddress();
 
-                var billingAddress = {
+                const billingAddress = {
                     givenName: billingAddressDetails['billing[firstname]'],
                     surname: billingAddressDetails['billing[lastname]'],
                     phoneNumber: billingAddressDetails['billing[telephone]'] || '',
@@ -1144,8 +1069,9 @@ vZero.prototype = {
                     countryCodeAlpha2: billingAddressDetails['billing[country_id]']
                 };
 
+                let additionalInformation = null;
                 if (Object.keys(shippingAddressDetails).length > 0) {
-                    var additionalInformation = {
+                    additionalInformation = {
                         shippingGivenName: shippingAddressDetails['shipping[firstname]'],
                         shippingSurname: shippingAddressDetails['shipping[lastname]'],
                         shippingPhone: shippingAddressDetails['shipping[telephone]'] || '',
@@ -1160,41 +1086,48 @@ vZero.prototype = {
                     };
                 }
 
-                var verifyOptions = {
+                const verifyOptions = {
                     amount: this.amount,
                     nonce: nonce,
                     billingAddress: billingAddress,
-                    additionalInformation: additionalInformation || null,
-                    onLookupComplete: function (data, next) {
+                    additionalInformation: additionalInformation,
+                    onLookupComplete: (data, next) => {
                         next();
                     },
-                    addFrame: function (err, iframe) {
-                        $$('#three-d-modal .bt-modal-body').first().insert(iframe);
-                        $('three-d-modal').removeClassName('hidden');
+                    addFrame: (err, iframe) => {
+                        const modalBody = document.querySelector('#three-d-modal .bt-modal-body');
+                        if (modalBody) {
+                            modalBody.appendChild(iframe);
+                        }
+                        const modal = document.getElementById('three-d-modal');
+                        if (modal) {
+                            modal.classList.remove('hidden');
+                        }
                     },
-                    removeFrame: function () {
-                        $$('#three-d-modal .bt-modal-body iframe').first().remove();
-                        $('three-d-modal').addClassName('hidden');
-                    }.bind(this)
+                    removeFrame: () => {
+                        const iframe = document.querySelector('#three-d-modal .bt-modal-body iframe');
+                        if (iframe) {
+                            iframe.remove();
+                        }
+                        const modal = document.getElementById('three-d-modal');
+                        if (modal) {
+                            modal.classList.add('hidden');
+                        }
+                    }
                 };
 
-                // Verify the card by it's nonce
-                threeDSecureInstance.verifyCard(verifyOptions, function (verifyError, payload) {
+                threeDSecureInstance.verifyCard(verifyOptions, (verifyError, payload) => {
                     if (!verifyError) {
                         if (payload.liabilityShifted) {
-                            // Run any callback functions
                             if (options.onSuccess) {
                                 options.onSuccess(payload);
                             }
                         } else {
-                            // Allow the payment through if it's American Express
                             if (this.cardType === "AE") {
                                 if (options.onSuccess) {
                                     options.onSuccess(payload);
                                 }
-                            }
-                            // Block the payment
-                            else if (this.threeDSecureFailedAction == 1) {
+                            } else if (this.threeDSecureFailedAction === 1) {
                                 if (options.onFailure) {
                                     options.onFailure(
                                         payload,
@@ -1202,7 +1135,6 @@ vZero.prototype = {
                                     );
                                 }
                             } else {
-                                // Otherwise let the server side handle this
                                 if (options.onSuccess) {
                                     options.onSuccess(payload);
                                 }
@@ -1213,38 +1145,35 @@ vZero.prototype = {
                             options.onFailure(payload, verifyError);
                         }
                     }
-                }.bind(this));
-            }.bind(this));
-        }.bind(this));
-
-    },
+                });
+            });
+        });
+    }
 
     /**
      * Verify a card stored in the vault
      *
-     * @param options Contains any callback functions which have been set
+     * @param {Object} options
      */
-    verify3dSecureVault: function (options) {
-
-        // Get the payment nonce
-        var paymentNonce = $$('#creditcard-saved-accounts input:checked[type=radio]').first().getAttribute('data-threedsecure-nonce');
+    verify3dSecureVault(options) {
+        const checkedRadio = document.querySelector('#creditcard-saved-accounts input:checked[type=radio]');
+        const paymentNonce = checkedRadio ? checkedRadio.getAttribute('data-threedsecure-nonce') : null;
 
         if (paymentNonce) {
-            // Verify the nonce via 3d secure
             this.verify3dSecureNonce(paymentNonce, {
-                onSuccess: function (response) {
-                    // Store threeDSecure token and nonce in form
-                    $('creditcard-payment-nonce').removeAttribute('disabled');
-                    $('creditcard-payment-nonce').value = response.nonce;
-                    $('creditcard-payment-nonce').setAttribute('value', response.nonce);
+                onSuccess: (response) => {
+                    const nonceField = document.getElementById('creditcard-payment-nonce');
+                    if (nonceField) {
+                        nonceField.removeAttribute('disabled');
+                        nonceField.value = response.nonce;
+                        nonceField.setAttribute('value', response.nonce);
+                    }
 
-                    // Run any callback functions
                     if (typeof options.onSuccess === 'function') {
                         options.onSuccess();
                     }
                 },
-                onFailure: function (response, error) {
-                    // Show the error
+                onFailure: (response, error) => {
                     alert(error);
 
                     if (typeof options.onFailure === 'function') {
@@ -1263,18 +1192,16 @@ vZero.prototype = {
                 checkout.setLoadWaiting(false);
             }
         }
-    },
+    }
 
     /**
      * Process a standard card request
      *
-     * @param options Contains any callback functions which have been set
+     * @param {Object} options
      */
-    processCard: function (options) {
-
-        // Retrieve billing address postcode & pass to api (as of SDK 3.9.0)
-        var postcode = this.getBillingPostcode(),
-            opt = {};
+    processCard(options) {
+        const postcode = this.getBillingPostcode();
+        let opt = {};
 
         if (postcode) {
             opt = {
@@ -1284,17 +1211,14 @@ vZero.prototype = {
             };
         }
 
-        // Tokenize using hosted fields
-        this._hostedIntegration.tokenize(opt, function (tokenizeErr, payload) {
+        this._hostedIntegration.tokenize(opt, (tokenizeErr, payload) => {
             if (tokenizeErr) {
-
                 if (typeof options.onFailure === 'function') {
                     options.onFailure();
                 } else {
                     checkout.setLoadWaiting(false);
                 }
 
-                // Return the message to the user
                 if (typeof tokenizeErr.message === 'string') {
                     alert(tokenizeErr.message);
                 }
@@ -1302,123 +1226,64 @@ vZero.prototype = {
             }
 
             return this.hostedFieldsNonceReceived(payload, options);
-        }.bind(this));
-    },
+        });
+    }
 
     /**
-     * Should our integrations intercept credit card payments based on the settings?
+     * Should integrations intercept credit card payments?
      *
      * @returns {boolean}
      */
-    shouldInterceptCreditCard: function () {
-        return (this.amount != '0.00');
-    },
+    shouldInterceptCreditCard() {
+        return (this.amount !== '0.00');
+    }
 
     /**
-     * Should our integrations intercept PayPal payments based on the settings?
+     * Should integrations intercept PayPal payments?
      *
      * @returns {boolean}
      */
-    shouldInterceptPayPal: function () {
+    shouldInterceptPayPal() {
         return true;
-    },
+    }
 
     /**
      * Wrapper function which defines which method should be called
      *
-     * verify3dSecureVault - used for verifying any vaulted card when 3D secure is enabled
-     * verify3dSecure - verify a normal card via 3D secure
-     * processCard - verify a normal card
-     *
-     * If the customer has choosen a vaulted card and 3D is disabled no client side interaction is needed
-     *
-     * @param options Object containing onSuccess, onFailure functions
+     * @param {Object} options
      */
-    process: function (options) {
+    process(options) {
         options = options || {};
 
-        // Run success action if the hosted field token is generated, or the user is using a saved card without 3Ds
         if (this._hostedFieldsTokenGenerated || (this.usingSavedCard() && !this.usingSavedThreeDCard())) {
-
-            // No action required as we're using a saved card
             if (typeof options.onSuccess === 'function') {
-                options.onSuccess()
+                options.onSuccess();
             }
-
         } else if (this.usingSavedThreeDCard()) {
-
-            // The user has selected a card stored via 3D secure
             return this.verify3dSecureVault(options);
-
         } else {
-
-            // Otherwise process the card normally
             return this.processCard(options);
-
         }
-    },
+    }
 
     /**
      * Called on Credit Card loading
      *
      * @returns {boolean}
      */
-    creditCardLoaded: function () {
+    creditCardLoaded() {
         return false;
-    },
+    }
 
     /**
      * Called on PayPal loading
      *
      * @returns {boolean}
      */
-    paypalLoaded: function () {
+    paypalLoaded() {
         return false;
-    },
-
-    /**
-     * Parse a transports response into JSON
-     *
-     * @param transport
-     * @returns {*}
-     * @private
-     */
-    _parseTransportAsJson: function (transport) {
-        if (transport.responseJSON && typeof transport.responseJSON === 'object') {
-            return transport.responseJSON;
-        } else if (transport.responseText) {
-            if (typeof JSON === 'object' && typeof JSON.parse === 'function') {
-                return JSON.parse(transport.responseText);
-            } else {
-                return eval('(' + transport.responseText + ')');
-            }
-        }
-
-        return {};
     }
+}
 
-};
-
-// Avoid 'console' errors in browsers that lack a console.
-(function () {
-    var method;
-    var noop = function () {
-    };
-    var methods = [
-        'assert', 'clear', 'count', 'debug', 'dir', 'dirxml', 'error',
-        'exception', 'group', 'groupCollapsed', 'groupEnd', 'info', 'log',
-        'markTimeline', 'profile', 'profileEnd', 'table', 'time', 'timeEnd',
-        'timeStamp', 'trace', 'warn'
-    ];
-    var length = methods.length;
-    var console = (window.console = window.console || {});
-
-    while (length--) {
-        method = methods[length];
-
-        // Only stub undefined methods.
-        if (!console[method]) {
-            console[method] = noop;
-        }
-    }
-}());
+// Static property for tracking ajax observation
+vZero.observingAjaxRequests = false;

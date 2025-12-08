@@ -1,12 +1,18 @@
-var BraintreePayPalExpress = Class.create(BraintreeExpressAbstract, {
-    vzeroPayPal: false,
+/**
+ * Braintree PayPal Express class
+ *
+ * @class BraintreePayPalExpress
+ * @extends BraintreeExpressAbstract
+ */
+class BraintreePayPalExpress extends BraintreeExpressAbstract {
+    vzeroPayPal = false;
 
     /**
      * Init the PayPal button class
      *
-     * @private
+     * @protected
      */
-    _init: function () {
+    _init() {
         this.vzeroPayPal = new vZeroPayPalButton(
             false,
             '',
@@ -17,56 +23,59 @@ var BraintreePayPalExpress = Class.create(BraintreeExpressAbstract, {
             this.urls.clientTokenUrl,
             {}
         );
-    },
+    }
 
     /**
      * Attach the PayPal instance to the buttons
      *
-     * @param buttons
+     * @param {NodeList|Array} buttons
      */
-    attachToButtons: function (buttons) {
-        var that = this;
-        var options = {
-            env: that.config.env,
+    attachToButtons(buttons) {
+        const options = {
+            env: this.config.env,
             commit: false,
-            style: that.config.buttonStyle,
-            funding: that.config.funding,
+            style: this.config.buttonStyle,
+            funding: this.config.funding,
             payment: {
                 flow: 'checkout',
-                amount: that.config.total,
-                currency: that.config.currency,
+                amount: this.config.total,
+                currency: this.config.currency,
                 enableShippingAddress: true,
                 shippingAddressEditable: true,
-                displayName: that.config.displayName
+                displayName: this.config.displayName
             },
             events: {
-                validate: that.validateForm,
-                onAuthorize: function (payload) {
-                    var params = {
+                validate: this.validateForm,
+                onAuthorize: (payload) => {
+                    const params = {
                         paypal: JSON.stringify(payload)
                     };
-                    if (typeof that.config.productId !== 'undefined') {
-                        params.product_id = that.config.productId;
-                        params.form_data = $('product_addtocart_form') ? $('product_addtocart_form').serialize() : $('pp_express_form').serialize();
+                    if (typeof this.config.productId !== 'undefined') {
+                        params.product_id = this.config.productId;
+                        const productForm = document.getElementById('product_addtocart_form');
+                        const ppExpressForm = document.getElementById('pp_express_form');
+                        params.form_data = productForm ? new URLSearchParams(new FormData(productForm)).toString() : (ppExpressForm ? new URLSearchParams(new FormData(ppExpressForm)).toString() : '');
                     }
-                    that.initModal(params);
+                    this.initModal(params);
                 },
-                onCancel: function() {
-                    that.hideModal();
+                onCancel: () => {
+                    this.hideModal();
                 },
-                onError: function() {
+                onError: () => {
                     alert(typeof Translator === "object" ? Translator.translate("We were unable to complete the request. Please try again.") : "We were unable to complete the request. Please try again.");
                 }
             }
         };
 
         // Add a class to the parents of the buttons
-        buttons.each(function (button) {
-            button.up().addClassName('braintree-paypal-express-container');
+        buttons = Array.from(buttons);
+        buttons.forEach((button) => {
+            if (button.parentElement) {
+                button.parentElement.classList.add('braintree-paypal-express-container');
+            }
         });
 
         // Initialize the PayPal button logic on any valid buttons on the page
         this.vzeroPayPal.attachPayPalButtonEvent(buttons, options);
     }
-
-});
+}

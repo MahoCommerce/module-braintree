@@ -2,40 +2,39 @@
  * The integration class for the Default checkout
  *
  * @class vZeroIntegration
- * @author Dave Macaulay <braintreesupport@gene.co.uk>
  */
-var vZeroIntegration = Class.create();
-vZeroIntegration.prototype = {
-
+class vZeroIntegration {
     /**
      * Device Data instance from braintree
      */
-    dataCollectorInstance: null,
+    dataCollectorInstance = null;
+
+    /**
+     * Static loaded flag to prevent multiple initializations
+     */
+    static loaded = false;
 
     /**
      * Create an instance of the integration
      *
-     * @param vzero The vZero class that's being used by the checkout
-     * @param vzeroPaypal The vZero PayPal object
-     * @param paypalWrapperMarkUp The markup used to wrap the PayPal button
-     * @param paypalButtonClass The class of the button we need to replace with the above mark up
-     * @param isOnepage Is the integration a onepage checkout?
-     * @param config Any further config the integration wants to push into the class
-     * @param submitAfterPayment Is the checkout going to submit the actual payment after the payment step? For instance a checkout with a review step
+     * @param {vZero} vzero The vZero class that's being used by the checkout
+     * @param {vZeroPayPalButton} vzeroPaypal The vZero PayPal object
+     * @param {string} paypalWrapperMarkUp The markup used to wrap the PayPal button
+     * @param {string} paypalButtonClass The class of the button we need to replace
+     * @param {boolean} isOnepage Is the integration a onepage checkout?
+     * @param {Object} config Any further config the integration wants to push into the class
+     * @param {boolean} submitAfterPayment Is the checkout going to submit the payment after the payment step?
      */
-    initialize: function (vzero, vzeroPaypal, paypalWrapperMarkUp, paypalButtonClass, isOnepage, config, submitAfterPayment) {
-
-        // Only allow the system to be initialized twice
-        if (vZeroIntegration.prototype.loaded) {
+    constructor(vzero, vzeroPaypal, paypalWrapperMarkUp, paypalButtonClass, isOnepage, config, submitAfterPayment) {
+        if (vZeroIntegration.loaded) {
             console.error('Your checkout is including the Braintree resources multiple times, please resolve this.');
             return false;
         }
-        vZeroIntegration.prototype.loaded = true;
+        vZeroIntegration.loaded = true;
 
         this.vzero = vzero || false;
         this.vzeroPaypal = vzeroPaypal || false;
 
-        // If both methods aren't present don't run the integration
         if (this.vzero === false && this.vzeroPaypal === false) {
             console.warn('The vzero and vzeroPaypal objects are not initiated.');
             return false;
@@ -43,141 +42,126 @@ vZeroIntegration.prototype = {
 
         this.paypalWrapperMarkUp = paypalWrapperMarkUp || false;
         this.paypalButtonClass = paypalButtonClass || false;
-        this.submitButtonClass = this.paypalButtonClass; /* Used for other integrations */
+        this.submitButtonClass = this.paypalButtonClass;
 
         this.isOnepage = isOnepage || false;
-
         this.config = config || {};
-
         this.submitAfterPayment = submitAfterPayment || false;
 
         this._methodSwitchTimeout = false;
-
         this._originalSubmitFn = false;
 
         this.kountEnvironment = false;
         this.kountId = false;
 
-        // Wait for the DOM to finish loading before creating observers
-        document.observe("dom:loaded", function () {
-
-            // Capture the original submit function
+        mahoOnReady(() => {
             if (this.captureOriginalSubmitFn()) {
                 this.observeSubmissionOverride();
             }
 
-            // Call the function which is going to intercept the submit event
             this.prepareSubmitObserver();
             this.preparePaymentMethodSwitchObserver();
+        });
 
-        }.bind(this));
-
-        // Has the hosted fields method been generated successfully?
         this.hostedFieldsGenerated = false;
 
-        // On onepage checkouts we need to do some other magic
         if (this.isOnepage) {
             this.observeAjaxRequests();
 
-            document.observe("dom:loaded", function () {
+            mahoOnReady(() => {
                 this.initSavedPayPal();
                 this.initDefaultMethod();
 
-                if ($('braintree-hosted-submit') !== null) {
+                if (document.getElementById('braintree-hosted-submit') !== null) {
                     this.initHostedFields();
                 }
-            }.bind(this));
+            });
         }
 
-        document.observe("dom:loaded", function () {
-            // Saved methods need events to!
+        mahoOnReady(() => {
             this.initSavedMethods();
 
-            if ($('braintree-hosted-submit') !== null) {
+            if (document.getElementById('braintree-hosted-submit') !== null) {
                 this.initHostedFields();
             }
-        }.bind(this));
+        });
 
-        // Initialize device data events
         this._deviceDataInit = false;
         this.vzero.observeEvent([
             'onHandleAjaxRequest',
             'integration.onInitSavedMethods'
         ], this.initDeviceData, this);
-        this.vzero.observeEvent('integration.onBeforeSubmit', function () {
-            if ($('braintree-device-data') != null) {
-                $('braintree-device-data').writeAttribute('disabled', false);
+
+        this.vzero.observeEvent('integration.onBeforeSubmit', () => {
+            const deviceData = document.getElementById('braintree-device-data');
+            if (deviceData !== null) {
+                deviceData.removeAttribute('disabled');
             }
         }, this);
 
-        // Fire our onInit event
-        this.vzero.fireEvent(this, 'integration.onInit', {integration: this});
-    },
+        this.vzero.fireEvent(this, 'integration.onInit', { integration: this });
+    }
 
     /**
      * Add device_data into the session
+     *
+     * @param {Object} params
+     * @param {vZeroIntegration} self
      */
-    initDeviceData: function (params, self) {
-        if ($('credit-card-form') != null) {
-            var form = $('credit-card-form').up('form');
-            if (form != undefined) {
-                if (form.select('#braintree-device-data').length == 0) {
+    initDeviceData(params, self) {
+        const creditCardForm = document.getElementById('credit-card-form');
+        if (creditCardForm !== null) {
+            const form = creditCardForm.closest('form');
+            if (form) {
+                if (form.querySelectorAll('#braintree-device-data').length === 0) {
                     if (self._deviceDataInit === true) {
                         return false;
                     }
                     self._deviceDataInit = true;
 
-                    // Create a new element and insert it into the DOM
-                    var input = new Element('input', {
-                        type: 'hidden',
-                        name: 'payment[device_data]',
-                        id: 'braintree-device-data'
-                    });
-                    form.insert(input);
+                    const input = document.createElement('input');
+                    input.type = 'hidden';
+                    input.name = 'payment[device_data]';
+                    input.id = 'braintree-device-data';
+                    form.appendChild(input);
 
-                    // Populate the new input with the device data
                     self.populateDeviceData(input);
                 }
             }
         }
-    },
+    }
 
     /**
      * Populate device data using the data collector
      *
-     * @param input
+     * @param {HTMLInputElement} input
      */
-    populateDeviceData: function (input) {
-        // Teardown if device data is already generated
+    populateDeviceData(input) {
         if (this.dataCollectorInstance !== null) {
-            this.dataCollectorInstance.teardown(function () {
+            this.dataCollectorInstance.teardown(() => {
                 this.dataCollectorInstance = null;
                 return this.populateDeviceData(input);
-            }.bind(this));
+            });
             return;
         }
 
-        this.vzero.getClient(function (clientInstance) {
-            var params = {
+        this.vzero.getClient((clientInstance) => {
+            const params = {
                 client: clientInstance,
                 kount: true
             };
 
-            // Should we generate device data for PayPal?
             if (this.vzeroPaypal !== false) {
                 params.paypal = true;
             }
 
-            braintree.dataCollector.create(params, function (err, dataCollectorInstance) {
+            braintree.dataCollector.create(params, (err, dataCollectorInstance) => {
                 if (err) {
-                    // We don't want to console warn if the merchant isn't setup to accept Kount
-                    if (err.code != 'DATA_COLLECTOR_KOUNT_NOT_ENABLED' &&
-                        err.code != 'DATA_COLLECTOR_PAYPAL_NOT_ENABLED'
+                    if (err.code !== 'DATA_COLLECTOR_KOUNT_NOT_ENABLED' &&
+                        err.code !== 'DATA_COLLECTOR_PAYPAL_NOT_ENABLED'
                     ) {
-                        // Handle error in creation of data collector
                         console.error(err);
                     } else {
-                        // Warn the user of the issue, but it's not important
                         console.warn('A warning occurred whilst initialisation the Braintree data collector. This warning can be safely ignored.');
                         console.warn(err);
                     }
@@ -185,172 +169,144 @@ vZeroIntegration.prototype = {
                 }
 
                 this.dataCollectorInstance = dataCollectorInstance;
-
                 input.value = dataCollectorInstance.deviceData;
-                input.writeAttribute('disabled', false);
+                input.removeAttribute('disabled');
                 this._deviceDataInit = false;
-            }.bind(this));
-        }.bind(this));
-    },
+            });
+        });
+    }
 
     /**
      * Init the saved method events
      */
-    initSavedMethods: function () {
+    initSavedMethods() {
+        document.querySelectorAll('#creditcard-saved-accounts input[type="radio"], #paypal-saved-accounts input[type="radio"]').forEach((element) => {
+            let parentElement = '';
+            let targetElement = '';
 
-        // Loop through each saved card being selected
-        $$('#creditcard-saved-accounts input[type="radio"], #paypal-saved-accounts input[type="radio"]').each(function (element) {
-
-            // Determine which method we're observing
-            var parentElement = '';
-            var targetElement = '';
-            if (element.up('#creditcard-saved-accounts') !== undefined) {
+            if (element.closest('#creditcard-saved-accounts')) {
                 parentElement = '#creditcard-saved-accounts';
                 targetElement = '#credit-card-form';
-            } else if (element.up('#paypal-saved-accounts') !== undefined) {
+            } else if (element.closest('#paypal-saved-accounts')) {
                 parentElement = '#paypal-saved-accounts';
                 targetElement = '.paypal-info';
             }
 
-            // Observe the elements changing
-            $(element).stopObserving('change').observe('change', function (event) {
+            // Remove existing listener and add new one
+            const newElement = element.cloneNode(true);
+            element.parentNode.replaceChild(newElement, element);
+            newElement.addEventListener('change', () => {
                 return this.showHideOtherMethod(parentElement, targetElement);
-            }.bind(this));
-
-        }.bind(this));
+            });
+        });
 
         this.vzero.fireEvent(this, 'integration.onInitSavedMethods');
-    },
+    }
 
     /**
      * Hide or show the "other" method for both PayPal & Credit Card
      *
-     * @param parentElement
-     * @param targetElement
+     * @param {string} parentElement
+     * @param {string} targetElement
      */
-    showHideOtherMethod: function (parentElement, targetElement) {
+    showHideOtherMethod(parentElement, targetElement) {
+        const checkedRadio = document.querySelector(parentElement + ' input:checked[type=radio]');
+        const target = document.querySelector(targetElement);
 
-        // Has the user selected other?
-        if ($$(parentElement + ' input:checked[type=radio]').first() !== undefined && $$(parentElement + ' input:checked[type=radio]').first().value == 'other') {
-
-            if ($$(targetElement).first() !== undefined) {
-
-                // Show the credit card form
-                $$(targetElement).first().show();
-
-                // Enable the credit card form all the elements in the credit card form
-                $$(targetElement + ' input, ' + targetElement + ' select').each(function (formElement) {
+        if (checkedRadio && checkedRadio.value === 'other') {
+            if (target) {
+                target.style.display = '';
+                document.querySelectorAll(targetElement + ' input, ' + targetElement + ' select').forEach((formElement) => {
                     formElement.removeAttribute('disabled');
                 });
-
             }
-
-        } else if ($$(parentElement + ' input:checked[type=radio]').first() !== undefined) {
-
-            if ($$(targetElement).first() !== undefined) {
-
-                // Hide the new credit card form
-                $$(targetElement).first().hide();
-
-                // Disable all the elements in the credit card form
-                $$(targetElement + ' input, ' + targetElement + ' select').each(function (formElement) {
+        } else if (checkedRadio) {
+            if (target) {
+                target.style.display = 'none';
+                document.querySelectorAll(targetElement + ' input, ' + targetElement + ' select').forEach((formElement) => {
                     formElement.setAttribute('disabled', 'disabled');
                 });
-
             }
-
         }
 
         this.vzero.fireEvent(this, 'integration.onShowHideOtherMethod', {
             parentElement: parentElement,
             targetElement: targetElement
         });
-    },
+    }
 
     /**
      * Check to see if the "Other" option is selected and show the div correctly
      */
-    checkSavedOther: function () {
-        var parentElement = '';
-        var targetElement = '';
+    checkSavedOther() {
+        let parentElement = '';
+        let targetElement = '';
 
-        if (this.getPaymentMethod() == 'gene_braintree_creditcard') {
+        if (this.getPaymentMethod() === 'gene_braintree_creditcard') {
             parentElement = '#creditcard-saved-accounts';
             targetElement = '#credit-card-form';
-        } else if (this.getPaymentMethod() == 'gene_braintree_paypal') {
+        } else if (this.getPaymentMethod() === 'gene_braintree_paypal') {
             parentElement = '#paypal-saved-accounts';
             targetElement = '.paypal-info';
         }
 
-        // Only run this action if the parent element exists on the page
-        if ($$(parentElement).first() !== undefined) {
+        if (document.querySelector(parentElement)) {
             this.showHideOtherMethod(parentElement, targetElement);
         }
 
         this.vzero.fireEvent(this, 'integration.onCheckSavedOther');
-    },
+    }
 
     /**
      * After the payment methods have switched run this
      *
      * @returns {boolean}
      */
-    afterPaymentMethodSwitch: function () {
+    afterPaymentMethodSwitch() {
         return true;
-    },
+    }
 
     /**
      * Init hosted fields
      */
-    initHostedFields: function () {
-
-        // Only init hosted fields if it's enabled
+    initHostedFields() {
         if (this.vzero.hostedFields) {
-
-            // Verify the form is on the page
-            if ($('braintree-hosted-submit') !== null) {
-
-                // Verify this checkout has a form (would be weird to have a formless checkout, but you never know!)
-                if ($('braintree-hosted-submit').up('form') !== undefined) {
-
-                    // Store the form in the integration class
-                    this.form = $('braintree-hosted-submit').up('form');
-
-                    // Init hosted fields upon the form
+            const submitBtn = document.getElementById('braintree-hosted-submit');
+            if (submitBtn !== null) {
+                const form = submitBtn.closest('form');
+                if (form) {
+                    this.form = form;
                     this.vzero.initHostedFields(this);
-
                 } else {
                     console.error('Hosted Fields cannot be initialized as we\'re unable to locate the parent form.');
                 }
             }
         }
-    },
+    }
 
     /**
      * Validate hosted fields is complete and error free
      *
      * @returns {boolean}
      */
-    validateHostedFields: function () {
+    validateHostedFields() {
         if (!this.vzero.usingSavedCard() && this.vzero._hostedIntegration) {
-            var state = this.vzero._hostedIntegration.getState(),
-                errorMsgs = [],
-                translate = {
-                    'number': Translator.translate('Card Number'),
-                    'expirationMonth': Translator.translate('Expiry Month'),
-                    'expirationYear': Translator.translate('Expiry Year'),
-                    'cvv': Translator.translate('CVV'),
-                    'postalCode': Translator.translate('Postal Code')
-                };
+            const state = this.vzero._hostedIntegration.getState();
+            const errorMsgs = [];
+            const translate = {
+                'number': Translator.translate('Card Number'),
+                'expirationMonth': Translator.translate('Expiry Month'),
+                'expirationYear': Translator.translate('Expiry Year'),
+                'cvv': Translator.translate('CVV'),
+                'postalCode': Translator.translate('Postal Code')
+            };
 
-            // Loop through each field and ensure it's validity
-            $H(state.fields).each(function (field) {
-                if (field[1].isValid == false) {
-                    errorMsgs.push(translate[field[0]] + ' ' + Translator.translate('is invalid.'));
+            Object.entries(state.fields).forEach(([fieldName, fieldState]) => {
+                if (fieldState.isValid === false) {
+                    errorMsgs.push(translate[fieldName] + ' ' + Translator.translate('is invalid.'));
                 }
-            }.bind(this));
+            });
 
-            // If any errors are present, alert the user and stop the checkout process
             if (errorMsgs.length > 0) {
                 alert(
                     Translator.translate('There are a number of errors present with the credit card form:') +
@@ -360,10 +316,8 @@ vZeroIntegration.prototype = {
                 return false;
             }
 
-            // Validate the card type
             if (this.vzero.cardType && this.vzero.supportedCards) {
-                // Detect whether or not the card is supported
-                if (this.vzero.supportedCards.indexOf(this.vzero.cardType) == -1) {
+                if (this.vzero.supportedCards.indexOf(this.vzero.cardType) === -1) {
                     alert(Translator.translate(
                         'We\'re currently unable to process this card type, please try another card or payment method.'
                     ));
@@ -373,227 +327,182 @@ vZeroIntegration.prototype = {
         }
 
         return true;
-    },
+    }
 
     /**
      * Init the default payment methods
      */
-    initDefaultMethod: function () {
+    initDefaultMethod() {
         if (this.shouldAddPayPalButton(false)) {
             this.setLoading();
-            this.vzero.updateData(function () {
+            this.vzero.updateData(() => {
                 this.resetLoading();
                 this.updatePayPalButton('add');
-            }.bind(this));
+            });
         }
 
-        // Run the after payment method switch on init of the default method
         this.afterPaymentMethodSwitch();
-
         this.vzero.fireEvent(this, 'integration.onInitDefaultMethod');
-    },
+    }
 
     /**
      * Observe any Ajax requests and refresh the PayPal button or update the checkouts data
      */
-    observeAjaxRequests: function () {
-        this.vzero.observeAjaxRequests(function () {
-            this.vzero.updateData(function () {
-
-                // The Ajax request might kill our events
+    observeAjaxRequests() {
+        this.vzero.observeAjaxRequests(() => {
+            this.vzero.updateData(() => {
                 if (this.isOnepage) {
                     this.initSavedPayPal();
                     this.rebuildPayPalButton();
                     this.checkSavedOther();
 
-                    // If hosted fields is enabled init the environment
                     if (this.vzero.hostedFields) {
                         this.initHostedFields();
                     }
                 }
 
-                // Make sure we're observing the saved methods correctly
                 this.initSavedMethods();
-
-                // Run the after payment method switch on init of the default method
                 this.afterPaymentMethodSwitch();
-
-                // Fire an event to capture any instances of the checkout updating it's DOM
                 this.vzero.fireEvent(this, 'integration.onObserveAjaxRequests');
-
-            }.bind(this));
-        }.bind(this), (typeof this.config.ignoreAjax !== 'undefined' ? this.config.ignoreAjax : false))
-    },
+            });
+        }, (typeof this.config.ignoreAjax !== 'undefined' ? this.config.ignoreAjax : false));
+    }
 
     /**
      * Rebuild the PayPal button if it's been removed
      */
-    rebuildPayPalButton: function () {
-
-        // Check to see if the DOM element has been removed?
-        if ($('paypal-container') == null) {
+    rebuildPayPalButton() {
+        if (document.getElementById('paypal-container') === null) {
             this.updatePayPalButton();
         }
-
-    },
+    }
 
     /**
      * Handle saved PayPals being present on the page
      */
-    initSavedPayPal: function () {
-
-        // If we have any saved accounts we'll need to do something jammy
-        if ($$('#paypal-saved-accounts input[type=radio]').first() !== undefined) {
-            $('paypal-saved-accounts').on('change', 'input[type=radio]', function (event) {
-
-                // Update the PayPal button accordingly
-                this.updatePayPalButton(false, 'gene_braintree_paypal');
-
-            }.bind(this));
+    initSavedPayPal() {
+        const savedAccounts = document.getElementById('paypal-saved-accounts');
+        if (savedAccounts && savedAccounts.querySelector('input[type=radio]')) {
+            savedAccounts.addEventListener('change', (event) => {
+                if (event.target.type === 'radio') {
+                    this.updatePayPalButton(false, 'gene_braintree_paypal');
+                }
+            });
         }
-
-    },
+    }
 
     /**
      * Capture the original submit function
      *
      * @returns {boolean}
      */
-    captureOriginalSubmitFn: function () {
+    captureOriginalSubmitFn() {
         return false;
-    },
+    }
 
     /**
-     * Start an interval to ensure the submit function has been correctly overidden
+     * Start an interval to ensure the submit function has been correctly overridden
      */
-    observeSubmissionOverride: function () {
-        setInterval(function () {
+    observeSubmissionOverride() {
+        setInterval(() => {
             if (this._originalSubmitFn) {
                 this.prepareSubmitObserver();
             }
-        }.bind(this), 500);
-    },
+        }, 500);
+    }
 
     /**
      * Set the submit function to be used
      *
-     * This should be overridden within each checkouts .phtml file
-     * vZeroIntegration.prototype.prepareSubmitObserver = function() {}
-     *
      * @returns {boolean}
      */
-    prepareSubmitObserver: function () {
+    prepareSubmitObserver() {
         return false;
-    },
+    }
 
     /**
      * Event to run before submit
-     * Should always return _beforeSubmit
      *
-     * @returns {boolean}
+     * @param {Function} callback
+     * @returns {*}
      */
-    beforeSubmit: function (callback) {
+    beforeSubmit(callback) {
         return this._beforeSubmit(callback);
-    },
+    }
 
     /**
      * Private before submit function
      *
-     * @param callback
+     * @param {Function} callback
      * @private
      */
-    _beforeSubmit: function (callback) {
+    _beforeSubmit(callback) {
         this.vzero.fireEvent(this, 'integration.onBeforeSubmit');
 
-        // Remove the save after payment to ensure validation fires correctly
-        if (this.submitAfterPayment && $('braintree-submit-after-payment')) {
-            $('braintree-submit-after-payment').remove();
+        const submitAfterPayment = document.getElementById('braintree-submit-after-payment');
+        if (this.submitAfterPayment && submitAfterPayment) {
+            submitAfterPayment.remove();
         }
 
         callback();
-    },
+    }
 
     /**
      * Event to run after submit
      *
      * @returns {boolean}
      */
-    afterSubmit: function () {
+    afterSubmit() {
         this.vzero.fireEvent(this, 'integration.onAfterSubmit');
         return false;
-    },
+    }
 
     /**
      * Submit the integration to tokenize the card
      *
-     * @param type
-     * @param successCallback
-     * @param failedCallback
-     * @param validateFailedCallback
+     * @param {string} type
+     * @param {Function} successCallback
+     * @param {Function} failedCallback
+     * @param {Function} validateFailedCallback
      */
-    submit: function (type, successCallback, failedCallback, validateFailedCallback) {
-
-        // Set the token being generated back to false on a new submission
+    submit(type, successCallback, failedCallback, validateFailedCallback) {
         this.vzero._hostedFieldsTokenGenerated = false;
         this.hostedFieldsGenerated = false;
 
-        // Check we actually want to intercept this credit card transaction?
         if (this.shouldInterceptSubmit(type)) {
-
-            // If the type is card, validate Hosted Fields
-            if (type != 'creditcard' || (type == 'creditcard' && this.validateHostedFields())) {
-
-                // Validate the form before submission
+            if (type !== 'creditcard' || (type === 'creditcard' && this.validateHostedFields())) {
                 if (this.validateAll()) {
-
-                    // Show the loading information
                     this.setLoading();
 
-                    // Call the before submit function
-                    this.beforeSubmit(function () {
-
-                        // Always attempt to update the card type on submission
-                        if ($$('[data-genebraintree-name="number"]').first() != undefined) {
-                            this.vzero.updateCardType($$('[data-genebraintree-name="number"]').first().value);
+                    this.beforeSubmit(() => {
+                        const cardNumber = document.querySelector('[data-genebraintree-name="number"]');
+                        if (cardNumber) {
+                            this.vzero.updateCardType(cardNumber.value);
                         }
 
-                        // Update the data within the vZero object
                         this.vzero.updateData(
-                            function () {
-
-                                // Update the billing details if they're present on the page
+                            () => {
                                 this.updateBilling();
 
-                                // Process the data on the page
                                 this.vzero.process({
-                                    onSuccess: function () {
-
-                                        // Make some modifications to the form
+                                    onSuccess: () => {
                                         this.enableDeviceData();
-
-                                        // Unset the loading, as this can block success functions
                                         this.resetLoading();
                                         this.afterSubmit();
-
-                                        // Enable/disable the correct nonce input fields
                                         this.enableDisableNonce();
 
                                         this.vzero._hostedFieldsTokenGenerated = true;
                                         this.hostedFieldsGenerated = true;
 
-                                        // Call the callback function
+                                        let response;
                                         if (typeof successCallback === 'function') {
-                                            var response = successCallback();
+                                            response = successCallback();
                                         }
 
-                                        // Enable loading again, as things are happening!
                                         this.setLoading();
-
                                         return response;
-
-                                    }.bind(this),
-                                    onFailure: function () {
-
+                                    },
+                                    onFailure: () => {
                                         this.vzero._hostedFieldsTokenGenerated = false;
                                         this.hostedFieldsGenerated = false;
 
@@ -606,16 +515,13 @@ vZeroIntegration.prototype = {
                                         if (typeof failedCallback === 'function') {
                                             return failedCallback();
                                         }
-                                    }.bind(this)
-                                })
-                            }.bind(this),
+                                    }
+                                });
+                            },
                             this.getUpdateDataParams()
                         );
-
-                    }.bind(this));
-
+                    });
                 } else {
-
                     this.vzero._hostedFieldsTokenGenerated = false;
                     this.hostedFieldsGenerated = false;
 
@@ -628,200 +534,167 @@ vZeroIntegration.prototype = {
                 this.resetLoading();
             }
         }
-    },
+    }
 
     /**
      * Submit the entire checkout
      */
-    submitCheckout: function () {
-        // Submit the checkout steps
+    submitCheckout() {
         window.review && review.save();
-    },
+    }
 
     /**
      * How to submit the payment section
      */
-    submitPayment: function () {
+    submitPayment() {
         payment.save && payment.save();
-    },
+    }
 
     /**
      * Enable/disable the correct nonce input fields
      */
-    enableDisableNonce: function () {
-        // Make sure the nonce inputs aren't going to interfere
-        if (this.getPaymentMethod() == 'gene_braintree_creditcard') {
-            if ($('creditcard-payment-nonce') !== null) {
-                $('creditcard-payment-nonce').removeAttribute('disabled');
+    enableDisableNonce() {
+        const creditcardNonce = document.getElementById('creditcard-payment-nonce');
+        const paypalNonce = document.getElementById('paypal-payment-nonce');
+
+        if (this.getPaymentMethod() === 'gene_braintree_creditcard') {
+            if (creditcardNonce !== null) {
+                creditcardNonce.removeAttribute('disabled');
             }
-            if ($('paypal-payment-nonce') !== null) {
-                $('paypal-payment-nonce').setAttribute('disabled', 'disabled');
+            if (paypalNonce !== null) {
+                paypalNonce.setAttribute('disabled', 'disabled');
             }
-        } else if (this.getPaymentMethod() == 'gene_braintree_paypal') {
-            if ($('creditcard-payment-nonce') !== null) {
-                $('creditcard-payment-nonce').setAttribute('disabled', 'disabled');
+        } else if (this.getPaymentMethod() === 'gene_braintree_paypal') {
+            if (creditcardNonce !== null) {
+                creditcardNonce.setAttribute('disabled', 'disabled');
             }
-            if ($('paypal-payment-nonce') !== null) {
-                $('paypal-payment-nonce').removeAttribute('disabled');
+            if (paypalNonce !== null) {
+                paypalNonce.removeAttribute('disabled');
             }
         }
-    },
+    }
 
     /**
      * Replace the PayPal button at the correct time
-     *
-     * This should be overridden within each checkouts .phtml file
-     * vZeroIntegration.prototype.preparePaymentMethodSwitchObserver = function() {}
      */
-    preparePaymentMethodSwitchObserver: function () {
+    preparePaymentMethodSwitchObserver() {
         return this.defaultPaymentMethodSwitch();
-    },
+    }
 
     /**
-     * If the checkout uses the Magento standard Payment.prototype.switchMethod we can utilise this function
+     * If the checkout uses the Magento standard Payment.prototype.switchMethod
      */
-    defaultPaymentMethodSwitch: function () {
+    defaultPaymentMethodSwitch() {
+        const vzeroIntegration = this;
+        const paymentSwitchOriginal = Payment.prototype.switchMethod;
 
-        // Store a pointer to the vZero integration
-        var vzeroIntegration = this;
-
-        // Store the original payment method
-        var paymentSwitchOriginal = Payment.prototype.switchMethod;
-
-        // Intercept the save function
-        Payment.prototype.switchMethod = function (method) {
-
-            // Run our method switch function
+        Payment.prototype.switchMethod = function(method) {
             vzeroIntegration.paymentMethodSwitch(method);
-
-            // Run the original function
             return paymentSwitchOriginal.apply(this, arguments);
         };
-
-    },
+    }
 
     /**
      * Function to run when the customer changes payment method
-     * @param method
+     *
+     * @param {string} method
      */
-    paymentMethodSwitch: function (method) {
-
-        // Wait for 50ms to see if this function is called again, only ever run the last instance
+    paymentMethodSwitch(method) {
         clearTimeout(this._methodSwitchTimeout);
-        this._methodSwitchTimeout = setTimeout(function () {
-
-            // Should we add a PayPal button?
+        this._methodSwitchTimeout = setTimeout(() => {
             if (this.shouldAddPayPalButton(method)) {
                 this.updatePayPalButton('add', method);
             } else {
                 this.updatePayPalButton('remove', method);
             }
 
-            // Has the user enabled hosted fields?
-            if ((method ? method : this.getPaymentMethod()) == 'gene_braintree_creditcard') {
+            if ((method ? method : this.getPaymentMethod()) === 'gene_braintree_creditcard') {
                 this.initHostedFields();
             }
 
-            // Check to see if the other information should be displayed
             this.checkSavedOther();
-
-            // Run the event once the payment method has switched
             this.afterPaymentMethodSwitch();
-
-            this.vzero.fireEvent(this, 'integration.onPaymentMethodSwitch', {method: method});
-
-        }.bind(this), 50);
-
-    },
+            this.vzero.fireEvent(this, 'integration.onPaymentMethodSwitch', { method: method });
+        }, 50);
+    }
 
     /**
      * Complete a PayPal transaction
      *
+     * @param {Object} obj
      * @returns {boolean}
      */
-    completePayPal: function (obj) {
-
-        // Make sure the nonces are the correct way around
+    completePayPal(obj) {
         this.enableDisableNonce();
-
-        // Enable the device data
         this.enableDeviceData();
 
-        if (obj.nonce && $('paypal-payment-nonce') !== null) {
-            $('paypal-payment-nonce').value = obj.nonce;
-            $('paypal-payment-nonce').setAttribute('value', obj.nonce);
+        const paypalNonce = document.getElementById('paypal-payment-nonce');
+        if (obj.nonce && paypalNonce !== null) {
+            paypalNonce.value = obj.nonce;
+            paypalNonce.setAttribute('value', obj.nonce);
         } else {
             console.warn('Unable to update PayPal nonce, please verify that the nonce input field has the ID: paypal-payment-nonce');
         }
 
-        // Check the callback type is a function
         this.afterPayPalComplete();
-
         return false;
-    },
+    }
 
     /**
      * Any operations that need to happen after the PayPal integration has completed
      *
      * @returns {boolean}
      */
-    afterPayPalComplete: function () {
+    afterPayPalComplete() {
         this.resetLoading();
         return this.submitCheckout();
-    },
+    }
 
     /**
      * Return the mark up for the PayPal button
      *
      * @returns {string}
      */
-    getPayPalMarkUp: function () {
-        return $('braintree-paypal-button').innerHTML;
-    },
+    getPayPalMarkUp() {
+        const button = document.getElementById('braintree-paypal-button');
+        return button ? button.innerHTML : '';
+    }
 
     /**
      * Update the PayPal button on the page
      *
-     * @param action
-     * @param method
+     * @param {string} action
+     * @param {string} method
      * @returns {boolean}
      */
-    updatePayPalButton: function (action, method) {
-
+    updatePayPalButton(action, method) {
         if (this.paypalWrapperMarkUp === false) {
             return false;
         }
 
-        // Refresh is deprecated
-        if (action == 'refresh') {
+        if (action === 'refresh') {
             return true;
         }
 
-        // Check to see if we should be adding a PayPal button?
-        if ((this.shouldAddPayPalButton(method) && action != 'remove') || action == 'add') {
+        if ((this.shouldAddPayPalButton(method) && action !== 'remove') || action === 'add') {
+            const submitButton = document.querySelector(this.paypalButtonClass);
+            if (submitButton) {
+                submitButton.style.display = 'none';
 
-            // Hide the checkout button
-            if ($$(this.paypalButtonClass).first() !== undefined) {
-
-                // Hide the original checkout button
-                $$(this.paypalButtonClass).first().hide();
-
-                // Does a button already exist on the page and is visible?
-                if ($$('#paypal-complete').first() !== undefined) {
-                    $$('#paypal-complete').first().show();
+                const paypalComplete = document.getElementById('paypal-complete');
+                if (paypalComplete) {
+                    paypalComplete.style.display = '';
                     return true;
                 }
 
-                // Insert the wrapper mark up in prepation for adding the button
-                $$(this.paypalButtonClass).first().insert({after: this.paypalWrapperMarkUp});
+                submitButton.insertAdjacentHTML('afterend', this.paypalWrapperMarkUp);
 
-                // Add in the PayPal button
-                var options = this.vzeroPaypal._buildOptions();
+                const options = this.vzeroPaypal._buildOptions();
                 options.events = {
-                    validate: this.validateAll,
+                    validate: this.validateAll.bind(this),
                     onAuthorize: this.completePayPal.bind(this),
-                    onCancel: function() {},
-                    onError: function(err) {
+                    onCancel: () => {},
+                    onError: (err) => {
                         alert(typeof Translator === "object" ? Translator.translate("We were unable to complete the request. Please try again.") : "We were unable to complete the request. Please try again.");
                         console.error('Error while processing payment', err);
                     }
@@ -831,163 +704,164 @@ vZeroIntegration.prototype = {
             } else {
                 console.warn('We\'re unable to find the element ' + this.paypalButtonClass + '. Please check your integration.');
             }
-
         } else {
-
-            // If not we need to remove it
-            // Revert our madness
-            if ($$(this.paypalButtonClass).first() !== undefined) {
-                $$(this.paypalButtonClass).first().show();
+            const submitButton = document.querySelector(this.paypalButtonClass);
+            if (submitButton) {
+                submitButton.style.display = '';
             }
 
-            // Remove the PayPal element
-            if ($$('#paypal-complete').first() !== undefined) {
-                $('paypal-complete').hide();
+            const paypalComplete = document.getElementById('paypal-complete');
+            if (paypalComplete) {
+                paypalComplete.style.display = 'none';
             }
         }
-
-    },
+    }
 
     /**
-     * When the review step is shown on non one step checkout solutions update the PayPal button
+     * When the review step is shown on non one step checkout solutions
      */
-    onReviewInit: function () {
+    onReviewInit() {
         if (!this.isOnepage) {
             this.updatePayPalButton();
         }
         this.vzero.fireEvent(this, 'integration.onReviewInit');
-    },
+    }
 
     /**
      * Attach a click event handler to the button to validate the form
      *
-     * @param integration
+     * @returns {boolean}
      */
-    paypalOnReady: function (integration) {
+    paypalOnReady(integration) {
         return true;
-    },
+    }
 
     /**
      * Set the loading state
      */
-    setLoading: function () {
+    setLoading() {
         checkout.setLoadWaiting('payment');
-    },
+    }
 
     /**
      * Reset the loading state
      */
-    resetLoading: function () {
+    resetLoading() {
         checkout.setLoadWaiting(false);
-    },
+    }
 
     /**
      * Make sure the device data field isn't disabled
      */
-    enableDeviceData: function () {
-        if ($('device_data') !== null) {
-            $('device_data').removeAttribute('disabled');
+    enableDeviceData() {
+        const deviceData = document.getElementById('device_data');
+        if (deviceData !== null) {
+            deviceData.removeAttribute('disabled');
         }
-    },
+    }
 
     /**
      * Update the billing of the vZero object
      *
      * @returns {boolean}
      */
-    updateBilling: function () {
+    updateBilling() {
+        const billingSelect = document.getElementById('billing-address-select');
+        if ((billingSelect !== null && billingSelect.value === '') || billingSelect === null) {
+            const firstname = document.getElementById('billing:firstname');
+            const lastname = document.getElementById('billing:lastname');
+            const postcode = document.getElementById('billing:postcode');
 
-        // Verify we're not using a saved address
-        if (($('billing-address-select') !== null && $('billing-address-select').value == '') || $('billing-address-select') === null) {
-
-            // Grab these directly from the form and update
-            if ($('billing:firstname') !== null && $('billing:lastname') !== null) {
-                this.vzero.setBillingName($('billing:firstname').value + ' ' + $('billing:lastname').value);
+            if (firstname !== null && lastname !== null) {
+                this.vzero.setBillingName(firstname.value + ' ' + lastname.value);
             }
-            if ($('billing:postcode') !== null) {
-                this.vzero.setBillingPostcode($('billing:postcode').value);
+            if (postcode !== null) {
+                this.vzero.setBillingPostcode(postcode.value);
             }
         }
-    },
+    }
 
     /**
      * Any extra data we need to pass through to the updateData call
      *
-     * @returns {{}}
+     * @returns {Object}
      */
-    getUpdateDataParams: function () {
-        var parameters = {};
+    getUpdateDataParams() {
+        const parameters = {};
+        const billingSelect = document.getElementById('billing-address-select');
 
-        // If the billing address is selected and we're wanting to ship to that address we need to pass the addressId
-        if ($('billing-address-select') !== null && $('billing-address-select').value != '') {
-            parameters.addressId = $('billing-address-select').value;
+        if (billingSelect !== null && billingSelect.value !== '') {
+            parameters.addressId = billingSelect.value;
         }
 
         return parameters;
-    },
+    }
 
     /**
      * Return the current payment method
      *
-     * @returns {*}
+     * @returns {string}
      */
-    getPaymentMethod: function () {
+    getPaymentMethod() {
         return payment.currentMethod;
-    },
+    }
 
     /**
      * Should we intercept the save action of the checkout
      *
-     * @param type
-     * @returns {*}
+     * @param {string} type
+     * @returns {boolean}
      */
-    shouldInterceptSubmit: function (type) {
+    shouldInterceptSubmit(type) {
         switch (type) {
             case 'creditcard':
-                return (this.getPaymentMethod() == 'gene_braintree_creditcard' && this.vzero.shouldInterceptCreditCard());
-                break;
+                return (this.getPaymentMethod() === 'gene_braintree_creditcard' && this.vzero.shouldInterceptCreditCard());
             case 'paypal':
-                return (this.getPaymentMethod() == 'gene_braintree_paypal' && this.vzero.shouldInterceptCreditCard());
-                break;
+                return (this.getPaymentMethod() === 'gene_braintree_paypal' && this.vzero.shouldInterceptCreditCard());
         }
         return false;
-    },
+    }
 
     /**
      * Should we be adding a PayPal button?
+     *
+     * @param {string} method
      * @returns {boolean}
      */
-    shouldAddPayPalButton: function (method) {
-        return (((method ? method : this.getPaymentMethod()) == 'gene_braintree_paypal' && $('paypal-saved-accounts') === null) || ((method ? method : this.getPaymentMethod()) == 'gene_braintree_paypal' && ($$('#paypal-saved-accounts input:checked[type=radio]').first() !== undefined && $$('#paypal-saved-accounts input:checked[type=radio]').first().value == 'other')));
-    },
+    shouldAddPayPalButton(method) {
+        const currentMethod = method ? method : this.getPaymentMethod();
+        const paypalSavedAccounts = document.getElementById('paypal-saved-accounts');
+        const checkedRadio = document.querySelector('#paypal-saved-accounts input:checked[type=radio]');
+
+        return (
+            (currentMethod === 'gene_braintree_paypal' && paypalSavedAccounts === null) ||
+            (currentMethod === 'gene_braintree_paypal' && checkedRadio && checkedRadio.value === 'other')
+        );
+    }
 
     /**
      * Function to run once 3D retokenization is complete
      */
-    threeDTokenizationComplete: function () {
+    threeDTokenizationComplete() {
         this.resetLoading();
-    },
+    }
 
     /**
      * Validate the entire form
      *
      * @returns {boolean}
      */
-    validateAll: function () {
+    validateAll() {
         return true;
-    },
-
-    /**
-     * @deprecated
-     */
-    disableCreditCardForm: function () {
-
-    },
-
-    /**
-     * @deprecated
-     */
-    enableCreditCardForm: function () {
-
     }
-};
+
+    /**
+     * @deprecated
+     */
+    disableCreditCardForm() {}
+
+    /**
+     * @deprecated
+     */
+    enableCreditCardForm() {}
+}

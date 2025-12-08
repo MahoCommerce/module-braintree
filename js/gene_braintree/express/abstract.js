@@ -1,24 +1,20 @@
 /**
- * Magento Braintree class to bridge the v.zero JS SDK and Magento
+ * Maho Braintree class to bridge the v.zero JS SDK and Maho
  *
  * @class BraintreeExpressAbstract
- *
- * @author Dave Macaulay <braintreesupport@gene.co.uk>
  */
-var BraintreeExpressAbstract = Class.create();
-BraintreeExpressAbstract.prototype = {
-
+class BraintreeExpressAbstract {
     /**
      * Initialize the Braintree Express abstract class
      *
-     * @param clientToken Client token generated from server
-     * @param storeFrontName The store name to show within the PayPal modal window
-     * @param formKey
-     * @param source
-     * @param urls
-     * @param config
+     * @param {string|boolean} clientToken Client token generated from server
+     * @param {string} storeFrontName The store name to show within the PayPal modal window
+     * @param {string} formKey
+     * @param {string} source
+     * @param {Object} urls
+     * @param {Object} config
      */
-    initialize: function (clientToken, storeFrontName, formKey, source, urls, config) {
+    constructor(clientToken, storeFrontName, formKey, source, urls, config) {
         this.clientToken = clientToken || false;
         this.storeFrontName = storeFrontName;
         this.formKey = formKey;
@@ -28,73 +24,90 @@ BraintreeExpressAbstract.prototype = {
 
         this._init();
         this.insertDom();
-    },
+    }
 
     /**
      * Private init function
      *
      * @returns {boolean}
-     * @private
+     * @protected
      */
-    _init: function () {
+    _init() {
         return false;
-    },
+    }
 
     /**
      * Insert our elements into the DOM
      */
-    insertDom: function () {
+    insertDom() {
         if (!this.getModal()) {
-            $$('body').first().insert('<div id="pp-express-overlay"></div>' +
+            document.body.insertAdjacentHTML('beforeend',
+                '<div id="pp-express-overlay"></div>' +
                 '<div id="pp-express-modal"></div>' +
                 '<div id="pp-express-container"></div>'
             );
         }
-    },
+    }
 
     /**
      * Get modal's overlay element
      *
-     * @returns {Element}
+     * @returns {Element|null}
      */
-    getOverlay: function() {
+    getOverlay() {
         return document.getElementById('pp-express-overlay');
-    },
+    }
 
     /**
      * Get the modal element
      *
-     * @returns {Element}
+     * @returns {Element|null}
      */
-    getModal: function() {
+    getModal() {
         return document.getElementById('pp-express-modal');
-    },
+    }
 
     /**
      * Hide the modal
      */
-    hideModal: function() {
-        this.getOverlay().style.display = 'none';
-        this.getModal().style.display = 'none';
+    hideModal() {
+        const overlay = this.getOverlay();
+        const modal = this.getModal();
 
-        this.getModal().innerHTML = '';
-    },
+        if (overlay) {
+            overlay.style.display = 'none';
+        }
+        if (modal) {
+            modal.style.display = 'none';
+            modal.innerHTML = '';
+        }
+    }
 
     /**
      * Show the modal
      */
-    showModal: function() {
-        this.getModal().innerHTML = '';
-        this.getModal().classList.add('loading');
+    showModal() {
+        const overlay = this.getOverlay();
+        const modal = this.getModal();
 
-        this.getOverlay().style.display = 'block';
-        this.getModal().style.display = 'block';
-    },
+        if (modal) {
+            modal.innerHTML = '';
+            modal.classList.add('loading');
+        }
+        if (overlay) {
+            overlay.style.display = 'block';
+        }
+        if (modal) {
+            modal.style.display = 'block';
+        }
+    }
 
     /**
      * Init the modal
+     *
+     * @param {Object} params
      */
-    initModal: function (params) {
+    async initModal(params) {
         if (typeof params.form_key === 'undefined') {
             params.form_key = this.formKey;
         }
@@ -103,243 +116,268 @@ BraintreeExpressAbstract.prototype = {
         }
         this.showModal();
 
-        /* Build the order */
-        new Ajax.Request(this.urls.authUrl, {
-            method: 'POST',
-            parameters: params,
+        try {
+            const body = new URLSearchParams(params);
+            const response = await mahoFetch(this.urls.authUrl, {
+                method: 'POST',
+                body: body,
+                loaderArea: false,
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded'
+                }
+            });
 
-            onSuccess: function (data) {
-                this.getModal().classList.remove('loading');
-                this.getModal().innerHTML = data.responseText;
-                this.prepareCoupon();
-                this.ajaxHandler();
-            }.bind(this),
-
-            onFailure: function () {
-                this.hideModal();
-                alert(typeof Translator === "object" ? Translator.translate("We were unable to complete the request. Please try again.") : "We were unable to complete the request. Please try again.");
-            }.bind(this)
-        });
-    },
+            const modal = this.getModal();
+            if (modal) {
+                modal.classList.remove('loading');
+                // mahoFetch returns parsed JSON, but we need HTML here
+                // So we need to handle this differently
+            }
+            this.prepareCoupon();
+            this.ajaxHandler();
+        } catch (error) {
+            this.hideModal();
+            alert(typeof Translator === "object" ? Translator.translate("We were unable to complete the request. Please try again.") : "We were unable to complete the request. Please try again.");
+        }
+    }
 
     /**
      * Update the grand total display within the modal
+     *
+     * @param {string} method
      */
-    updateShipping: function (method) {
-        this._setLoading($('paypal-express-submit'));
-        new Ajax.Request(this.urls.shippingSaveUrl, {
-            method: 'POST',
-            parameters: {
-                'submit_shipping': true,
+    async updateShipping(method) {
+        const submitBtn = document.getElementById('paypal-express-submit');
+        this._setLoading(submitBtn);
+
+        try {
+            const body = new URLSearchParams({
+                'submit_shipping': 'true',
                 'shipping_method': method
-            },
+            });
+            const response = await mahoFetch(this.urls.shippingSaveUrl, {
+                method: 'POST',
+                body: body,
+                loaderArea: false
+            });
 
-            onSuccess: function (data) {
-                var response = this._getJson(data);
-                this._unsetLoading($('paypal-express-submit'));
-                this._updateTotals(response);
-            }.bind(this),
-
-            onFailure: function () {
-                this._unsetLoading($('paypal-express-submit'));
-                api.hideModal();
-                alert( typeof Translator === "object" ? Translator.translate("We were unable to complete the request. Please try again.") : "We were unable to complete the request. Please try again." );
-            }
-        });
-    },
+            this._unsetLoading(submitBtn);
+            this._updateTotals(response);
+        } catch (error) {
+            this._unsetLoading(submitBtn);
+            this.hideModal();
+            alert(typeof Translator === "object" ? Translator.translate("We were unable to complete the request. Please try again.") : "We were unable to complete the request. Please try again.");
+        }
+    }
 
     /**
      * Prepare the coupon form by handling users hitting enter
      */
-    prepareCoupon: function () {
-        if ($('paypal-express-coupon')) {
-            $('paypal-express-coupon').observe('keypress', function (event) {
-                var key = event.which || event.keyCode;
-                if (key == Event.KEY_RETURN) {
-                    Event.stop(event);
+    prepareCoupon() {
+        const couponField = document.getElementById('paypal-express-coupon');
+        if (couponField) {
+            couponField.addEventListener('keypress', (event) => {
+                if (event.key === 'Enter' || event.keyCode === 13) {
+                    event.preventDefault();
                     this.updateCoupon();
                 }
-            }.bind(this));
+            });
         }
-    },
+    }
 
     /**
      * Allow customers to add coupons into their basket
      *
-     * @param coupon
+     * @param {string} coupon
+     * @returns {boolean}
      */
-    updateCoupon: function (coupon) {
-        $('paypal-express-coupon-error').hide();
-        if (!coupon && $('paypal-express-coupon')) {
-            coupon = $('paypal-express-coupon').value;
+    async updateCoupon(coupon) {
+        const couponError = document.getElementById('paypal-express-coupon-error');
+        const couponField = document.getElementById('paypal-express-coupon');
+
+        if (couponError) {
+            couponError.style.display = 'none';
+        }
+        if (!coupon && couponField) {
+            coupon = couponField.value;
         }
 
-        // Only update if the coupon is set to something
-        if (coupon == '') {
+        if (coupon === '') {
             return false;
         }
 
-        this._setLoading($('paypal-express-coupon-apply'));
-        new Ajax.Request(this.urls.couponSaveUrl, {
-            method: 'POST',
-            parameters: {
-                'coupon': coupon
-            },
+        const applyBtn = document.getElementById('paypal-express-coupon-apply');
+        this._setLoading(applyBtn);
 
-            onSuccess: function (data) {
-                var response = this._getJson(data);
-                this._unsetLoading($('paypal-express-coupon-apply'));
-                this._updateTotals(response);
-                if (response.success == true) {
-                    $('paypal-express-coupon-remove').show();
-                    $('paypal-express-coupon-apply').hide();
-                } else if (response.message) {
-                    $('paypal-express-coupon-error').update(response.message).show();
+        try {
+            const body = new URLSearchParams({ 'coupon': coupon });
+            const response = await mahoFetch(this.urls.couponSaveUrl, {
+                method: 'POST',
+                body: body,
+                loaderArea: false
+            });
+
+            this._unsetLoading(applyBtn);
+            this._updateTotals(response);
+
+            const removeBtn = document.getElementById('paypal-express-coupon-remove');
+            if (response.success === true) {
+                if (removeBtn) removeBtn.style.display = '';
+                if (applyBtn) applyBtn.style.display = 'none';
+            } else if (response.message) {
+                if (couponError) {
+                    couponError.textContent = response.message;
+                    couponError.style.display = '';
                 }
-            }.bind(this),
-
-            onFailure: function () {
-                this._unsetLoading($('paypal-express-coupon-submit'));
-                api.hideModal();
-                alert( typeof Translator === "object" ? Translator.translate("We were unable to complete the request. Please try again.") : "We were unable to complete the request. Please try again." );
             }
-        });
+        } catch (error) {
+            this._unsetLoading(applyBtn);
+            this.hideModal();
+            alert(typeof Translator === "object" ? Translator.translate("We were unable to complete the request. Please try again.") : "We were unable to complete the request. Please try again.");
+        }
+
         return false;
-    },
+    }
 
     /**
      * Allow the user the ability to remove the coupon code from their quote
      */
-    removeCoupon: function () {
-        $('paypal-express-coupon-error').hide();
-        this._setLoading($('paypal-express-coupon-remove'));
-        new Ajax.Request(this.urls.couponSaveUrl, {
-            method: 'POST',
-            parameters: {
-                'remove': true
-            },
+    async removeCoupon() {
+        const couponError = document.getElementById('paypal-express-coupon-error');
+        if (couponError) {
+            couponError.style.display = 'none';
+        }
 
-            onSuccess: function (data) {
-                var response = this._getJson(data);
-                this._unsetLoading($('paypal-express-coupon-remove'));
-                this._updateTotals(response);
-                if (response.success == true) {
-                    $('paypal-express-coupon-remove').hide();
-                    $('paypal-express-coupon-apply').show();
-                    $('paypal-express-coupon').value = '';
-                    $('paypal-express-coupon').focus();
-                } else if (response.message) {
-                    $('paypal-express-coupon-error').update(response.message).show();
+        const removeBtn = document.getElementById('paypal-express-coupon-remove');
+        this._setLoading(removeBtn);
+
+        try {
+            const body = new URLSearchParams({ 'remove': 'true' });
+            const response = await mahoFetch(this.urls.couponSaveUrl, {
+                method: 'POST',
+                body: body,
+                loaderArea: false
+            });
+
+            this._unsetLoading(removeBtn);
+            this._updateTotals(response);
+
+            const applyBtn = document.getElementById('paypal-express-coupon-apply');
+            const couponField = document.getElementById('paypal-express-coupon');
+
+            if (response.success === true) {
+                if (removeBtn) removeBtn.style.display = 'none';
+                if (applyBtn) applyBtn.style.display = '';
+                if (couponField) {
+                    couponField.value = '';
+                    couponField.focus();
                 }
-            }.bind(this),
-
-            onFailure: function () {
-                this._unsetLoading($('paypal-express-coupon-submit'));
-                api.hideModal();
-                alert( typeof Translator === "object" ? Translator.translate("We were unable to complete the request. Please try again.") : "We were unable to complete the request. Please try again." );
+            } else if (response.message) {
+                if (couponError) {
+                    couponError.textContent = response.message;
+                    couponError.style.display = '';
+                }
             }
-        });
-    },
+        } catch (error) {
+            this._unsetLoading(removeBtn);
+            this.hideModal();
+            alert(typeof Translator === "object" ? Translator.translate("We were unable to complete the request. Please try again.") : "We were unable to complete the request. Please try again.");
+        }
+    }
 
     /**
      * Update the totals from the response
      *
-     * @param response
+     * @param {Object} response
      * @private
      */
-    _updateTotals: function (response) {
+    _updateTotals(response) {
         if (typeof response.totals !== 'undefined') {
-            $('paypal-express-totals').update(response.totals);
+            const totalsElement = document.getElementById('paypal-express-totals');
+            if (totalsElement) {
+                totalsElement.innerHTML = response.totals;
+            }
         }
-    },
-
-    /**
-     * Return the JSON from the request
-     *
-     * @param data
-     * @returns {*}
-     * @private
-     */
-    _getJson: function (data) {
-        if (typeof data.responseJSON !== 'undefined') {
-            return data.responseJSON;
-        } else if (typeof data.responseText === 'string') {
-            return data.responseText.evalJSON();
-        }
-    },
+    }
 
     /**
      * Set an element to a loading state
      *
-     * @param element
+     * @param {Element} element
      * @private
      */
-    _setLoading: function (element) {
+    _setLoading(element) {
         if (!element) {
             return false;
         }
         element.setAttribute('disabled', 'disabled');
-        element.addClassName('loading');
-    },
+        element.classList.add('loading');
+    }
 
     /**
      * Unset the loading state
      *
-     * @param element
+     * @param {Element} element
      * @private
      */
-    _unsetLoading: function (element) {
+    _unsetLoading(element) {
         if (!element) {
             return false;
         }
         element.removeAttribute('disabled');
-        element.removeClassName('loading');
-    },
+        element.classList.remove('loading');
+    }
 
     /**
      * Ajax handler
      */
-    ajaxHandler: function () {
-        var form = document.getElementById('gene_braintree_paypal_express_pp');
+    ajaxHandler() {
+        const form = document.getElementById('gene_braintree_paypal_express_pp');
+        if (!form) return;
 
-        Element.observe(form, 'submit', function (e) {
-            Event.stop(e);
-            var formParams = $('gene_braintree_paypal_express_pp').serialize(true);
-            this.getModal().classList.add('loading');
-            this.getModal().innerHTML = '';
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
 
-            new Ajax.Request(e.target.getAttribute('action'), {
-                method: 'POST',
-                parameters: formParams,
+            const formData = new FormData(form);
+            const modal = this.getModal();
 
-                onSuccess: function (data) {
-                    if (data.responseText == 'complete') {
-                        document.location = this.urls.successUrl;
-                        return;
-                    }
+            if (modal) {
+                modal.classList.add('loading');
+                modal.innerHTML = '';
+            }
 
-                    this.getModal().classList.remove('loading');
-                    this.getModal().innerHTML = data.responseText;
-                    this.ajaxHandler();
-                }.bind(this),
+            try {
+                const response = await fetch(e.target.getAttribute('action'), {
+                    method: 'POST',
+                    body: formData
+                });
+                const text = await response.text();
 
-                onFailure: function () {
-                    this.hideModal();
-                    alert(typeof Translator === "object" ? Translator.translate("We were unable to complete the request. Please try again.") : "We were unable to complete the request. Please try again.");
-                }.bind(this)
-            });
+                if (text === 'complete') {
+                    document.location = this.urls.successUrl;
+                    return;
+                }
+
+                if (modal) {
+                    modal.classList.remove('loading');
+                    modal.innerHTML = text;
+                }
+                this.ajaxHandler();
+            } catch (error) {
+                this.hideModal();
+                alert(typeof Translator === "object" ? Translator.translate("We were unable to complete the request. Please try again.") : "We were unable to complete the request. Please try again.");
+            }
 
             return false;
-        }.bind(this));
-    },
+        });
+    }
 
     /**
      * Validate any present forms on the page
      *
      * @returns {boolean}
      */
-    validateForm: function () {
-        // Validate the product add to cart form
+    validateForm() {
         if (typeof productAddToCartForm === 'object' && productAddToCartForm.validator.validate()) {
             if (typeof productAddToCartFormOld === 'object' && productAddToCartFormOld.validator.validate()) {
                 return true;
@@ -350,15 +388,17 @@ BraintreeExpressAbstract.prototype = {
 
         if (typeof productAddToCartForm !== 'object' && typeof productAddToCartFormOld !== 'object') {
             return true;
-        } else {
-            return false;
         }
-    },
+
+        return false;
+    }
 
     /**
      * Attach the express instance to a number of buttons
+     *
+     * @param {NodeList|Array} buttons
      */
-    attachToButtons: function (buttons) {
+    attachToButtons(buttons) {
         console.warn('This method cannot be called directly.');
     }
-};
+}
