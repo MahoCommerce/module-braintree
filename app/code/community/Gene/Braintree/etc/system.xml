@@ -9,33 +9,8 @@
                     <show_in_default>1</show_in_default>
                     <show_in_website>1</show_in_website>
                     <show_in_store>1</show_in_store>
-                    <comment><![CDATA[
-                        <div class="braintree-logos" style="float: left;width: 100%;margin: 8px 0 24px 0;">
-                            <img src="/skin/frontend/base/default/images/gene/braintree/braintree-logo-black.png" height="36" style="display: inline-block; vertical-align: middle;" border="0" />
-                            <div style="display: inline-block;padding: 0 14px;vertical-align: middle;opacity: 0.7;">by</div>
-                            <a href="http://support.gene.co.uk/" title="Gene Commerce" target="_blank"><img src="https://i.imgur.com/OAXtYNg.png" style="display: inline-block;vertical-align: middle;" height="36" /></a>
-                        </div>
-                        To use this module you will need an existing production or sandbox Braintree account. You can apply at <a href="https://www.braintreepayments.com">braintreepayments.com</a>.<br />Braintree Payments integration provided by <a href="http://gene.co.uk/" target="_blank">Gene Commerce</a>.
-                    ]]></comment>
+                    <comment><![CDATA[To use this module you will need an existing production or sandbox Braintree account. You can apply at <a href="https://www.braintreepayments.com" target="_blank">braintreepayments.com</a>.]]></comment>
                     <fields>
-
-                        <module_version translate="label">
-                            <label>Magento Braintree Payments Version</label>
-                            <frontend_model>gene_braintree/adminhtml_system_config_braintree_moduleversion</frontend_model>
-                            <sort_order>20</sort_order>
-                            <show_in_default>1</show_in_default>
-                            <show_in_website>1</show_in_website>
-                            <show_in_store>1</show_in_store>
-                        </module_version>
-
-                        <lib_version translate="label">
-                            <label>Braintree PHP SDK Version</label>
-                            <frontend_model>gene_braintree/adminhtml_system_config_braintree_version</frontend_model>
-                            <sort_order>20</sort_order>
-                            <show_in_default>1</show_in_default>
-                            <show_in_website>1</show_in_website>
-                            <show_in_store>1</show_in_store>
-                        </lib_version>
 
                         <migration translate="label">
                             <label>Migrate from Legacy Braintree</label>
