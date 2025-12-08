@@ -864,4 +864,13 @@ class vZeroIntegration {
      * @deprecated
      */
     enableCreditCardForm() {}
+
+    /**
+     * Add methods to the class prototype (Prototype.js compatibility)
+     *
+     * @param {Object} methods
+     */
+    static addMethods(methods) {
+        Object.assign(vZeroIntegration.prototype, methods);
+    }
 }

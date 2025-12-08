@@ -1283,6 +1283,15 @@ class vZero {
     paypalLoaded() {
         return false;
     }
+
+    /**
+     * Add methods to the class prototype (Prototype.js compatibility)
+     *
+     * @param {Object} methods
+     */
+    static addMethods(methods) {
+        Object.assign(vZero.prototype, methods);
+    }
 }
 
 // Static property for tracking ajax observation
