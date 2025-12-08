@@ -1,25 +1,64 @@
-# module-gene-braintree
-OpenMage compatible fork of Gene_Braintree module
+# Braintree Payment Module for Maho Commerce
 
-This module was originally available through the Magento Marketplace under the name "Braintree Payments With Hosted Fields".
+A comprehensive Braintree payment integration for Maho Commerce, supporting multiple payment methods including Credit Card, PayPal, Apple Pay, and Google Pay.
 
-This module has been updated to use the 6.x.x version of the [Braintree PHP library](https://github.com/braintree/braintree_php). Originally, the Gene module used the 3.x.x	version of the Braintree library which will be deprecated in March 2022 and unsupported in March 2023. Since the OpenMage project aims to continue supporting Magento 1.9 for many years, merchants may need an updated version of this module.
+## Requirements
 
-It is important to note that this fork removed the inlined copy of the Braintree library, and instead uses Composer to manage the dependency of the Braintree library. Therefore, you must install this module via Composer. For example:
+- Maho Commerce 25.11+
+- PHP 8.3+
+- Braintree merchant account
 
-```
-{
-  "minimum-stability": "dev",
-  "prefer-stable": true,
-  "repositories": [
-    { "type": "vcs", "no-api": true, "url": "git@github.com:justinbeaty/module-gene-braintree.git" },
-  ],
-  "require": {
-    "aydin-hassan/magento-core-composer-installer": "*",
-    "openmage/magento-lts": "*",
-    "gene/braintree": "dev-master",
-  }
-}
+## Installation
+
+```bash
+composer require mahocommerce/module-braintree
 ```
 
-This module has been tested with at least one production OpenMage 20.x website, but you should make sure to test it on a local or staging website pushing it live.
+## Features
+
+### Payment Methods
+
+- **Credit Card** - Direct credit card payments with hosted fields integration
+- **PayPal** - PayPal checkout via Braintree
+- **Apple Pay** - Apple Pay for supported devices
+- **Google Pay** - Google Pay integration
+
+### Additional Features
+
+- **3D Secure** - Support for 3D Secure authentication
+- **Vault** - Save payment methods for returning customers
+- **Express Checkout** - PayPal and Apple Pay buttons on product and cart pages
+- **Multi-currency** - Support for multiple currencies with merchant account mapping
+- **Kount Integration** - Advanced fraud protection via Kount
+- **Admin Orders** - Create orders with Braintree payments from the admin panel
+- **Multishipping** - Support for multishipping checkout
+
+## Configuration
+
+1. Navigate to **System > Configuration > Payment Methods**
+2. Configure **Braintree Settings** with your API credentials:
+   - Environment (Sandbox/Production)
+   - Merchant ID
+   - Public Key
+   - Private Key
+   - Merchant Account ID
+
+3. Enable and configure individual payment methods:
+   - Credit Card (Braintree)
+   - PayPal (Braintree)
+   - Apple Pay (Braintree)
+   - Google Pay (Braintree)
+
+## Supported Card Types
+
+- Visa
+- MasterCard
+- American Express
+- Discover
+- JCB
+- Maestro
+
+## Credits
+
+Originally developed by Gene Commerce, then maintained by [Justin Beaty](https://github.com/justinbeaty/module-gene-braintree), 
+then by [SportPursuit](https://github.com/SportPursuit/module-gene-braintree), now adapted for Maho.

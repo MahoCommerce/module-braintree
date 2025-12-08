@@ -147,7 +147,6 @@ class Gene_Braintree_Model_Paymentmethod_Googlepay extends Gene_Braintree_Model_
      * @param float $amount
      * @return Gene_Braintree_Model_Paymentmethod_Googlepay
      * @throws Mage_Core_Exception
-     * @throws Zend_Currency_Exception
      */
     public function authorize(Varien_Object $payment, $amount)
     {
@@ -175,7 +174,6 @@ class Gene_Braintree_Model_Paymentmethod_Googlepay extends Gene_Braintree_Model_
      * @param bool|false $token
      * @return $this
      * @throws Mage_Core_Exception
-     * @throws Zend_Currency_Exception
      */
     protected function _authorize(Varien_Object $payment, $amount, $shouldCapture = false, $token = false)
     {

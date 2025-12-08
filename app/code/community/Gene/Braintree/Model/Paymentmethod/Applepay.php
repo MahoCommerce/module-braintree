@@ -110,7 +110,6 @@ class Gene_Braintree_Model_Paymentmethod_Applepay extends Gene_Braintree_Model_P
      * @param bool|false $token
      * @return $this
      * @throws Mage_Core_Exception
-     * @throws Zend_Currency_Exception
      */
     protected function _authorize(Varien_Object $payment, $amount, $shouldCapture = false, $token = false)
     {
@@ -207,7 +206,6 @@ class Gene_Braintree_Model_Paymentmethod_Applepay extends Gene_Braintree_Model_P
      * @param float $amount
      * @return Gene_Braintree_Model_Paymentmethod_Applepay
      * @throws Mage_Core_Exception
-     * @throws Zend_Currency_Exception
      */
     public function authorize(Varien_Object $payment, $amount)
     {

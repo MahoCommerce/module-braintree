@@ -27,9 +27,9 @@
                 <action method="addExternalJs"><url>https://js.braintreegateway.com/web/{SDK_VERSION}/js/hosted-fields.min.js</url></action>
                 <action method="addExternalJs"><url>https://js.braintreegateway.com/web/{SDK_VERSION}/js/three-d-secure.min.js</url></action>
                 <action method="addExternalJs"><url>https://js.braintreegateway.com/web/{SDK_VERSION}/js/data-collector.min.js</url></action>
-                <action method="addJs"><url>gene/braintree/minified/vzero.min.js</url></action>
-                <action method="addJs"><url>gene/braintree/minified/vzero-paypal.min.js</url></action>
-                <action method="addJs"><url>gene/braintree/minified/vzero-integration.min.js</url></action>
+                <action method="addJs"><url>gene_braintree/vzero.js</url></action>
+                <action method="addJs"><url>gene_braintree/vzero-paypal.js</url></action>
+                <action method="addJs"><url>gene_braintree/vzero-integration.js</url></action>
             </block>
         </reference>
         <reference name="before_body_end">

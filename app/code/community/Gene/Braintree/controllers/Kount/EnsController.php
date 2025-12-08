@@ -10,8 +10,8 @@ class Gene_Braintree_Kount_EnsController extends Mage_Core_Controller_Front_Acti
     /**
      * Handle an incoming ENS request
      *
-     * @return \Zend_Controller_Response_Abstract
-     * @throws \Mage_Core_Exception
+     * @return Mage_Core_Controller_Response_Http
+     * @throws Mage_Core_Exception
      */
     public function indexAction()
     {

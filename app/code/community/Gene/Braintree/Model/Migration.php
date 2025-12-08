@@ -374,7 +374,6 @@ class Gene_Braintree_Model_Migration extends Mage_Core_Model_Abstract
      * Disable the legacy modules
      *
      * @return bool
-     * @throws \Zend_Db_Adapter_Exception
      */
     protected function _disableLegacy()
     {

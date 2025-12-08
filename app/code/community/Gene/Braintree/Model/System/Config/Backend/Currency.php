@@ -15,7 +15,7 @@ class Gene_Braintree_Model_System_Config_Backend_Currency extends Mage_Core_Mode
     {
         if (!is_array($this->getValue())) {
             $value = $this->getValue();
-            $this->setValue(empty($value) ? false : Mage::helper('core')->jsonDecode($value, Zend_Json::TYPE_OBJECT));
+            $this->setValue(empty($value) ? false : Mage::helper('core')->jsonDecode($value, false));
         }
     }
 

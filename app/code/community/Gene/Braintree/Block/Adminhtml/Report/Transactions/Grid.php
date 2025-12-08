@@ -266,7 +266,6 @@ class Gene_Braintree_Block_Adminhtml_Report_Transactions_Grid extends Mage_Admin
      * @param $isExport
      *
      * @return string
-     * @throws Zend_Currency_Exception
      */
     public function handleAmount($value, $row, $column, $isExport)
     {

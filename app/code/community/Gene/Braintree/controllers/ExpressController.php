@@ -470,7 +470,7 @@ class Gene_Braintree_ExpressController extends Mage_Core_Controller_Front_Action
     /**
      * Return the totals in the Ajax response
      *
-     * @return \Zend_Controller_Response_Abstract
+     * @return string
      */
     protected function _returnTotals()
     {

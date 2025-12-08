@@ -1,8 +1,8 @@
 {
-    "name": "gene/braintree",
-    "type": "magento-module",
+    "name": "mahocommerce/module-braintree",
+    "description": "Braintree payment integration for Maho Commerce",
+    "type": "maho-module",
     "require": {
-        "php": "^8.2",
         "braintree/braintree_php": "^6"
     }
 }

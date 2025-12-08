@@ -96,27 +96,26 @@ class Gene_Braintree_Model_Kount_Rest extends Mage_Core_Model_Abstract
      *
      * @return mixed|false
      * @throws \Exception
-     * @throws \Zend_Http_Client_Exception
      */
     protected function _makeRequest($action, $payload)
     {
         $url = $this->_getApiUrl($action);
 
-        $request = new Varien_Http_Client();
-        $request->setUri($url);
-
-        // Authenticate with the REST Api using our API key
-        $request->setHeaders('X-Kount-Api-Key', $this->_getApiKey());
-
-        // Set the request parameters
-        $request->setParameterPost($payload);
+        $client = \Symfony\Component\HttpClient\HttpClient::create();
 
         try {
-            $response = $request->request(Zend_Http_Client::POST);
-            if ($response) {
-                $response = Mage::helper('core')->jsonDecode($response->getBody());
-                if (is_array($response)) {
-                    return $response;
+            $response = $client->request('POST', $url, [
+                'headers' => [
+                    'X-Kount-Api-Key' => $this->_getApiKey(),
+                ],
+                'body' => $payload,
+            ]);
+
+            $responseBody = $response->getContent();
+            if ($responseBody) {
+                $decoded = Mage::helper('core')->jsonDecode($responseBody);
+                if (is_array($decoded)) {
+                    return $decoded;
                 }
             }
         } catch (Exception $e) {

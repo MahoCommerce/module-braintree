@@ -1048,7 +1048,6 @@ class Gene_Braintree_Model_Wrapper_Braintree extends Mage_Core_Model_Abstract
      * @param                         $amount
      *
      * @return string
-     * @throws \Zend_Currency_Exception
      */
     public function getCaptureAmount(Mage_Sales_Model_Order $order = null, $amount)
     {
@@ -1072,7 +1071,6 @@ class Gene_Braintree_Model_Wrapper_Braintree extends Mage_Core_Model_Abstract
      * @param $amount
      *
      * @return string
-     * @throws \Zend_Currency_Exception
      */
     public function convertCaptureAmount($baseCurrencyCode, $orderQuoteCurrencyCode, $amount)
     {
