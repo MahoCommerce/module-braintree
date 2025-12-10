@@ -60,5 +60,5 @@ composer require mahocommerce/module-braintree
 
 ## Credits
 
-Originally developed by Gene Commerce, then maintained by [Justin Beaty](https://github.com/justinbeaty/module-gene-braintree), 
+Originally developed by [Gene Commerce](https://github.com/genecommerce), then maintained by [Justin Beaty](https://github.com/justinbeaty/module-gene-braintree), 
 then by [SportPursuit](https://github.com/SportPursuit/module-gene-braintree), now adapted for Maho.
