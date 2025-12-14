@@ -62,3 +62,7 @@ composer require mahocommerce/module-braintree
 
 Originally developed by [Gene Commerce](https://github.com/genecommerce), then maintained by [Justin Beaty](https://github.com/justinbeaty/module-gene-braintree), 
 then by [SportPursuit](https://github.com/SportPursuit/module-gene-braintree), now adapted for [Maho](https://mahocommerce.com).
+
+## License
+
+[Open Software License (OSL 3.0)](https://opensource.org/licenses/osl-3.0.php)

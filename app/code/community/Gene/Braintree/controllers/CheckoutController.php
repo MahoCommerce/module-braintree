@@ -1,9 +1,8 @@
 <?php
 
 /**
- * Class Gene_Braintree_CheckoutController
- *
  * @author Dave Macaulay <braintreesupport@gene.co.uk>
+ * @license https://opensource.org/licenses/osl-3.0.php Open Software License (OSL 3.0)
  */
 class Gene_Braintree_CheckoutController extends Mage_Core_Controller_Front_Action
 {

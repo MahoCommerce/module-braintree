@@ -1,10 +1,9 @@
 <?php
 
 /**
- * Class Gene_Braintree_Block_Applepay_Express_Abstract
- *
- * @author Dave Macaulay <dave@gene.co.uk>
- * @author Paul Canning <paul.canning@gene.co.uk>
+ * @author  Dave Macaulay <dave@gene.co.uk>
+ * @author  Paul Canning <paul.canning@gene.co.uk>
+ * @license https://opensource.org/licenses/osl-3.0.php Open Software License (OSL 3.0)
  */
 class Gene_Braintree_Block_Applepay_Express_Abstract extends Mage_Core_Block_Template
 {

@@ -1,9 +1,8 @@
 <?php
 
 /**
- * Class Gene_Braintree_Model_System_Config_Source_Payment_Liabilityaction
- *
  * @author Dave Macaulay <braintreesupport@gene.co.uk>
+ * @license    https://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
  */
 class Gene_Braintree_Model_System_Config_Source_Payment_Liabilityaction
 {

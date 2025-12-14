@@ -1,9 +1,8 @@
 <?php
 
 /**
- * Class Gene_Braintree_Model_Wrapper_Braintree
- *
  * @author Dave Macaulay <braintreesupport@gene.co.uk>
+ * @license https://opensource.org/licenses/osl-3.0.php Open Software License (OSL 3.0)
  */
 class Gene_Braintree_Model_Wrapper_Braintree extends Mage_Core_Model_Abstract
 {

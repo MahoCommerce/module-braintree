@@ -1,9 +1,12 @@
 <?php
 
 /**
+ * @license    https://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
  * Class Gene_Braintree_ExpressController
  *
- * @author Aidan Threadgold <braintreesupport@gene.co.uk> & Dave Macaulay <braintreesupport@gene.co.uk>
+ * @author Aidan Threadgold <braintreesupport@gene.co.uk>
+ * @author Dave Macaulay <braintreesupport@gene.co.uk>
+ * @license https://opensource.org/licenses/osl-3.0.php Open Software License (OSL 3.0)
  */
 class Gene_Braintree_ExpressController extends Mage_Core_Controller_Front_Action
 {

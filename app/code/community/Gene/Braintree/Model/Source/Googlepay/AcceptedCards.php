@@ -1,13 +1,11 @@
 <?php
 
 /**
- * Class Gene_Braintree_Model_Source_Googlepay_Accepted_Cards
- *
  * @author Paul Canning <paul.canning@gene.co.uk>
+ * @license https://opensource.org/licenses/osl-3.0.php Open Software License (OSL 3.0)
  */
 class Gene_Braintree_Model_Source_Googlepay_AcceptedCards
 {
-
     /**
      * Return the array of options
      *

@@ -1,6 +1,7 @@
 <?php
 
 /**
+ * @license    https://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
  * Class Gene_Braintree_Block_Applepay_Setup
  *
  * @author Dave Macaulay <dave@gene.co.uk>

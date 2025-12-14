@@ -1,9 +1,8 @@
 <?php
 
 /**
- * Class Gene_Braintree_Block_Express_Checkout
- *
  * @author Aidan Threadgold <braintreesupport@gene.co.uk>
+ * @license https://opensource.org/licenses/osl-3.0.php Open Software License (OSL 3.0)
  */
 class Gene_Braintree_Block_Express_Checkout extends Mage_Core_Block_Template
 {

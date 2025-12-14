@@ -1,6 +1,7 @@
 {
     "name": "mahocommerce/module-braintree",
     "description": "Braintree payment integration for Maho Commerce",
+    "license": "OSL-3.0",
     "type": "maho-module",
     "require": {
         "braintree/braintree_php": "^6"

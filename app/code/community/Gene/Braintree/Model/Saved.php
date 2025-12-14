@@ -1,5 +1,6 @@
 <?php
 /**
+ * @license    https://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
  * Class Gene_Braintree_Model_Saved
  *
  * @author Dave Macaulay <braintreesupport@gene.co.uk>

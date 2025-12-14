@@ -1,9 +1,8 @@
 <?php
 
 /**
- * Class Gene_Braintree_Model_System_Config_Backend_Kount_Ens
- *
  * @author Dave Macaulay <braintreesupport@gene.co.uk>
+ * @license https://opensource.org/licenses/osl-3.0.php Open Software License (OSL 3.0)
  */
 class Gene_Braintree_Block_Adminhtml_System_Config_Braintree_Kount_Ens extends Mage_Adminhtml_Block_System_Config_Form_Field
 {

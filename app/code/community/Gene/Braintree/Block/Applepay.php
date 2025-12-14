@@ -1,15 +1,11 @@
 <?php
 
 /**
- * Class Gene_Braintree_Block_Applepay
- *
  * @author Dave Macaulay <dave@gene.co.uk>
+ * @license https://opensource.org/licenses/osl-3.0.php Open Software License (OSL 3.0)
  */
 class Gene_Braintree_Block_Applepay extends Mage_Payment_Block_Form
 {
-    /**
-     * Internal constructor. Set template
-     */
     protected function _construct()
     {
         parent::_construct();

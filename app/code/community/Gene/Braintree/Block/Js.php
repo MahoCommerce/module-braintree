@@ -1,9 +1,8 @@
 <?php
 
 /**
- * Class Gene_Braintree_Block_Js
- *
  * @author Dave Macaulay <braintreesupport@gene.co.uk>
+ * @license    https://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
  */
 class Gene_Braintree_Block_Js extends Gene_Braintree_Block_Assets
 {
