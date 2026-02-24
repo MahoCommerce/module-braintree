@@ -16,21 +16,15 @@ class Gene_Braintree_Block_Applepay_Express_Setup extends Gene_Braintree_Block_A
     protected $_token = null;
 
     /**
-     * Generate braintree token
-     */
-    protected function _construct()
-    {
-        parent::_construct();
-        $this->_token = Mage::getModel('gene_braintree/wrapper_braintree')->init()->generateToken();
-    }
-
-    /**
      * Get braintree token
      *
      * @return string
      */
     public function getToken()
     {
+        if ($this->_token === null) {
+            $this->_token = Mage::getModel('gene_braintree/wrapper_braintree')->init()->generateToken();
+        }
         return $this->_token;
     }
 

@@ -6,7 +6,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 This is the Gene_Braintree module, a **Maho Commerce-only** payment integration for Braintree. It provides payment processing via Credit Card, PayPal, Apple Pay, and Google Pay through the Braintree gateway.
 
-**Module Version:** 3.1.3
+**Module Version:** 4.0.0
 **Namespace:** Gene_Braintree
 **Code Pool:** community
 
