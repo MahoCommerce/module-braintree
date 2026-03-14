@@ -554,22 +554,21 @@ class vZeroIntegration {
      * Enable/disable the correct nonce input fields
      */
     enableDisableNonce() {
-        const creditcardNonce = document.getElementById('creditcard-payment-nonce');
-        const paypalNonce = document.getElementById('paypal-payment-nonce');
+        const nonceFields = {
+            'gene_braintree_creditcard': document.getElementById('creditcard-payment-nonce'),
+            'gene_braintree_paypal': document.getElementById('paypal-payment-nonce'),
+            'gene_braintree_googlepay': document.getElementById('googlepay-payment-nonce'),
+            'gene_braintree_applepay': document.getElementById('applepay-payment-nonce'),
+        };
 
-        if (this.getPaymentMethod() === 'gene_braintree_creditcard') {
-            if (creditcardNonce !== null) {
-                creditcardNonce.removeAttribute('disabled');
-            }
-            if (paypalNonce !== null) {
-                paypalNonce.setAttribute('disabled', 'disabled');
-            }
-        } else if (this.getPaymentMethod() === 'gene_braintree_paypal') {
-            if (creditcardNonce !== null) {
-                creditcardNonce.setAttribute('disabled', 'disabled');
-            }
-            if (paypalNonce !== null) {
-                paypalNonce.removeAttribute('disabled');
+        const activeMethod = this.getPaymentMethod();
+
+        for (const [method, field] of Object.entries(nonceFields)) {
+            if (field === null) continue;
+            if (method === activeMethod) {
+                field.removeAttribute('disabled');
+            } else {
+                field.setAttribute('disabled', 'disabled');
             }
         }
     }
