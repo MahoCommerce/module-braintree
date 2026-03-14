@@ -243,30 +243,15 @@ class Gene_Braintree_Helper_Data extends Mage_Core_Helper_Abstract
      */
     public function getStyleConfigArray($scope)
     {
-        if (!Mage::getStoreConfig('payment/gene_braintree_paypal/button_style_' . $scope . '_customise')) {
+        $prefix = 'payment/gene_braintree_paypal/button_style_' . $scope . '_';
 
-            // Load default config values
-            $configFile = Mage::getConfig()->getModuleDir('etc', 'Gene_Braintree').DS.'config.xml';
-            $xml = simplexml_load_string(file_get_contents($configFile), 'Varien_Simplexml_Element');
-            $xml = $xml->asArray();
-            $config = $xml['default']['payment']['gene_braintree_paypal'];
-
-            return array(
-                "layout" => $config['button_style_' . $scope . '_layout'],
-                "size" => $config['button_style_' . $scope . '_size'],
-                "shape" => $config['button_style_' . $scope . '_shape'],
-                "color" => $config['button_style_' . $scope . '_color'],
-                "tagline" => false
-            );
-        }
-
-        return array(
-            "layout" => Mage::getStoreConfig('payment/gene_braintree_paypal/button_style_' . $scope . '_layout'),
-            "size" => Mage::getStoreConfig('payment/gene_braintree_paypal/button_style_' . $scope . '_size'),
-            "shape" => Mage::getStoreConfig('payment/gene_braintree_paypal/button_style_' . $scope . '_shape'),
-            "color" => Mage::getStoreConfig('payment/gene_braintree_paypal/button_style_' . $scope . '_color'),
-            "tagline" => false
-        );
+        return [
+            'layout'  => Mage::getStoreConfig($prefix . 'layout') ?: 'vertical',
+            'size'    => Mage::getStoreConfig($prefix . 'size') ?: 'medium',
+            'shape'   => Mage::getStoreConfig($prefix . 'shape') ?: 'rect',
+            'color'   => Mage::getStoreConfig($prefix . 'color') ?: 'gold',
+            'tagline' => false,
+        ];
     }
 
     /**
