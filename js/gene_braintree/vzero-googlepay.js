@@ -191,17 +191,25 @@ class vZeroGooglePay {
                                         }
                                     }],
                                     emailRequired: true,
-                                    shippingAddressRequired: true,
+                                    shippingAddressRequired: false,
                                 });
 
                                 paymentsClient.loadPaymentData(paymentDataRequest).then((paymentData) => {
                                     return googlePaymentInstance.parseResponse(paymentData);
                                 }).then((result) => {
+                                    const methodCode = 'gene_braintree_googlepay';
+                                    if (typeof payment !== 'undefined' && payment.switchMethod) {
+                                        payment.switchMethod(methodCode);
+                                        const radio = document.querySelector('input[name="payment[method]"][value="' + methodCode + '"]');
+                                        if (radio) {
+                                            radio.checked = true;
+                                        }
+                                    }
                                     const nonceField = document.getElementById('googlepay-payment-nonce');
                                     if (nonceField) {
                                         nonceField.value = result.nonce;
                                     }
-                                    this.vzero.integration.submitCheckout();
+                                    this.vzero.integration.submitCheckout(result.nonce);
                                 }).catch((err) => {
                                     console.error(err);
                                 });
@@ -209,6 +217,7 @@ class vZeroGooglePay {
                         });
 
                         if (button) {
+                            button.id = 'co-google-pay-btn';
                             const checkoutBtn = document.querySelector('#review-buttons-container .btn-checkout');
                             if (checkoutBtn) {
                                 checkoutBtn.style.display = 'none';

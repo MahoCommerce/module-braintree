@@ -538,8 +538,14 @@ class vZeroIntegration {
 
     /**
      * Submit the entire checkout
+     * @param {string} [googlePayNonce] - If provided (from Google Pay flow), set on input immediately before save so it is not lost
      */
-    submitCheckout() {
+    submitCheckout(googlePayNonce) {
+        const nonceEl = document.getElementById('googlepay-payment-nonce');
+        if (typeof googlePayNonce === 'string' && googlePayNonce.length > 0 && nonceEl) {
+            nonceEl.value = googlePayNonce;
+            nonceEl.removeAttribute('disabled');
+        }
         window.review && review.save();
     }
 
