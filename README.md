@@ -49,6 +49,10 @@ composer require mahocommerce/module-braintree
    - Apple Pay (Braintree)
    - Google Pay (Braintree)
 
+## Checkout Compatibility
+
+All frontend JavaScript has been converted from Prototype.js to vanilla JS for full Maho Commerce compatibility. Integration templates exist for several third-party checkout modules (Aheadworks, Magestore, iDev OneStepCheckout, FancyCheckout, FireCheckout, IWD, Unicode, Oye, FME, AwesomeCheckout), however only **Maho's default checkout** (multistep and onestep) is officially supported going forward.
+
 ## Supported Card Types
 
 - Visa

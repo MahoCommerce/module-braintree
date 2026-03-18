@@ -12,7 +12,7 @@
     }
 
     (function () {
-        document.observe("dom:loaded", function() {
+        mahoOnReady(function() {
             var express = new BraintreeApplePayExpress(
                 '<?php echo $this->getToken(); ?>',
                 '<?php echo Mage::app()->getStore()->getFrontendName(); ?>',
@@ -33,7 +33,7 @@
             express.setAmount('<?php echo $this->getQuoteGrandTotal(); ?>');
 
             // Attach our Apple Pay event onto the buttons
-            express.attachToButtons($$('[data-applepay]'));
+            express.attachToButtons(document.querySelectorAll('[data-applepay]'));
         });
     })();
 </script>

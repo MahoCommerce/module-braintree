@@ -20,7 +20,7 @@ if ($this->getProduct() && $this->getProduct()->getTypeId() == Mage_Catalog_Mode
     }
 
     (function () {
-        document.observe("dom:loaded", function() {
+        mahoOnReady(function() {
             var express = new BraintreeApplePayExpress(
                 '<?php echo $this->getToken(); ?>',
                 '<?php echo Mage::app()->getStore()->getFrontendName(); ?>',
@@ -43,15 +43,15 @@ if ($this->getProduct() && $this->getProduct()->getTypeId() == Mage_Catalog_Mode
 
             // On bundle option changes, update the express amount
             if (typeof window.bundle !== 'undefined') {
-                $(document).observe('bundle:reload-price', function (event) {
-                    if (typeof event.memo.priceInclTax !== 'undefined') {
-                        express.setAmount(parseFloat(event.memo.priceInclTax).toFixed(2));
+                document.addEventListener('bundle:reload-price', function (event) {
+                    if (typeof event.detail.priceInclTax !== 'undefined') {
+                        express.setAmount(parseFloat(event.detail.priceInclTax).toFixed(2));
                     }
                 });
             }
 
             // Attach our Apple Pay event onto the buttons
-            express.attachToButtons($$('[data-applepay]'));
+            express.attachToButtons(document.querySelectorAll('[data-applepay]'));
         });
     })();
 </script>

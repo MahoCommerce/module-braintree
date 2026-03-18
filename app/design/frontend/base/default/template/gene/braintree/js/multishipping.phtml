@@ -13,19 +13,21 @@
          * Multi shipping doesn't have ajax states
          **/
         setLoading: function () {
-            $('payment-continue').setAttribute('disabled','disabled');
-            $('payment-continue').addClassName('loading');
+            var btn = document.getElementById('payment-continue');
+            btn.setAttribute('disabled','disabled');
+            btn.classList.add('loading');
         },
         resetLoading: function () {
-            $('payment-continue').removeAttribute('disabled');
-            $('payment-continue').removeClassName('loading');
+            var btn = document.getElementById('payment-continue');
+            btn.removeAttribute('disabled');
+            btn.classList.remove('loading');
         },
 
         /**
          * Capture the original submit function
          */
         captureOriginalSubmitFn: function () {
-            this._originalSubmitFn = $('multishipping-billing-form').submit;
+            this._originalSubmitFn = document.getElementById('multishipping-billing-form').submit;
             return true;
         },
 
@@ -38,20 +40,22 @@
             var vzeroIntegration = this;
 
             // Observe the click event
-            $('multishipping-billing-form').onsubmit = function braintreeOverride(event) {
+            document.getElementById('multishipping-billing-form').onsubmit = function braintreeOverride(event) {
 
                 // Stop the event
-                Event.stop(event);
+                event.preventDefault();
+                event.stopPropagation();
 
+                var form = document.getElementById('multishipping-billing-form');
                 if (vzeroIntegration.shouldInterceptSubmit('creditcard')) {
 
                     // If everything was a success on the checkout end, let's submit the vZero integration
                     vzeroIntegration.submit('creditcard', function () {
-                        return vzeroIntegration._originalSubmitFn.call($('multishipping-billing-form'), arguments);
+                        return vzeroIntegration._originalSubmitFn.call(form, arguments);
                     });
 
                 } else {
-                    return vzeroIntegration._originalSubmitFn.call($('multishipping-billing-form'), arguments);
+                    return vzeroIntegration._originalSubmitFn.call(form, arguments);
                 }
 
             };
@@ -90,15 +94,18 @@
         showHideOtherMethod: function (parentElement, targetElement) {
 
             // Has the user selected other?
-            if ($$(parentElement + ' input:checked[type=radio]').first() !== undefined && $$(parentElement + ' input:checked[type=radio]').first().value == 'other') {
+            var checkedRadio = document.querySelector(parentElement + ' input:checked[type=radio]');
+            var target = document.querySelector(targetElement);
 
-                if ($$(targetElement).first() !== undefined) {
+            if (checkedRadio && checkedRadio.value == 'other') {
+
+                if (target) {
 
                     // Show the credit card form
-                    $$(targetElement).first().show();
+                    target.style.display = '';
 
                     // Enable the credit card form all the elements in the credit card form
-                    $$(targetElement + ' input, ' + targetElement + ' select').each(function (formElement) {
+                    document.querySelectorAll(targetElement + ' input, ' + targetElement + ' select').forEach(function (formElement) {
                         formElement.removeAttribute('disabled');
                     });
 
@@ -109,22 +116,22 @@
 
                 }
 
-            } else if ($$(parentElement + ' input:checked[type=radio]').first() !== undefined) {
+            } else if (checkedRadio) {
 
-                if ($$(targetElement).first() !== undefined) {
+                if (target) {
 
                     // Hide the new credit card form
-                    $$(targetElement).first().hide();
+                    target.style.display = 'none';
 
                     // Disable all the elements in the credit card form
-                    $$(targetElement + ' input, ' + targetElement + ' select').each(function (formElement) {
+                    document.querySelectorAll(targetElement + ' input, ' + targetElement + ' select').forEach(function (formElement) {
                         formElement.setAttribute('disabled', 'disabled');
                     });
 
                     // Tear down hosted fields
                     if (this.vzero.hostedFields) {
                         this.vzero.teardownHostedFields();
-                        $('credit-card-form').addClassName('loading');
+                        document.getElementById('credit-card-form').classList.add('loading');
                     }
 
                 }
@@ -145,7 +152,7 @@
          * Submit the payment
          */
         submitCheckout: function () {
-            return $('multishipping-billing-form').submit();
+            return document.getElementById('multishipping-billing-form').submit();
         }
 
     });

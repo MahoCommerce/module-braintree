@@ -18,7 +18,7 @@ if (!$this->isEnabledCart()) {
     }
 
     (function () {
-        document.observe("dom:loaded", function() {
+        mahoOnReady(function() {
             var express = new BraintreePayPalExpress(
                 false,
                 '<?php echo addslashes(Mage::app()->getStore()->getFrontendName()); ?>',
@@ -43,7 +43,7 @@ if (!$this->isEnabledCart()) {
                     funding:        {<?php echo $this->getFunding(); ?>}
                 }
             );
-            express.attachToButtons($$('[data-paypalexpress]'));
+            express.attachToButtons(document.querySelectorAll('[data-paypalexpress]'));
 
             // Expose the ppExpress object to the window for backwards compatibility
             window.ppExpress = express;

@@ -17,7 +17,13 @@
 
     if (!window.ApplePaySession || window.ApplePaySession && !ApplePaySession.canMakePayments()) {
         // Attempt to hide the parent wrapping the payment method
-        $$('input[value="gene_braintree_applepay"]').first().up().hide();
-        $('payment_form_<?php echo $this->getMethodCode() ?>').hide();
+        var applePayInput = document.querySelector('input[value="gene_braintree_applepay"]');
+        if (applePayInput && applePayInput.parentElement) {
+            applePayInput.parentElement.style.display = 'none';
+        }
+        var applePayForm = document.getElementById('payment_form_<?php echo $this->getMethodCode() ?>');
+        if (applePayForm) {
+            applePayForm.style.display = 'none';
+        }
     }
 </script>

@@ -107,11 +107,13 @@
                 return _originalSwitchToMethod.apply(this, arguments);
             };
 
-            Event.observe(window, 'load', function(e) {
+            window.addEventListener('load', function(e) {
                 // Block the change events fired by Aheadworks
-                $$('#payment_form_gene_braintree_paypal input, #payment_form_gene_braintree_creditcard input').each(function (element) {
-                    if (element.identify() != 'other-creditcard' && element.identify() != 'other-paypal') {
-                        element.stopObserving('change');
+                document.querySelectorAll('#payment_form_gene_braintree_paypal input, #payment_form_gene_braintree_creditcard input').forEach(function (element) {
+                    if (!element.id) { element.id = 'aw-' + Math.random().toString(36).substr(2, 9); }
+                    if (element.id != 'other-creditcard' && element.id != 'other-paypal') {
+                        var clone = element.cloneNode(true);
+                        element.parentNode.replaceChild(clone, element);
                     }
                 });
             });

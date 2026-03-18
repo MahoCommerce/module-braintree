@@ -23,12 +23,12 @@ if (!$this->isEnabledPdp()) {
         Product.ConfigurableSwatches.prototype.setStockData = function () {
             originSetStockData.apply(this, arguments);
 
-            this._E.cartBtn.btn = $$('.add-to-cart button.button:not([data-paypalexpress]):not(.not-btn-cart)');
+            this._E.cartBtn.btn = document.querySelectorAll('.add-to-cart button.button:not([data-paypalexpress]):not(.not-btn-cart)');
         };
     }
 
     (function () {
-        document.observe("dom:loaded", function() {
+        mahoOnReady(function() {
             var express = new BraintreePayPalExpress(
                 false,
                 '<?php echo addslashes(Mage::app()->getStore()->getFrontendName()); ?>',
@@ -54,7 +54,7 @@ if (!$this->isEnabledPdp()) {
                     funding:        {<?php echo $this->getFunding(); ?>}
                 }
             );
-            express.attachToButtons($$('[data-paypalexpress]'));
+            express.attachToButtons(document.querySelectorAll('[data-paypalexpress]'));
 
             // Expose the ppExpress object to the window for backwards compatibility
             window.ppExpress = express;

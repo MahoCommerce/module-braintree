@@ -103,11 +103,11 @@
         (window.vzeroPaypal || false),
         '<div id="paypal-complete"><div id="paypal-container"></div></div>',
         '#review-buttons-container .btn-checkout',
-        $$('.firecheckout-set.onecolumn').length === 0,
+        document.querySelectorAll('.firecheckout-set.onecolumn').length === 0,
         {
             ignoreAjax: ['firecheckout/index/saveOrder']
         },
-        $$('.firecheckout-set.onecolumn').length === 1
+        document.querySelectorAll('.firecheckout-set.onecolumn').length === 1
     );
 
 </script>

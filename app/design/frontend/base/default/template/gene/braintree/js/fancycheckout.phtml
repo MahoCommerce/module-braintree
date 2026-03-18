@@ -21,7 +21,11 @@
          * Retrieve the billing address from the form
          */
         getBillingAddress: function () {
-            return this.vzero.extractBilling($('fancycheckout_orderform').serialize(true));
+            var form = document.getElementById('fancycheckout_orderform');
+            var formData = new FormData(form);
+            var data = {};
+            formData.forEach(function(value, key) { data[key] = value; });
+            return this.vzero.extractBilling(data);
         },
 
         /**
@@ -56,8 +60,9 @@
             var vzeroIntegration = this;
 
             // Observe the click event
-            $('fancycheckout_orderform').onsubmit = function (event) {
-                Event.stop(event);
+            document.getElementById('fancycheckout_orderform').onsubmit = function (event) {
+                event.preventDefault();
+                event.stopPropagation();
 
                 if (vzeroIntegration.shouldInterceptSubmit('creditcard')) {
 
@@ -116,7 +121,7 @@
             }
 
             // Only run this action if the parent element exists on the page
-            if ($$(parentElement).first() !== undefined) {
+            if (document.querySelector(parentElement)) {
                 this.showHideOtherMethod(parentElement, targetElement);
             }
         },

@@ -107,7 +107,7 @@ $_code = 'gene_braintree_creditcard';
                         </select>
                         <script type="text/javascript">
                             //<![CDATA[
-                            $('region_id').setAttribute('defaultValue',  "<?php echo $this->getAddress()->getRegionId() ?>");
+                            document.getElementById('region_id').setAttribute('defaultValue',  "<?php echo $this->getAddress()->getRegionId() ?>");
                             //]]>
                         </script>
                         <input type="text" id="region" name="billing[region]" value="<?php echo $this->escapeHtml($this->getAddress()->getRegion()) ?>"  title="<?php echo Mage::helper('core')->quoteEscape($this->__('State/Province')) ?>" class="input-text <?php echo $this->helper('customer/address')->getAttributeValidationClass('region') ?>" />
@@ -141,20 +141,22 @@ $_code = 'gene_braintree_creditcard';
     var dataForm = new VarienForm('form-validate', true);
     new RegionUpdater('country', 'region', 'region_id', <?php echo $this->helper('directory')->getRegionJson() ?>, undefined, 'zip');
 
-    if ($('toggle-braintree-tool-tip')) {
-        $('toggle-braintree-tool-tip').observe('click', toggleCvvToolTip);
+    var toggleToolTip = document.getElementById('toggle-braintree-tool-tip');
+    if (toggleToolTip) {
+        toggleToolTip.addEventListener('click', toggleCvvToolTip);
     }
     function toggleCvvToolTip(event){
-        if($('braintree-tool-tip')){
-            $('braintree-tool-tip').setStyle({
-                top: (Event.pointerY(event)-560)+'px'
-            })
-            $('braintree-tool-tip').toggle();
+        var toolTip = document.getElementById('braintree-tool-tip');
+        if (toolTip) {
+            toolTip.style.top = (event.clientY - 560) + 'px';
+            toolTip.style.display = toolTip.style.display === 'none' ? '' : 'none';
         }
-        Event.stop(event);
+        event.preventDefault();
+        event.stopPropagation();
     }
-    if($('braintree-tool-tip-close')){
-        Event.observe($('braintree-tool-tip-close'), 'click', toggleCvvToolTip);
+    var toolTipClose = document.getElementById('braintree-tool-tip-close');
+    if (toolTipClose) {
+        toolTipClose.addEventListener('click', toggleCvvToolTip);
     }
     //]]>
 </script>

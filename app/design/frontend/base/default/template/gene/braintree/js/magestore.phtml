@@ -22,15 +22,18 @@
          * Return the payment method from the checkouts methods
          */
         getPaymentMethod: function() {
-            return $RF($('one-step-checkout-form'), 'payment[method]');
+            var form = document.getElementById('one-step-checkout-form');
+            var checked = form ? form.querySelector('input[name="payment[method]"]:checked') : null;
+            return checked ? checked.value : '';
         },
 
         /**
          * Activate the loading state of this checkout
          */
         setLoading: function() {
-            $('onestepcheckout-button-place-order').removeClassName('onestepcheckout-btn-checkout');
-            $('onestepcheckout-button-place-order').addClassName('place-order-loader');
+            var btn = document.getElementById('onestepcheckout-button-place-order');
+            btn.classList.remove('onestepcheckout-btn-checkout');
+            btn.classList.add('place-order-loader');
             already_placing_order = true;
         },
 
@@ -38,8 +41,9 @@
          * Reset the loading state of the checkout
          */
         resetLoading: function() {
-            $('onestepcheckout-button-place-order').addClassName('onestepcheckout-btn-checkout');
-            $('onestepcheckout-button-place-order').removeClassName('place-order-loader');
+            var btn = document.getElementById('onestepcheckout-button-place-order');
+            btn.classList.add('onestepcheckout-btn-checkout');
+            btn.classList.remove('place-order-loader');
             already_placing_order = false;
         },
 
@@ -47,11 +51,11 @@
          * Show the placing order div before the submit
          */
         beforeSubmit: function(callback) {
-            $('onestepcheckout-place-order-loading').show();
+            document.getElementById('onestepcheckout-place-order-loading').style.display = '';
             return this._beforeSubmit(callback);
         },
         afterSubmit: function() {
-            $('onestepcheckout-place-order-loading').hide();
+            document.getElementById('onestepcheckout-place-order-loading').style.display = 'none';
         },
 
         /**
@@ -115,7 +119,7 @@
          * The action to run after the PayPal action has been completed
          */
         submitCheckout: function() {
-            return oscPlaceOrder($('onestepcheckout-button-place-order'));
+            return oscPlaceOrder(document.getElementById('onestepcheckout-button-place-order'));
         }
 
     });
