@@ -34,6 +34,13 @@ class Gene_Braintree_Block_Assets extends Mage_Core_Block_Template
     protected $externalJs = array();
 
     /**
+     * Cache for payment method active status
+     *
+     * @var array
+     */
+    protected $methodActiveCache = [];
+
+    /**
      * Initialize template
      *
      */
@@ -56,13 +63,24 @@ class Gene_Braintree_Block_Assets extends Mage_Core_Block_Template
     }
 
     /**
-     * Return the JS URLs
+     * Return the JS URLs, filtering out scripts for disabled payment methods
      *
      * @return array
      */
     public function getJs()
     {
-        return array_unique($this->js);
+        return array_unique(array_filter($this->js, function ($url) {
+            if (strpos($url, 'vzero-paypal') !== false) {
+                return $this->isMethodActive('gene_braintree_paypal');
+            }
+            if (strpos($url, 'vzero-googlepay') !== false) {
+                return $this->isMethodActive('gene_braintree_googlepay');
+            }
+            if (strpos($url, 'vzero-applepay') !== false) {
+                return $this->isMethodActive('gene_braintree_applepay');
+            }
+            return true;
+        }));
     }
 
     /**
@@ -79,13 +97,44 @@ class Gene_Braintree_Block_Assets extends Mage_Core_Block_Template
     }
 
     /**
-     * Return the external JS scripts
+     * Return the external JS scripts, filtering out scripts for disabled payment methods
      *
      * @return array
      */
     public function getExternalJs()
     {
-        return array_unique($this->externalJs);
+        return array_unique(array_filter($this->externalJs, function ($url) {
+            if (strpos($url, 'paypal-checkout') !== false || strpos($url, 'paypalobjects.com') !== false) {
+                return $this->isMethodActive('gene_braintree_paypal');
+            }
+            if (strpos($url, 'google-payment') !== false || strpos($url, 'pay.google.com') !== false) {
+                return $this->isMethodActive('gene_braintree_googlepay');
+            }
+            if (strpos($url, 'apple-pay') !== false) {
+                return $this->isMethodActive('gene_braintree_applepay');
+            }
+            return true;
+        }));
+    }
+
+    /**
+     * Check if a payment method is active/available
+     *
+     * @param string $methodCode
+     * @return bool
+     */
+    protected function isMethodActive($methodCode)
+    {
+        if (!isset($this->methodActiveCache[$methodCode])) {
+            $model = Mage::getConfig()->getNode('default/payment/' . $methodCode . '/model');
+            if ($model) {
+                $instance = Mage::getModel((string) $model);
+                $this->methodActiveCache[$methodCode] = $instance && $instance->isAvailable();
+            } else {
+                $this->methodActiveCache[$methodCode] = false;
+            }
+        }
+        return $this->methodActiveCache[$methodCode];
     }
 
     /**
