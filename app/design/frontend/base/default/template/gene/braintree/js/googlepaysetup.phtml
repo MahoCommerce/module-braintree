@@ -1,8 +1,8 @@
 <!-- Gene GooglePay Setup -->
 <?php /* @var Gene_Braintree_Block_Googlepay_Setup $this */ ?>
 <script type="text/javascript">
-    if (typeof vzero === 'undefined') {
-        // Start an instance of vZero for the Apple Pay instance
+    if (typeof vZero !== 'undefined' && typeof vzero === 'undefined') {
+        // Start an instance of vZero for the Google Pay instance
         var vzero = new vZero(
             'gene_braintree_creditcard',
             false,
@@ -14,7 +14,6 @@
             false,
             '<?php echo Mage::getUrl('braintree/checkout/clientToken', array('_secure' => Mage::app()->getFrontController()->getRequest()->isSecure())); ?>'
         );
-        console.debug(vzero);
     }
 </script>
 
@@ -25,7 +24,7 @@
             return;
         }
 
-        // Initialize Apple Pay once the integration kit has initialized
+        // Initialize Google Pay once the integration kit has initialized
         vzero.observeEvent('integration.onInit', function () {
             new vZeroGooglePay(
                 false,
