@@ -1454,7 +1454,7 @@
                         </active>
 
                         <merchant_account_id translate="label">
-                            <label>Merchant Account ID</label>
+                            <label>Google Merchant ID</label>
                             <frontend_type>text</frontend_type>
                             <sort_order>20</sort_order>
                             <show_in_default>1</show_in_default>
@@ -1463,7 +1463,7 @@
                             <frontend_class>validate-config</frontend_class>
                             <comment>
                                 <![CDATA[
-                                    Your Merchant Account ID, provided by Google.
+                                    Your Google Merchant ID from the <a href="https://pay.google.com/business/console/" target="_blank">Google Pay & Wallet Console</a>. In sandbox mode you can use any placeholder value (e.g. <code>sandbox</code>). See <a href="https://developer.paypal.com/braintree/docs/guides/google-pay/overview" target="_blank">Braintree Google Pay documentation</a> for more details.
                                 ]]>
                             </comment>
                             <depends>
