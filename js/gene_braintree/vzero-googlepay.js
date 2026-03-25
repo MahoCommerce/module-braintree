@@ -151,13 +151,14 @@ class vZeroGooglePay {
         const merchantAccountId = this.additionalOptions.merchantAccountId;
         const currencyCode = this.additionalOptions.currencyCode;
         const allowedCardNetworks = this.additionalOptions.allowedCardNetworks;
+        const environment = this.additionalOptions.environment;
 
         this.getClient((clientInstance) => {
             const googlePayConfig = {
                 client: clientInstance,
                 googlePayVersion: 2
             };
-            if (merchantAccountId) {
+            if (environment === 'production' && merchantAccountId) {
                 googlePayConfig.googleMerchantId = merchantAccountId;
             }
             braintree.googlePayment.create(googlePayConfig, (googlePaymentErr, googlePaymentInstance) => {
