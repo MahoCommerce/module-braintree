@@ -153,11 +153,14 @@ class vZeroGooglePay {
         const allowedCardNetworks = this.additionalOptions.allowedCardNetworks;
 
         this.getClient((clientInstance) => {
-            braintree.googlePayment.create({
+            const googlePayConfig = {
                 client: clientInstance,
-                googlePayVersion: 2,
-                googleMerchantId: merchantAccountId
-            }, (googlePaymentErr, googlePaymentInstance) => {
+                googlePayVersion: 2
+            };
+            if (merchantAccountId) {
+                googlePayConfig.googleMerchantId = merchantAccountId;
+            }
+            braintree.googlePayment.create(googlePayConfig, (googlePaymentErr, googlePaymentInstance) => {
                 if (googlePaymentErr) {
                     console.error('Error creating google pay instance:', googlePaymentErr);
                     return;
