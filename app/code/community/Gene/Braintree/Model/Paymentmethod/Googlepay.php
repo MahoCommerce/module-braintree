@@ -380,10 +380,10 @@ class Gene_Braintree_Model_Paymentmethod_Googlepay extends Gene_Braintree_Model_
 
         // Set information about the card
         $payment->setCcOwner($result->transaction->customerDetails->firstName . ' ' . $result->transaction->customerDetails->lastName)
-            ->setCcLast4($result->transaction->androidPayCardDetails->last4)
-            ->setCcType($result->transaction->androidPayCardDetails->cardType)
-            ->setCcExpMonth($result->transaction->androidPayCardDetails->expirationMonth)
-            ->setCcExpYear($result->transaction->androidPayCardDetails->expirationYear);
+            ->setCcLast4($result->transaction->googlePayCardDetails->last4)
+            ->setCcType($result->transaction->googlePayCardDetails->cardType)
+            ->setCcExpMonth($result->transaction->googlePayCardDetails->expirationMonth)
+            ->setCcExpYear($result->transaction->googlePayCardDetails->expirationYear);
 
         // Handle any fraud response from Braintree
         $this->handleFraud($result, $payment);
