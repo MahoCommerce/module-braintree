@@ -203,14 +203,14 @@ class Gene_Braintree_Model_Paymentmethod_Googlepay extends Gene_Braintree_Model_
 
             // Attempt to make the sale, firstly dispatching an event
             $result = $this->_getWrapper()->makeSale(
-                $this->_dispatchSaleArrayEvent('gene_braintree_applepay_sale_array', $saleArray, $payment)
+                $this->_dispatchSaleArrayEvent('gene_braintree_googlepay_sale_array', $saleArray, $payment)
             );
 
         } catch (Exception $e) {
             // Dispatch an event for when a payment fails
-            Mage::dispatchEvent('gene_braintree_applepay_failed_exception', array('payment' => $payment, 'exception' => $e));
+            Mage::dispatchEvent('gene_braintree_googlepay_failed_exception', array('payment' => $payment, 'exception' => $e));
 
-            return $this->_processFailedResult($this->_getHelper()->__('We were unable to complete your purchase through Apple Pay, please try again or an alternative payment method.'), $e);
+            return $this->_processFailedResult($this->_getHelper()->__('We were unable to complete your purchase through Google Pay, please try again or an alternative payment method.'), $e);
         }
 
         // Log the result
@@ -219,7 +219,20 @@ class Gene_Braintree_Model_Paymentmethod_Googlepay extends Gene_Braintree_Model_
         // If the sale has failed
         if ($result->success !== true) {
             // Dispatch an event for when a payment fails
-            Mage::dispatchEvent('gene_braintree_applepay_failed', array('payment' => $payment, 'result' => $result));
+            Mage::dispatchEvent('gene_braintree_googlepay_failed', array('payment' => $payment, 'result' => $result));
+
+            // Return a friendly message for processor declined transactions
+            if (isset($result->transaction->status)
+                && $result->transaction->status == Braintree\Transaction::PROCESSOR_DECLINED
+            ) {
+                return $this->_processFailedResult(
+                    $this->_getHelper()->__(
+                        'Your transaction has been declined, please try another payment method or contacting your issuing bank.'
+                    ),
+                    false,
+                    $result
+                );
+            }
 
             return $this->_processFailedResult($this->_getHelper()->__('%s. Please try again or attempt refreshing the page.', rtrim($result->message, '.')));
         }
@@ -363,7 +376,7 @@ class Gene_Braintree_Model_Paymentmethod_Googlepay extends Gene_Braintree_Model_
     protected function _processSuccessResult(Varien_Object $payment, $result, $amount)
     {
         // Pass an event if the payment was a success
-        Mage::dispatchEvent('gene_braintree_applepay_success', array(
+        Mage::dispatchEvent('gene_braintree_googlepay_success', array(
             'payment' => $payment,
             'result' => $result,
             'amount' => $amount

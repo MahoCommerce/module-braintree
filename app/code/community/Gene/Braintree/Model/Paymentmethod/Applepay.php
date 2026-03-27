@@ -157,6 +157,19 @@ class Gene_Braintree_Model_Paymentmethod_Applepay extends Gene_Braintree_Model_P
             // Dispatch an event for when a payment fails
             Mage::dispatchEvent('gene_braintree_applepay_failed', array('payment' => $payment, 'result' => $result));
 
+            // Return a friendly message for processor declined transactions
+            if (isset($result->transaction->status)
+                && $result->transaction->status == Braintree\Transaction::PROCESSOR_DECLINED
+            ) {
+                return $this->_processFailedResult(
+                    $this->_getHelper()->__(
+                        'Your transaction has been declined, please try another payment method or contacting your issuing bank.'
+                    ),
+                    false,
+                    $result
+                );
+            }
+
             return $this->_processFailedResult($this->_getHelper()->__('%s. Please try again or attempt refreshing the page.', rtrim($result->message, '.')));
         }
 
