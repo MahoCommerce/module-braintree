@@ -9,7 +9,7 @@ class Gene_Braintree_Block_Assets extends Mage_Core_Block_Template
     /**
      * Version of Braintree SDK to be included
      */
-    public const SDK_VERSION = '3.48.0';
+    public const SDK_VERSION = '3.138.0';
 
     /**
      * Record the current version
@@ -67,9 +67,6 @@ class Gene_Braintree_Block_Assets extends Mage_Core_Block_Template
     public function getJs()
     {
         return array_unique(array_filter($this->js, function ($url) {
-            if (str_contains($url, 'vzero-paypal')) {
-                return $this->isMethodActive('gene_braintree_paypal');
-            }
             if (str_contains($url, 'vzero-googlepay')) {
                 return $this->isMethodActive('gene_braintree_googlepay');
             }
@@ -99,9 +96,6 @@ class Gene_Braintree_Block_Assets extends Mage_Core_Block_Template
     public function getExternalJs()
     {
         return array_unique(array_filter($this->externalJs, function ($url) {
-            if (str_contains($url, 'paypal-checkout') || str_contains($url, 'paypalobjects.com')) {
-                return $this->isMethodActive('gene_braintree_paypal');
-            }
             if (str_contains($url, 'google-payment') || str_contains($url, 'pay.google.com')) {
                 return $this->isMethodActive('gene_braintree_googlepay');
             }

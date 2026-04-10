@@ -169,7 +169,7 @@
     // stop Magento's card_validation ajax from running
     AdminOrder.prototype._getPaymentDataOriginal = AdminOrder.prototype.getPaymentData;
     AdminOrder.prototype.getPaymentData = function(currentMethod) {
-        return (currentMethod == 'gene_braintree_creditcard' || currentMethod == 'gene_braintree_paypal') ? false : this._getPaymentDataOriginal(currentMethod);
+        return (currentMethod == 'gene_braintree_creditcard') ? false : this._getPaymentDataOriginal(currentMethod);
     };
     //]]>
 </script>

@@ -971,12 +971,6 @@ class vZero {
                     this.setThreeDSecure(response.threeDSecure);
                 }
 
-                if (typeof vzeroPaypal !== "undefined") {
-                    if (response.grandTotal !== undefined && response.currencyCode !== undefined) {
-                        vzeroPaypal.setPricing(response.grandTotal, response.currencyCode);
-                    }
-                }
-
                 if (callbacks.length > 0) {
                     callbacks.forEach((cb) => {
                         if (typeof cb === 'function') {
@@ -1239,15 +1233,6 @@ class vZero {
     }
 
     /**
-     * Should integrations intercept PayPal payments?
-     *
-     * @returns {boolean}
-     */
-    shouldInterceptPayPal() {
-        return true;
-    }
-
-    /**
      * Wrapper function which defines which method should be called
      *
      * @param {Object} options
@@ -1272,15 +1257,6 @@ class vZero {
      * @returns {boolean}
      */
     creditCardLoaded() {
-        return false;
-    }
-
-    /**
-     * Called on PayPal loading
-     *
-     * @returns {boolean}
-     */
-    paypalLoaded() {
         return false;
     }
 

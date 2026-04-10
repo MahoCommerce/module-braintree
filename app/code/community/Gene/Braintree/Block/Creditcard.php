@@ -154,7 +154,6 @@ class Gene_Braintree_Block_Creditcard extends Mage_Payment_Block_Form_Cc
             'discover' => 'DI.png',
             'jcb' => 'JCB.png',
             'maestro' => 'ME.png',
-            'paypal' => 'PP.png',
             // Otherwise return the standard card image
             default => 'card.png',
         };

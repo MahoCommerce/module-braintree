@@ -28,7 +28,6 @@
                 <action method="addExternalJs"><url>https://js.braintreegateway.com/web/{SDK_VERSION}/js/three-d-secure.min.js</url></action>
                 <action method="addExternalJs"><url>https://js.braintreegateway.com/web/{SDK_VERSION}/js/data-collector.min.js</url></action>
                 <action method="addJs"><url>gene_braintree/vzero.js</url></action>
-                <action method="addJs"><url>gene_braintree/vzero-paypal.js</url></action>
                 <action method="addJs"><url>gene_braintree/vzero-integration.js</url></action>
             </block>
         </reference>

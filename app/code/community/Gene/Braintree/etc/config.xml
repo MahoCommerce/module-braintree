@@ -57,7 +57,6 @@
             <!-- When one of these methods is active setup is required by the system -->
             <setup_required>
                 <gene_braintree_creditcard />
-                <gene_braintree_paypal />
                 <gene_braintree_applepay />
                 <gene_braintree_googlepay />
             </setup_required>
@@ -65,20 +64,12 @@
             <!-- Function checks for assets on specific pages -->
             <assets_required>
                 <catalog_product_view>
-                    <paypal>
-                        <class>gene_braintree/express_assets</class>
-                        <method>isEnabledPdp</method>
-                    </paypal>
                     <applepay>
                         <class>gene_braintree/applepay_express</class>
                         <method>isEnabledPdp</method>
                     </applepay>
                 </catalog_product_view>
                 <checkout_cart_index>
-                    <paypal>
-                        <class>gene_braintree/express_assets</class>
-                        <method>isEnabledCart</method>
-                    </paypal>
                     <applepay>
                         <class>gene_braintree/applepay_express</class>
                         <method>isEnabledCart</method>
@@ -97,45 +88,6 @@
                 <debug>0</debug>
                 <multi_currency_enable>0</multi_currency_enable>
             </gene_braintree>
-
-            <!-- PayPal method -->
-            <gene_braintree_paypal>
-                <active>0</active>
-                <express_active>1</express_active>
-                <express_link_guest>0</express_link_guest>
-                <button_style_product_customise>0</button_style_product_customise>
-                <button_style_product_layout>horizontal</button_style_product_layout>
-                <button_style_product_size>responsive</button_style_product_size>
-                <button_style_product_shape>rect</button_style_product_shape>
-                <button_style_product_color>gold</button_style_product_color>
-                <button_style_cart_primary_customise>0</button_style_cart_primary_customise>
-                <button_style_cart_primary_layout>vertical</button_style_cart_primary_layout>
-                <button_style_cart_primary_size>responsive</button_style_cart_primary_size>
-                <button_style_cart_primary_shape>rect</button_style_cart_primary_shape>
-                <button_style_cart_primary_color>gold</button_style_cart_primary_color>
-                <button_style_cart_secondary_customise>0</button_style_cart_secondary_customise>
-                <button_style_cart_secondary_layout>horizontal</button_style_cart_secondary_layout>
-                <button_style_cart_secondary_size>responsive</button_style_cart_secondary_size>
-                <button_style_cart_secondary_shape>rect</button_style_cart_secondary_shape>
-                <button_style_cart_secondary_color>gold</button_style_cart_secondary_color>
-                <button_style_checkout_customise>0</button_style_checkout_customise>
-                <button_style_checkout_layout>vertical</button_style_checkout_layout>
-                <button_style_checkout_size>responsive</button_style_checkout_size>
-                <button_style_checkout_shape>rect</button_style_checkout_shape>
-                <button_style_checkout_color>gold</button_style_checkout_color>
-                <model>gene_braintree/paymentmethod_paypal</model>
-                <order_status>processing</order_status>
-                <payment_action>authorize_capture</payment_action>
-                <title>PayPal (Braintree)</title>
-                <environment>sandbox</environment>
-                <allowspecific>0</allowspecific>
-                <payment_type>single</payment_type>
-                <use_vault>0</use_vault>
-                <locale>en_gb</locale>
-                <payee_email_active>0</payee_email_active>
-                <disabled_funding></disabled_funding>
-                <sort_order>1</sort_order>
-            </gene_braintree_paypal>
 
             <!-- Credit Card method -->
             <gene_braintree_creditcard>
@@ -187,11 +139,6 @@
                 <active>0</active>
                 <model>gene_braintree/paymentmethod_legacy_creditcard</model>
             </braintree_legacy>
-
-            <braintree_paypal_legacy>
-                <active>0</active>
-                <model>gene_braintree/paymentmethod_legacy_paypal</model>
-            </braintree_paypal_legacy>
 
         </payment>
 

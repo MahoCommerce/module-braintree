@@ -36,25 +36,6 @@
 
         vzero.setThreeDFailedAction('<?php echo $this->getThreeDSecureFailedAction(); ?>');
 
-        <?php if ($this->isPayPalActive()) : ?>
-        // Pass some data through to the PayPal integration
-        var vzeroPaypal = new vZeroPayPalButton(
-            false,
-            <?php /** @var Mage_Core_Model_Store $store */ ?>
-            <?php $store = Mage::app()->getStore(); ?>
-            '<?php echo addslashes($store->getFrontendName()); ?>',
-            <?php echo $this->getSingleUse(); ?>,
-            '<?php echo $this->getLocale(); ?>',
-            <?php echo $this->getSingleFutureUse(); ?>,
-            <?php echo $this->shouldOnlyVaultOnVault() ? $this->shouldOnlyVaultOnVault() : 'false'; ?>,
-            '<?php echo Mage::getUrl('braintree/checkout/clientToken', array('_secure' => Mage::app()->getFrontController()->getRequest()->isSecure())); ?>',
-            {
-                env: '<?php echo $this->getEnv(); ?>',
-                buttonStyle: <?php echo $this->getStyleConfig('checkout'); ?>,
-                funding: {<?php echo $this->getFunding(); ?>}
-            }
-        );
-        <?php endif; ?>
     }
 </script>
 
@@ -67,17 +48,3 @@
         <div class="bt-modal-body"></div>
     </div>
 </div>
-
-<?php
-/**
- * We always want to hide the logged in aspect of the PayPal button, only ever display the button
- */
-?>
-<style type="text/css">
-    #braintree-paypal-loggedin {
-        display: none!important;
-    }
-    #braintree-paypal-loggedout {
-        display: block!important;
-    }
-</style>

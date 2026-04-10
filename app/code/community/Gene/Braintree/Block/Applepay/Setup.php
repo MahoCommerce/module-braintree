@@ -26,8 +26,7 @@ class Gene_Braintree_Block_Applepay_Setup extends Mage_Core_Block_Template
      */
     public function isCoreSetupPresent()
     {
-        return Mage::getModel('gene_braintree/paymentmethod_creditcard')->isAvailable()
-            || Mage::getModel('gene_braintree/paymentmethod_paypal')->isAvailable();
+        return Mage::getModel('gene_braintree/paymentmethod_creditcard')->isAvailable();
     }
 
     /**

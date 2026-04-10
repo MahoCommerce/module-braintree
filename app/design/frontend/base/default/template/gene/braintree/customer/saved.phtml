@@ -24,15 +24,6 @@
                         </div>
                     <?php endif; ?>
 
-                    <?php if($this->hasSavedDetails(Gene_Braintree_Model_Saved::SAVED_PAYPAL_ID)): ?>
-                        <div class="payment-methods">
-                            <h2 class="legend"><?php echo $this->__('PayPal') ?></h2>
-                            <?php $methodsBlock = $this->getChild('methods'); ?>
-                            <?php if ($methodsBlock): ?>
-                                <?php echo $methodsBlock->setType(Gene_Braintree_Model_Saved::SAVED_PAYPAL_ID)->toHtml(); ?>
-                            <?php endif; ?>
-                        </div>
-                    <?php endif; ?>
                 </div>
             </form>
 

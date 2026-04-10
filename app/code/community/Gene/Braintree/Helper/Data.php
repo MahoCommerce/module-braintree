@@ -256,40 +256,6 @@ class Gene_Braintree_Helper_Data extends Mage_Core_Helper_Abstract
     }
 
     /**
-     * Get button styling configuration settings as an array for PayPal button
-     * @param string $scope
-     * @return array
-     */
-    public function getStyleConfigArray($scope)
-    {
-        $prefix = 'payment/gene_braintree_paypal/button_style_' . $scope . '_';
-
-        return [
-            'layout'  => Mage::getStoreConfig($prefix . 'layout') ?: 'vertical',
-            'size'    => Mage::getStoreConfig($prefix . 'size') ?: 'medium',
-            'shape'   => Mage::getStoreConfig($prefix . 'shape') ?: 'rect',
-            'color'   => Mage::getStoreConfig($prefix . 'color') ?: 'gold',
-            'tagline' => false,
-        ];
-    }
-
-    /**
-     * Get button styling configuration settings
-     * @param string $scope
-     * @return string
-     */
-    public function getStyleConfig($scope)
-    {
-        $values = $this->getStyleConfigArray($scope);
-
-        return "{layout: '" . $values['layout'] . "',
-                size: '" . $values['size'] . "',
-                shape: '" . $values['shape'] . "',
-                color: '" . $values['color'] . "',
-                tagline: '" . $values['tagline'] . "'}";
-    }
-
-    /**
      * @param mixed $data
      * @return void
      */

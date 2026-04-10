@@ -11,7 +11,6 @@ class Gene_Braintree_Model_Saved extends Mage_Core_Model_Abstract
     /**
      * The ID's associated with the two different payment methods
      */
-    public const SAVED_PAYPAL_ID = 1;
     public const SAVED_CREDITCARD_ID = 2;
 
     /**
@@ -43,7 +42,7 @@ class Gene_Braintree_Model_Saved extends Mage_Core_Model_Abstract
 
                     // Assign them into our model
                     $object = new Varien_Object();
-                    $object->setSavedAccounts(array_merge($customer->creditCards, $customer->paypalAccounts));
+                    $object->setSavedAccounts($customer->creditCards);
 
                     Mage::dispatchEvent('gene_braintree_get_saved_methods', ['object' => $object]);
 
@@ -107,10 +106,6 @@ class Gene_Braintree_Model_Saved extends Mage_Core_Model_Abstract
                     if ($savedAccount instanceof Braintree\CreditCard) {
                         return true;
                     }
-                } elseif ($type == Gene_Braintree_Model_Saved::SAVED_PAYPAL_ID) {
-                    if ($savedAccount instanceof Braintree\PayPalAccount) {
-                        return true;
-                    }
                 }
 
             }
@@ -139,10 +134,6 @@ class Gene_Braintree_Model_Saved extends Mage_Core_Model_Abstract
                 // Check which type we're after
                 if ($type == Gene_Braintree_Model_Saved::SAVED_CREDITCARD_ID) {
                     if ($savedAccount instanceof Braintree\CreditCard) {
-                        $savedDetails[] = $savedAccount;
-                    }
-                } elseif ($type == Gene_Braintree_Model_Saved::SAVED_PAYPAL_ID) {
-                    if ($savedAccount instanceof Braintree\PayPalAccount) {
                         $savedDetails[] = $savedAccount;
                     }
                 }

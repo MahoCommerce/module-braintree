@@ -177,31 +177,6 @@ class Gene_Braintree_Model_Wrapper_Braintree extends Mage_Core_Model_Abstract
     {
         // Grab the customer ID from the customers account
         $customerId = Mage::getSingleton('customer/session')->getCustomer()->getBraintreeCustomerId();
-        // Detect which type of payment method we've got here
-        if ($paymentMethod instanceof Braintree\PayPalAccount) {
-            // Grab the customer
-            $customer = $this->getCustomer($customerId);
-            // Store all the tokens in an array
-            $customerTokens = [];
-            // Check the customer has PayPal Accounts
-            if (isset($customer->paypalAccounts)) {
-
-                /* @var $payPalAccount Braintree\PayPalAccount */
-                foreach ($customer->paypalAccounts as $payPalAccount) {
-                    if (isset($payPalAccount->token)) {
-                        $customerTokens[] = $payPalAccount->token;
-                    }
-                }
-            } else {
-                return false;
-            }
-            // Check to see if this customer account contains this token
-            if (in_array($paymentMethod->token, $customerTokens)) {
-                return true;
-            }
-            return false;
-        }
-
         if (property_exists($paymentMethod, 'customerId') && $paymentMethod->customerId == $customerId) {
             return true;
         }

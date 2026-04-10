@@ -125,16 +125,6 @@ class Gene_Braintree_Model_Migration extends Mage_Core_Model_Abstract
         }
 
         $configurationMapping = array_merge($configurationMapping, [
-            /* PayPal */
-            'paypal_active' => 'gene_braintree_paypal/active',
-            'paypal_title' => 'gene_braintree_paypal/title',
-            'paypal_sort_order' => 'gene_braintree_paypal/sort_order',
-            'paypal_payment_action' => 'gene_braintree_paypal/payment_action',
-            'paypal_order_status' => 'gene_braintree_paypal/order_status',
-            'paypal_allowspecific' => 'gene_braintree_paypal/allowspecific',
-            'paypal_specificcountry' => 'gene_braintree_paypal/specificcountry',
-            'shortcut_shopping_cart' => 'gene_braintree_paypal/express_cart',
-
             /* Credit Card */
             'active' => 'gene_braintree_creditcard/active',
             'title' => 'gene_braintree_creditcard/title',
@@ -302,7 +292,6 @@ class Gene_Braintree_Model_Migration extends Mage_Core_Model_Abstract
         }
 
         $dbWrite->update($resource->getTableName('sales/order_payment'), ['method' => 'braintree_legacy'], "method = 'braintree'");
-        $dbWrite->update($resource->getTableName('sales/order_payment'), ['method' => 'braintree_paypal_legacy'], "method = 'braintree_paypal'");
 
         return true;
     }
@@ -351,7 +340,7 @@ class Gene_Braintree_Model_Migration extends Mage_Core_Model_Abstract
         $dbWrite = $resource->getConnection('core_write');
         if ($dbWrite) {
             // Delete the system configuration values
-            $dbWrite->delete($resource->getTableName('core/config_data'), 'path LIKE "payment/braintree/%" OR path LIKE "payment/braintree_paypal/%"');
+            $dbWrite->delete($resource->getTableName('core/config_data'), 'path LIKE "payment/braintree/%"');
         }
 
         return true;
@@ -392,7 +381,7 @@ class Gene_Braintree_Model_Migration extends Mage_Core_Model_Abstract
             $dbWrite->update(
                 $resource->getTableName('core/config_data'),
                 ['value' => 0],
-                'path = "payment/braintree/paypal_active" OR path = "payment/braintree/active" OR path = "payment/braintree_paypal/active"',
+                'path = "payment/braintree/active"',
             );
         }
 

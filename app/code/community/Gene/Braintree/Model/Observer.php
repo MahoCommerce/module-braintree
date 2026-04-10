@@ -15,41 +15,7 @@ class Gene_Braintree_Model_Observer
      */
     public function updateInvoiceTransactionId(Varien_Event_Observer $observer)
     {
-        try {
-            $invoice = $observer->getEvent()->getInvoice();
-            $method = $invoice->getOrder()->getPayment()->getMethodInstance()->getCode();
-
-            if ($method != 'gene_braintree_paypal') {
-                return $observer;
-            }
-
-            if (Mage::app()->getRequest()->getRequestedControllerName() == 'sales_order_creditmemo') {
-                return $observer;
-            }
-
-            if (Mage::app()->getRequest()->getRequestedControllerName() == 'sales_order_invoice'
-                && Mage::app()->getRequest()->getActionName() == 'view') {
-                return $observer;
-            }
-
-            $allLastInvoiceTransIds = explode(
-                ',',
-                $invoice->getOrder()->getPayment()
-                    ->getAdditionalInformation()['last_invoice_trans_id'],
-            );
-            $latestInvoiceTransIdKey = max(array_keys($allLastInvoiceTransIds));
-            $latestInvoiceTransId = explode(
-                '-',
-                $allLastInvoiceTransIds[$latestInvoiceTransIdKey],
-            );
-
-            $invoice->setData('transaction_id', $latestInvoiceTransId[1]);
-        } catch (\Exception $e) {
-            Gene_Braintree_Model_Debug::log('updateInvoiceTransactionId failed ' . $e->getMessage());
-        }
-
         return $observer;
-
     }
 
     /**
@@ -215,12 +181,6 @@ class Gene_Braintree_Model_Observer
             $block->setChild('saved', $saved);
         }
 
-        // Add the child block of saved to the PayPal payment method form
-        if ($block instanceof Gene_Braintree_Block_Paypal) {
-            $saved = $block->getLayout()->createBlock('gene_braintree/paypal_saved');
-            $saved->setMethod($block->getMethod());
-            $block->setChild('saved', $saved);
-        }
     }
 
     /**

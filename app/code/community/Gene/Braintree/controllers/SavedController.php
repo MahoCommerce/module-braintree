@@ -171,7 +171,7 @@ class Gene_Braintree_SavedController extends Mage_Core_Controller_Front_Action
     /**
      * Init the payment method
      *
-     * @return \Braintree\CreditCard|\Braintree\PayPalAccount|false
+     * @return \Braintree\CreditCard|false
      */
     protected function _initPaymentMethod()
     {
@@ -200,7 +200,14 @@ class Gene_Braintree_SavedController extends Mage_Core_Controller_Front_Action
             return false;
         }
 
-        // Check that this is the users payment method, we have to use a custom method as Braintree don't return the PayPal customer ID
+        if (!$paymentMethod instanceof Braintree\CreditCard) {
+            $this->_getSession()->addError($this->__('This payment method type is not supported.'));
+
+            $this->_redirectReferer();
+            return false;
+        }
+
+        // Check that this is the users payment method
         if (!$wrapper->customerOwnsMethod($paymentMethod)) {
             $this->_getSession()->addError($this->__('You do not have permission to modify this payment method.'));
 

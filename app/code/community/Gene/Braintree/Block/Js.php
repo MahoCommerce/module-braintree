@@ -20,8 +20,6 @@ class Gene_Braintree_Block_Js extends Gene_Braintree_Block_Assets
      */
     private $creditCardActive = null;
     /** @var bool|null */
-    private $payPalActive = null;
-    /** @var bool|null */
     private $applepayActive = null;
     /** @var bool|null */
     private $googlepayActive = null;
@@ -38,20 +36,6 @@ class Gene_Braintree_Block_Js extends Gene_Braintree_Block_Assets
         }
 
         return $this->creditCardActive;
-    }
-
-    /**
-     * Return whether PayPal is active
-     *
-     * @return bool|null
-     */
-    protected function isPayPalActive()
-    {
-        if (is_null($this->payPalActive)) {
-            $this->payPalActive = Mage::getModel('gene_braintree/paymentmethod_paypal')->isAvailable();
-        }
-
-        return $this->payPalActive;
     }
 
     /**
@@ -185,62 +169,6 @@ class Gene_Braintree_Block_Js extends Gene_Braintree_Block_Assets
     }
 
     /**
-     * Shall we do a single use payment?
-     *
-     * @return string
-     */
-    protected function getSingleUse()
-    {
-        // We prefer to do future payments, so anything else is future
-        if ((Mage::getSingleton('gene_braintree/paymentmethod_paypal')->getPaymentType() ==
-                Gene_Braintree_Model_Source_Paypal_Paymenttype::GENE_BRAINTREE_PAYPAL_SINGLE_PAYMENT) ||
-            (!Mage::getSingleton('customer/session')->isLoggedIn())
-        ) {
-            return 'true';
-        }
-
-        return 'false';
-    }
-
-    /**
-     * If we're using future payments should we retrieve a token or just do a singular payment?
-     *
-     * @return string
-     */
-    protected function getSingleFutureUse()
-    {
-        // We prefer to do future payments, so anything else is future
-        if (Mage::getSingleton('gene_braintree/paymentmethod_paypal')->getPaymentType() == Gene_Braintree_Model_Source_Paypal_Paymenttype::GENE_BRAINTREE_PAYPAL_FUTURE_PAYMENTS
-            && !Mage::getModel('gene_braintree/paymentmethod_paypal')->isVaultEnabled()
-        ) {
-            return 'true';
-        }
-
-        return 'false';
-    }
-
-    /**
-     * Shall we only use Vault flow when the customer selects to store their PayPal account?
-     *
-     * @return bool
-     */
-    public function shouldOnlyVaultOnVault()
-    {
-        return $this->getSingleUse() == 'false' &&
-            Mage::getStoreConfigFlag('payment/gene_braintree_paypal/use_vault_only_on_vault');
-    }
-
-    /**
-     * Return the locale for PayPal
-     *
-     * @return mixed
-     */
-    protected function getLocale()
-    {
-        return Mage::getStoreConfig('payment/gene_braintree_paypal/locale');
-    }
-
-    /**
      * Only render if the payment method is active
      *
      * @return string|false
@@ -267,66 +195,6 @@ class Gene_Braintree_Block_Js extends Gene_Braintree_Block_Assets
     public function getEnv()
     {
         return Mage::getStoreConfig('payment/gene_braintree/environment');
-    }
-
-    /**
-     * Button funding options
-     * @return string
-     */
-    public function getFunding()
-    {
-        $funding = Mage::getStoreConfig('payment/gene_braintree_paypal/disabled_funding');
-        $funding = explode(',', $funding);
-        $disallowed = $allowed = [];
-
-        // Credit (only for USD currencies)
-        /** @var Mage_Core_Model_Store $store */
-        $store = Mage::app()->getStore();
-        if (!(in_array('credit', $funding) || $store->getCurrentCurrencyCode() != 'USD')) {
-            $allowed[] = "'credit'";
-        }
-
-        // Cards
-        if (in_array('card', $funding)) {
-            $disallowed[] = "'card'";
-        }
-
-        // German ELV
-        if (in_array('elv', $funding)) {
-            $disallowed[] = "'elv'";
-        }
-
-        $return = [];
-        if ($disallowed) {
-            $return[] = 'disallowed: [' . implode(',', $disallowed) . ']';
-        } else {
-            $return[] = 'disallowed: []';
-        }
-        if ($allowed) {
-            $return[] = 'allowed: [' . implode(',', $allowed) . ']';
-        } else {
-            $return[] = 'allowed: []';
-        }
-
-        return implode(',', $return);
-    }
-
-    /**
-     * Get button styling configuration settings as an array
-     * @return array
-     */
-    public function getStyleConfigArray(string $scope)
-    {
-        return Mage::helper('gene_braintree')->getStyleConfigArray($scope);
-    }
-
-    /**
-     * Get button styling configuration settings
-     * @return string
-     */
-    public function getStyleConfig(string $scope)
-    {
-        return Mage::helper('gene_braintree')->getStyleConfig($scope);
     }
 
     #[\Override]

@@ -14,14 +14,11 @@
             <action method="addExternalJs"><url>https://js.braintreegateway.com/web/{SDK_VERSION}/js/client.min.js</url></action>
             <action method="addExternalJs"><url>https://js.braintreegateway.com/web/{SDK_VERSION}/js/hosted-fields.min.js</url></action>
             <action method="addExternalJs"><url>https://js.braintreegateway.com/web/{SDK_VERSION}/js/three-d-secure.min.js</url></action>
-            <action method="addExternalJS"><url>https://js.braintreegateway.com/web/{SDK_VERSION}/js/paypal-checkout.min.js</url></action>
             <action method="addExternalJs"><url>https://js.braintreegateway.com/web/{SDK_VERSION}/js/data-collector.min.js</url></action>
             <action method="addExternalJs"><url>https://js.braintreegateway.com/web/{SDK_VERSION}/js/apple-pay.min.js</url></action>
             <action method="addExternalJs"><url>https://js.braintreegateway.com/web/{SDK_VERSION}/js/google-payment.min.js</url></action>
-            <action method="addExternalJS"><url>https://www.paypalobjects.com/api/checkout.js?{SDK_VERSION}</url></action>
             <action method="addExternalJS"><url>https://pay.google.com/gp/p/js/pay.js?{SDK_VERSION}</url></action>
             <action method="addJs"><url>gene_braintree/vzero.js</url></action>
-            <action method="addJs"><url>gene_braintree/vzero-paypal.js</url></action>
             <action method="addJs"><url>gene_braintree/vzero-integration.js</url></action>
             <action method="addJs"><url>gene_braintree/vzero-applepay.js</url></action>
             <action method="addJs"><url>gene_braintree/vzero-googlepay.js</url></action>
@@ -254,7 +251,6 @@
         <reference name="gene.braintree.head.assets">
             <!-- Instruct the asset block to include our Express assets -->
             <action method="addJs"><url>gene_braintree/express/abstract.js</url></action>
-            <action method="addJs"><url>gene_braintree/express/paypal.js</url></action>
             <action method="addJs"><url>gene_braintree/express/applepay.js</url></action>
         </reference>
         <reference name="head">
@@ -263,20 +259,9 @@
             <action method="addCss"><file>css/gene_braintree/applepay.css</file></action>
         </reference>
         <reference name="before_body_end">
-            <block type="gene_braintree/express_setup" name="gene_braintree_express_catalog_button" template="gene/braintree/express/catalog.phtml" />
             <block type="gene_braintree/applepay_express_setup" name="gene_braintree_applepay_express_setup" template="gene/braintree/applepay/express/catalog/setup.phtml" />
         </reference>
         <reference name="product.info.addtocart">
-            <block type="gene_braintree/express_button" name="product.info.extrabuttons.paypal.express" template="gene/braintree/express/button.phtml" after="-">
-                <action method="setData">
-                    <name>express_type</name>
-                    <value>catalog</value>
-                </action>
-                <action method="setData">
-                    <name>config_name</name>
-                    <value>product</value>
-                </action>
-            </block>
             <block type="gene_braintree/applepay_express_button" name="product.info.extrabuttons.applepay.express" template="gene/braintree/applepay/express/catalog/button.phtml" />
         </reference>
     </catalog_product_view>
@@ -287,7 +272,6 @@
         <reference name="gene.braintree.head.assets">
             <!-- Instruct the asset block to include our Express assets -->
             <action method="addJs"><url>gene_braintree/express/abstract.js</url></action>
-            <action method="addJs"><url>gene_braintree/express/paypal.js</url></action>
             <action method="addJs"><url>gene_braintree/express/applepay.js</url></action>
         </reference>
         <reference name="head">
@@ -296,34 +280,12 @@
             <action method="addCss"><file>css/gene_braintree/applepay.css</file></action>
         </reference>
         <reference name="before_body_end">
-            <block type="gene_braintree/express_setup" name="gene_braintree_express_cart_button" template="gene/braintree/express/cart.phtml" />
             <block type="gene_braintree/applepay_express_setup" name="gene_braintree_applepay_express_setup" template="gene/braintree/applepay/express/cart/setup.phtml" />
         </reference>
         <reference name="checkout.cart.top_methods">
-            <block type="gene_braintree/express_button" name="checkout.cart.methods.onepage.secondary.paypal.express" template="gene/braintree/express/button.phtml" after="-">
-                <action method="setData">
-                    <name>express_type</name>
-                    <value>cart</value>
-                    <config_name>cart_secondary</config_name>
-                </action>
-                <action method="setData">
-                    <name>config_name</name>
-                    <value>cart_secondary</value>
-                </action>
-            </block>
             <block type="gene_braintree/applepay_express_button" name="checkout.cart.methods.onepage.top.applepay.express" template="gene/braintree/applepay/express/catalog/button.phtml" />
         </reference>
         <reference name="checkout.cart.methods">
-            <block type="gene_braintree/express_button" name="checkout.cart.methods.onepage.primary.paypal.express" template="gene/braintree/express/button.phtml" before="checkout.cart.methods.onepage.bottom">
-                <action method="setData">
-                    <name>express_type</name>
-                    <value>cart</value>
-                </action>
-                <action method="setData">
-                    <name>config_name</name>
-                    <value>cart_primary</value>
-                </action>
-            </block>
             <block type="gene_braintree/applepay_express_button" name="checkout.cart.methods.onepage.top.applepay.express" template="gene/braintree/applepay/express/catalog/button.phtml" after="checkout.cart.methods.onepage.bottom" />
         </reference>
     </checkout_cart_index>
