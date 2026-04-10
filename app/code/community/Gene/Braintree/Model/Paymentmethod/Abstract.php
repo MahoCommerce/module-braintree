@@ -430,9 +430,12 @@ abstract class Gene_Braintree_Model_Paymentmethod_Abstract extends Mage_Payment_
 
         if ($log !== false) {
             Gene_Braintree_Model_Debug::log($log);
+            Mage::throwException($message);
         }
 
-        Mage::throwException($message);
+        // Use Mage_Payment_Model_Info_Exception for expected payment failures (e.g. processor
+        // declines) so they are not logged as exceptions in exception.log
+        throw new Mage_Payment_Model_Info_Exception($message);
     }
 
     /**
