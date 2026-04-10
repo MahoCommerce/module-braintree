@@ -31,7 +31,9 @@ class Gene_Braintree_Block_Paypal_Saved extends Mage_Core_Block_Template
      */
     public function hasSavedDetails()
     {
-        if (!(Mage::getSingleton('customer/session')->isLoggedIn() || Mage::app()->getStore()->isAdmin())) {
+        /** @var Mage_Core_Model_Store $store */
+        $store = Mage::app()->getStore();
+        if (!(Mage::getSingleton('customer/session')->isLoggedIn() || $store->isAdmin())) {
             return false;
         }
         if ($this->getSavedDetails()) {

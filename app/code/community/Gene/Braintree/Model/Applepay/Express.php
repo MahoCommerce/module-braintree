@@ -33,11 +33,10 @@ class Gene_Braintree_Model_Applepay_Express extends Mage_Core_Model_Abstract
     /**
      * Build up a new product quote
      *
-     * @param $productForm
      * @return Mage_Sales_Model_Quote
      * @throws Mage_Core_Model_Store_Exception
      */
-    public function initProductQuote($productForm)
+    public function initProductQuote(string $productForm)
     {
         // Verify our quote contains the product being added
         if (Mage::getSingleton('checkout/session')->getApplePayProductQuoteId()) {
@@ -54,11 +53,12 @@ class Gene_Braintree_Model_Applepay_Express extends Mage_Core_Model_Abstract
         // Ensure the product exists
         $product = Mage::getModel('catalog/product')->load($this->getProductId());
         if (!$product->getId()) {
-            return $this->errorAction(Mage::helper('gene_braintree')->__('We\'re unable to load that product.'));
+            Mage::throwException(Mage::helper('gene_braintree')->__('We\'re unable to load that product.'));
         }
 
         // Build a new quote
-        $quote = Mage::getModel('sales/quote')->setStoreId(Mage::app()->getStore()->getId());
+        $store = Mage::app()->getStore();
+        $quote = Mage::getModel('sales/quote')->setStoreId($store ? (int) $store->getId() : 0);
 
         // Build up the add request
         $formData = [];
@@ -86,10 +86,9 @@ class Gene_Braintree_Model_Applepay_Express extends Mage_Core_Model_Abstract
     /**
      * Convert the incoming Apple Pay address into a Magento address
      *
-     * @param $address
      * @return array
      */
-    protected function convertToMagentoAddress($address)
+    protected function convertToMagentoAddress(string|array $address)
     {
         if (is_string($address)) {
             $address = Mage::helper('core')->jsonDecode($address);
@@ -97,8 +96,11 @@ class Gene_Braintree_Model_Applepay_Express extends Mage_Core_Model_Abstract
 
         // Retrieve the countryId from the request
         $countryId = strtoupper($address['countryCode']);
-        if ((!$countryId || empty($countryId)) && ($countryName = $address['country'])) {
+        if (!$countryId && ($countryName = $address['country'])) {
             $countryCollection = Mage::getModel('directory/country')->getCollection();
+            if (!$countryCollection) {
+                return [];
+            }
             foreach ($countryCollection as $country) {
                 if ($countryName == $country->getName()) {
                     $countryId = strtoupper($country->getCountryId());
@@ -130,11 +132,9 @@ class Gene_Braintree_Model_Applepay_Express extends Mage_Core_Model_Abstract
     /**
      * Retrieve the region_id based on various items
      *
-     * @param $address
-     * @param $magentoAddress
      * @return bool|mixed
      */
-    protected function getRegionId($address, $magentoAddress)
+    protected function getRegionId(array $address, array $magentoAddress)
     {
         $region = Mage::getResourceModel('directory/region_collection')
             ->addFieldToFilter('country_id', $magentoAddress['country_id'])
@@ -176,7 +176,7 @@ class Gene_Braintree_Model_Applepay_Express extends Mage_Core_Model_Abstract
         // Recollect all totals for the quote
         $quote->setTotalsCollectedFlag(false);
         $quote->getBillingAddress();
-        $quote->getShippingAddress()->setCollectShippingRates(true);
+        $quote->getShippingAddress()->setCollectShippingRates(1);
         $quote->collectTotals();
         $quote->save();
 
@@ -211,10 +211,9 @@ class Gene_Braintree_Model_Applepay_Express extends Mage_Core_Model_Abstract
     /**
      * Convert a shipping rate into a consumable shipping rate
      *
-     * @param $shippingRate
      * @return array
      */
-    protected function convertShippingRate($shippingRate)
+    protected function convertShippingRate(Mage_Sales_Model_Quote_Address_Rate $shippingRate)
     {
         // Don't show the same information twice
         $detail = $shippingRate->getMethodTitle();
@@ -234,10 +233,9 @@ class Gene_Braintree_Model_Applepay_Express extends Mage_Core_Model_Abstract
     /**
      * Add any additional response parameters
      *
-     * @param $response
      * @return array
      */
-    public function getAdditionalResponse($response)
+    public function getAdditionalResponse(array $response)
     {
         $quote = $this->getQuote();
 
@@ -263,12 +261,14 @@ class Gene_Braintree_Model_Applepay_Express extends Mage_Core_Model_Abstract
     /**
      * Retrieve the country ID from the name
      *
-     * @param $countryName
      * @return bool|string
      */
-    public function getCountryIdFromName($countryName)
+    public function getCountryIdFromName(string $countryName)
     {
         $countryCollection = Mage::getModel('directory/country')->getCollection();
+        if (!$countryCollection) {
+            return false;
+        }
         foreach ($countryCollection as $country) {
             if ($countryName == $country->getName()) {
                 return $country->getCountryId();
@@ -281,10 +281,9 @@ class Gene_Braintree_Model_Applepay_Express extends Mage_Core_Model_Abstract
     /**
      * Set the shipping address into the model
      *
-     * @param $shippingAddress
      * @return $this
      */
-    public function setShippingAddress($shippingAddress)
+    public function setShippingAddress(string|array $shippingAddress)
     {
         $this->getQuote()->getShippingAddress()->addData($this->convertToMagentoAddress($shippingAddress));
 
@@ -294,10 +293,9 @@ class Gene_Braintree_Model_Applepay_Express extends Mage_Core_Model_Abstract
     /**
      * Set the billing address into the model
      *
-     * @param $billingAddress
      * @return $this
      */
-    public function setBillingAddress($billingAddress)
+    public function setBillingAddress(string|array $billingAddress)
     {
         $this->getQuote()->getBillingAddress()->addData($this->convertToMagentoAddress($billingAddress));
 
@@ -307,17 +305,16 @@ class Gene_Braintree_Model_Applepay_Express extends Mage_Core_Model_Abstract
     /**
      * Set the shipping method
      *
-     * @param $shippingMethod
      * @return $this
      */
-    public function setShippingMethod($shippingMethod)
+    public function setShippingMethod(string $shippingMethod)
     {
         $quote = $this->getQuote();
 
         // Resolve issues with certain table rates modules
         $quote->setTotalsCollectedFlag(false);
         $quote->getBillingAddress();
-        $quote->getShippingAddress()->setCollectShippingRates(true);
+        $quote->getShippingAddress()->setCollectShippingRates(1);
         $quote->collectTotals();
         $quote->save();
 
@@ -349,8 +346,9 @@ class Gene_Braintree_Model_Applepay_Express extends Mage_Core_Model_Abstract
 
             // Should we link guest orders to customers if they match?
             if (Mage::getStoreConfigFlag('payment/gene_braintree_applepay/express_link_guest')) {
+                $websiteStore = Mage::app()->getStore();
                 $customer = Mage::getModel('customer/customer')
-                    ->setWebsiteId(Mage::app()->getStore()->getWebsiteId())
+                    ->setWebsiteId($websiteStore ? $websiteStore->getWebsiteId() : 0)
                     ->loadByEmail($email);
                 if ($customer && $customer->getId()) {
                     $quote->setCustomer($customer);
@@ -400,9 +398,9 @@ class Gene_Braintree_Model_Applepay_Express extends Mage_Core_Model_Abstract
         Mage::getSingleton('checkout/session')->unsApplePayProductQuoteId();
 
         // Update session in regards to completed order above
-        Mage::getSingleton('checkout/session')->setLastSuccessQuoteId($quote->getId());
-        Mage::getSingleton('checkout/session')->setLastQuoteId($quote->getId());
-        Mage::getSingleton('checkout/session')->setLastOrderId($order->getId());
+        Mage::getSingleton('checkout/session')->setLastSuccessQuoteId((int) $quote->getId());
+        Mage::getSingleton('checkout/session')->setLastQuoteId((int) $quote->getId());
+        Mage::getSingleton('checkout/session')->setLastOrderId((int) $order->getId());
 
         return $this;
     }

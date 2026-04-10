@@ -8,6 +8,7 @@ class Gene_Braintree_Block_Info extends Mage_Payment_Block_Info
 {
     /**
      * Store this within the model
+     * @var bool|null
      */
     private $_singleInvoice = null;
 
@@ -38,9 +39,9 @@ class Gene_Braintree_Block_Info extends Mage_Payment_Block_Info
     /**
      * Include live details
      *
-     * @param $data
+     * @return Braintree\Transaction|null
      */
-    protected function includeLiveDetails(&$data)
+    protected function includeLiveDetails(array &$data)
     {
         // Retrieve the order
         $order = $this->getViewedObject();
@@ -89,8 +90,10 @@ class Gene_Braintree_Block_Info extends Mage_Payment_Block_Info
 
                 // Add in the current status
                 try {
-                    $transaction = Mage::getModel('gene_braintree/wrapper_braintree')->init($this->getViewedObject()->getStoreId())->findTransaction($transactionId);
-                    if ($transaction) {
+                    $viewedObject = $this->getViewedObject();
+                    $storeId = $viewedObject ? $viewedObject->getStoreId() : null;
+                    $transaction = Mage::getModel('gene_braintree/wrapper_braintree')->init($storeId)->findTransaction($transactionId);
+                    if ($transaction instanceof Braintree\Transaction) {
                         $data[$label] = $this->convertStatus($transaction->status);
                     } else {
                         $data[$label] = $this->__('<span style="color:red;"><strong>Warning:</strong> Cannot load payment in Braintree.</span>');
@@ -115,7 +118,7 @@ class Gene_Braintree_Block_Info extends Mage_Payment_Block_Info
      *
      * @return bool
      */
-    protected function isSingleInvoice()
+    public function isSingleInvoice()
     {
         // Caching on the check
         if ($this->_singleInvoice === null) {
@@ -144,13 +147,13 @@ class Gene_Braintree_Block_Info extends Mage_Payment_Block_Info
             return $this->_getWrapper()->getCleanTransactionId($this->getInfo()->getLastTransId());
 
             // Else if we're viewing an invoice or a credit memo
-        } elseif ($this->getViewedObject() && ($this->getViewedObject() instanceof Mage_Sales_Model_Order_Invoice
-                || $this->getViewedObject() instanceof Mage_Sales_Model_Order_Creditmemo)) {
+        } elseif ($this->getViewedObject() instanceof Mage_Sales_Model_Order_Invoice
+                || $this->getViewedObject() instanceof Mage_Sales_Model_Order_Creditmemo) {
 
             if (!$this->getViewedObject() instanceof Mage_Sales_Model_Order_Creditmemo) {
                 return $this->_getWrapper()->getCleanTransactionId($this->getViewedObject()->getTransactionId());
             }
-            if (!!$this->getViewedObject()->getTransactionId()) {
+            if ((bool) $this->getViewedObject()->getTransactionId()) {
                 return $this->_getWrapper()->getCleanTransactionId($this->getViewedObject()->getTransactionId());
             }
             // If the creditmemo has an invoice use that transaction ID, otherwise we're viewing an order wide credit memo
@@ -158,7 +161,6 @@ class Gene_Braintree_Block_Info extends Mage_Payment_Block_Info
                 return $this->_getWrapper()->getCleanTransactionId($this->getViewedObject()->getInvoice()->getTransactionId());
             }
             return $this->_getWrapper()->getCleanTransactionId($this->getInfo()->getLastTransId());
-            return $this->_getWrapper()->getCleanTransactionId($this->getViewedObject()->getTransactionId());
         } elseif (!$this->getViewedObject()) {
             // If we don't have a viewed object just utilise the information in the model
             $info = $this->getData('info');
@@ -173,11 +175,9 @@ class Gene_Braintree_Block_Info extends Mage_Payment_Block_Info
     /**
      * Make the status nicer to read
      *
-     * @param $status
-     *
      * @return string
      */
-    protected function convertStatus($status)
+    protected function convertStatus(string $status)
     {
         return match ($status) {
             'authorized' => '<span style="color: #40A500;"> ' . Mage::helper('gene_braintree')->__('Authorized') . '</span>',

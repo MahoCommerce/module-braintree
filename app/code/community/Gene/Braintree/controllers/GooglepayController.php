@@ -90,7 +90,7 @@ class Gene_Braintree_GooglepayController extends Mage_Core_Controller_Front_Acti
 
         // Is this express checkout request coming from the product page?
         if (isset($formData['product'], $formData['qty'])) {
-            $product = Mage::getModel('catalog/product')->load($formData['product']);
+            $product = Mage::getModel('catalog/product')->load((int) $formData['product']);
             if (!$product->getId()) {
                 Mage::getSingleton('core/session')->addError(
                     Mage::helper('gene_braintree')->__("We're unable to load that product."),
@@ -118,6 +118,8 @@ class Gene_Braintree_GooglepayController extends Mage_Core_Controller_Front_Acti
         $billingAddress = $googlepay['paymentMethodData']['info']['billingAddress'];
         $shippingAddress = $googlepay['shippingAddress'];
 
+        $firstName = '';
+        $lastName = '';
         if (isset($billingAddress['name'])) {
             [$firstName, $lastName] = explode(' ', $billingAddress['name'], 2);
         }
@@ -138,15 +140,17 @@ class Gene_Braintree_GooglepayController extends Mage_Core_Controller_Front_Acti
             ->setCity($shippingAddress['locality'])
             ->setCountryId($shippingAddress['countryCode'])
             ->setPostcode($shippingAddress['postalCode'])
-            ->setTelephone(isset($billingAddress['phoneNumber']) ?: '00000000000');
+            ->setTelephone($billingAddress['phoneNumber'] ?? '00000000000');
 
         // Determine if a region is required for the selected country
         if (
             isset($shippingAddress['administrativeArea'])
-            && ($regionId = $this->getRegionId($address, $shippingAddress['administrativeArea']))
             && Mage::helper('directory')->isRegionRequired($address->getCountryId())
         ) {
-            $address->setRegionId($regionId);
+            $regionId = $this->getRegionId($address, $shippingAddress['administrativeArea']);
+            if ($regionId !== false) {
+                $address->setRegionId((int) $regionId);
+            }
         }
 
         // Save the addresses
@@ -162,7 +166,7 @@ class Gene_Braintree_GooglepayController extends Mage_Core_Controller_Front_Acti
     }
 
     /**
-     * @return Mage_Core_Controller_Varien_Action
+     * @return $this|Mage_Core_Controller_Varien_Action
      * @throws Mage_Core_Model_Store_Exception
      */
     public function shippingAction()
@@ -173,7 +177,7 @@ class Gene_Braintree_GooglepayController extends Mage_Core_Controller_Front_Acti
         // Recollect all totals for the quote
         $quote->setTotalsCollectedFlag(false);
         $quote->getBillingAddress();
-        $quote->getShippingAddress()->setCollectShippingRates(true);
+        $quote->getShippingAddress()->setCollectShippingRates(1);
         $quote->collectTotals();
         $quote->save();
 
@@ -211,17 +215,21 @@ class Gene_Braintree_GooglepayController extends Mage_Core_Controller_Front_Acti
             ->setCustomQuote($this->getQuote());
 
         // View to select shipping method
-        $block = $this->getLayout()->createBlock('gene_braintree/googlepay_express_checkout')
-            ->setChild('totals', $totals)
-            ->setTemplate('gene/braintree/googlepay/shipping_details.phtml')
-            ->setShippingRates($shippingRates)
-            ->setQuote($quote);
+        $block = $this->getLayout()->createBlock('gene_braintree/googlepay_express_checkout'); // @phpstan-ignore mage.invalidType
+        if ($block) {
+            $block->setChild('totals', $totals)
+                ->setTemplate('gene/braintree/googlepay/shipping_details.phtml')
+                ->setShippingRates($shippingRates)
+                ->setQuote($quote);
+        }
 
-        $this->getResponse()->setBody($block->toHtml());
+        $this->getResponse()->setBody($block ? $block->toHtml() : '');
+
+        return $this;
     }
 
     /**
-     * @return bool
+     * @return void
      * @throws Mage_Core_Model_Store_Exception
      */
     public function processAction()
@@ -263,11 +271,11 @@ class Gene_Braintree_GooglepayController extends Mage_Core_Controller_Front_Acti
         } catch (Mage_Core_Exception $e) {
             $this->errorAction($e->getMessage());
 
-            return false;
+            return;
         } catch (Exception $e) {
             $this->errorAction($e->getMessage());
 
-            return false;
+            return;
         }
         $order = $service->getOrder();
 
@@ -280,9 +288,9 @@ class Gene_Braintree_GooglepayController extends Mage_Core_Controller_Front_Acti
         Mage::getSingleton('core/session')->setBraintreeExpressSource(null);
 
         // Redirect to thank you page
-        Mage::getSingleton('checkout/session')->setLastSuccessQuoteId($quote->getId());
-        Mage::getSingleton('checkout/session')->setLastQuoteId($quote->getId());
-        Mage::getSingleton('checkout/session')->setLastOrderId($order->getId());
+        Mage::getSingleton('checkout/session')->setLastSuccessQuoteId((int) $quote->getId());
+        Mage::getSingleton('checkout/session')->setLastQuoteId((int) $quote->getId());
+        Mage::getSingleton('checkout/session')->setLastOrderId((int) $order->getId());
 
         $this->getResponse()->setBody('complete');
     }
@@ -290,21 +298,22 @@ class Gene_Braintree_GooglepayController extends Mage_Core_Controller_Front_Acti
     /**
      * Display an error to the user
      *
-     * @param bool|false $errorMessage
+     * @param string|false $errorMessage
+     * @return void
      */
     public function errorAction($errorMessage = false)
     {
         // View to select shipping method
-        /* @var  Gene_Braintree_Block_Express_Checkout $block */
-        $block = $this->getLayout()
-            ->createBlock('gene_braintree/googlepay_express_checkout')
-            ->setTemplate('gene/braintree/googlepay/express/error.phtml');
+        $block = $this->getLayout()->createBlock('gene_braintree/googlepay_express_checkout'); // @phpstan-ignore mage.invalidType
+        if ($block) {
+            $block->setTemplate('gene/braintree/googlepay/express/error.phtml');
 
-        if ($errorMessage) {
-            $block->getLayout()->getMessagesBlock()->addError($errorMessage);
+            if ($errorMessage) {
+                $block->getLayout()->getMessagesBlock()->addError($errorMessage);
+            }
         }
 
-        $this->getResponse()->setBody($block->toHtml());
+        $this->getResponse()->setBody($block ? $block->toHtml() : '');
     }
 
     /**
@@ -322,7 +331,7 @@ class Gene_Braintree_GooglepayController extends Mage_Core_Controller_Front_Acti
             $this->_quote = Mage::getSingleton('checkout/session')->getQuote();
         } else {
             $store = Mage::app()->getStore();
-            $this->_quote = Mage::getModel('sales/quote')->setStoreId($store->getId());
+            $this->_quote = Mage::getModel('sales/quote')->setStoreId($store ? (int) $store->getId() : 0);
             $quoteId = Mage::getSingleton('core/session')->getBraintreeExpressQuote();
 
             if ($quoteId) {
@@ -336,9 +345,9 @@ class Gene_Braintree_GooglepayController extends Mage_Core_Controller_Front_Acti
     }
 
     /**
-     * @param $address
-     * @param $regionId
-     * @return bool
+     * @param Mage_Sales_Model_Quote_Address $address
+     * @param string $regionId
+     * @return int|false
      */
     protected function getRegionId($address, $regionId)
     {
@@ -361,7 +370,7 @@ class Gene_Braintree_GooglepayController extends Mage_Core_Controller_Front_Acti
     }
 
     /**
-     * @param $array
+     * @param array $array
      * @return $this
      */
     protected function _returnJson($array)

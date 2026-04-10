@@ -9,19 +9,22 @@ class Gene_Braintree_Block_Js extends Gene_Braintree_Block_Assets
     /**
      * We can use the same token twice
      *
-     * @var bool
+     * @var string|false
      */
     private $token = false;
 
     /**
      * Log whether methods are active
      *
-     * @var bool
+     * @var bool|null
      */
     private $creditCardActive = null;
+    /** @var bool|null */
     private $payPalActive = null;
-    private $applepayActive;
-    private $googlepayActive;
+    /** @var bool|null */
+    private $applepayActive = null;
+    /** @var bool|null */
+    private $googlepayActive = null;
 
     /**
      * Return whether CreditCard is active
@@ -170,7 +173,7 @@ class Gene_Braintree_Block_Js extends Gene_Braintree_Block_Assets
     /**
      * Generate and return a token
      *
-     * @return string
+     * @return string|false
      */
     protected function getClientToken()
     {
@@ -240,7 +243,7 @@ class Gene_Braintree_Block_Js extends Gene_Braintree_Block_Assets
     /**
      * Only render if the payment method is active
      *
-     * @return string
+     * @return string|false
      */
     #[\Override]
     protected function _toHtml()
@@ -250,7 +253,7 @@ class Gene_Braintree_Block_Js extends Gene_Braintree_Block_Assets
             Mage::register('gene_js_loaded_' . $this->getTemplate(), true);
 
             // The parent handles whether or not the module is enabled
-            return parent::_toHtml();
+            return (string) parent::_toHtml();
         }
 
         return '';
@@ -277,7 +280,9 @@ class Gene_Braintree_Block_Js extends Gene_Braintree_Block_Assets
         $disallowed = $allowed = [];
 
         // Credit (only for USD currencies)
-        if (!(in_array('credit', $funding) || Mage::app()->getStore()->getCurrentCurrencyCode() != 'USD')) {
+        /** @var Mage_Core_Model_Store $store */
+        $store = Mage::app()->getStore();
+        if (!(in_array('credit', $funding) || $store->getCurrentCurrencyCode() != 'USD')) {
             $allowed[] = "'credit'";
         }
 
@@ -303,28 +308,23 @@ class Gene_Braintree_Block_Js extends Gene_Braintree_Block_Assets
             $return[] = 'allowed: []';
         }
 
-        if ($return) {
-            return implode(',', $return);
-        }
-        return '';
+        return implode(',', $return);
     }
 
     /**
      * Get button styling configuration settings as an array
-     * @param $scope
      * @return array
      */
-    public function getStyleConfigArray($scope)
+    public function getStyleConfigArray(string $scope)
     {
         return Mage::helper('gene_braintree')->getStyleConfigArray($scope);
     }
 
     /**
      * Get button styling configuration settings
-     * @param $scope
      * @return string
      */
-    public function getStyleConfig($scope)
+    public function getStyleConfig(string $scope)
     {
         return Mage::helper('gene_braintree')->getStyleConfig($scope);
     }

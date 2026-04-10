@@ -5,6 +5,7 @@
  */
 
 /* @var $installer Gene_Braintree_Model_Entity_Setup */
+/** @var Gene_Braintree_Model_Entity_Setup $this */
 $installer = $this;
 $installer->startSetup();
 
@@ -30,7 +31,7 @@ if ($this->getStoreConfig(Gene_Braintree_Model_Wrapper_Braintree::BRAINTREE_ENVI
     }
 
     // Move anyone using the default integration over to Hosted Fields
-    if ($this->getStoreConfig(Gene_Braintree_Model_Source_Creditcard_FormIntegration::INTEGRATION_ACTION_XML_PATH) == Gene_Braintree_Model_Source_Creditcard_FormIntegration::INTEGRATION_DEFAULT) {
+    if ($this->getStoreConfig(Gene_Braintree_Model_Source_Creditcard_FormIntegration::INTEGRATION_ACTION_XML_PATH) == 'default') {
         Mage::getConfig()->saveConfig(
             Gene_Braintree_Model_Source_Creditcard_FormIntegration::INTEGRATION_ACTION_XML_PATH,
             Gene_Braintree_Model_Source_Creditcard_FormIntegration::INTEGRATION_HOSTED,
@@ -63,7 +64,7 @@ foreach ($stores as $store) {
     }
 
     // Move anyone using the default integration over to Hosted Fields
-    if ($this->getStoreConfig(Gene_Braintree_Model_Source_Creditcard_FormIntegration::INTEGRATION_ACTION_XML_PATH, $store) == Gene_Braintree_Model_Source_Creditcard_FormIntegration::INTEGRATION_DEFAULT) {
+    if ($this->getStoreConfig(Gene_Braintree_Model_Source_Creditcard_FormIntegration::INTEGRATION_ACTION_XML_PATH, $store) == 'default') {
         Mage::getConfig()->saveConfig(
             Gene_Braintree_Model_Source_Creditcard_FormIntegration::INTEGRATION_ACTION_XML_PATH,
             Gene_Braintree_Model_Source_Creditcard_FormIntegration::INTEGRATION_HOSTED,

@@ -30,7 +30,10 @@ class Gene_Braintree_Block_Adminhtml_System_Config_Braintree_Currency extends Ma
 
         // Determine the available currencies for the current scope
         if ($adminConfigData->getScope() == 'default') {
-            $currencies = Mage::app()->getStore(0)->getAvailableCurrencyCodes();
+            $store = Mage::app()->getStore(0);
+            if ($store) {
+                $currencies = $store->getAvailableCurrencyCodes();
+            }
         } elseif ($adminConfigData->getScope() == 'websites') {
             /* @var $website Mage_Core_Model_Website */
             $website = Mage::getModel('core/website')->load($adminConfigData->getWebsite(), 'code');
@@ -41,7 +44,10 @@ class Gene_Braintree_Block_Adminhtml_System_Config_Braintree_Currency extends Ma
                 }
             }
         } elseif ($adminConfigData->getScope() == 'stores') {
-            $currencies = Mage::app()->getStore($adminConfigData->getStore())->getAvailableCurrencyCodes();
+            $store = Mage::app()->getStore($adminConfigData->getStore());
+            if ($store) {
+                $currencies = $store->getAvailableCurrencyCodes();
+            }
         }
 
         // Retrieve the values

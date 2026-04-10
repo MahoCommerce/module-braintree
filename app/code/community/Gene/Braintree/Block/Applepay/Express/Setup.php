@@ -35,7 +35,9 @@ class Gene_Braintree_Block_Applepay_Express_Setup extends Gene_Braintree_Block_A
      */
     public function getStoreCurrency()
     {
-        return Mage::app()->getStore()->getCurrentCurrencyCode();
+        /** @var Mage_Core_Model_Store $store */
+        $store = Mage::app()->getStore();
+        return $store->getCurrentCurrencyCode();
     }
 
     /**
@@ -65,11 +67,11 @@ class Gene_Braintree_Block_Applepay_Express_Setup extends Gene_Braintree_Block_A
     /**
      * Get the grand total for the quote
      *
-     * @return float
+     * @return string
      */
     public function getQuoteGrandTotal()
     {
-        return number_format($this->getQuote()->getGrandTotal(), 2, '.', '');
+        return number_format((float) $this->getQuote()->getGrandTotal(), 2, '.', '');
     }
 
     /**

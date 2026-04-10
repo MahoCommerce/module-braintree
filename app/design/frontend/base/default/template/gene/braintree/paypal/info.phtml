@@ -1,4 +1,10 @@
-<p><strong><?php echo $this->escapeHtml($this->getMethod()->getTitle()) ?></strong></p>
+<?php
+/** @var Gene_Braintree_Block_Paypal_Info $this */
+/** @var array<string, mixed> $_specificInfo */
+/** @var string $_label */
+/** @var mixed $_value */
+?>
+<p><strong><?php echo (string) $this->escapeHtml($this->getMethod()->getTitle()) ?></strong></p>
 
 <?php if ($_specificInfo = $this->getSpecificInformation()):?>
     <table>
@@ -7,7 +13,7 @@
             if($_value):
             ?>
             <tr>
-                <th style="text-align: left;font-weight:bold;padding: 3px 0;"><?php echo $this->escapeHtml($_label)?>:</th>
+                <th style="text-align: left;font-weight:bold;padding: 3px 0;"><?php echo (string) $this->escapeHtml($_label)?>:</th>
             </tr>
             <tr>
                 <td style="padding: 3px 0;"><?php echo nl2br(implode("\n", $this->getValueAsArray($_value, true)))?></td>

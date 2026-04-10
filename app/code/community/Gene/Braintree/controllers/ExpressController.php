@@ -17,6 +17,8 @@ class Gene_Braintree_ExpressController extends Mage_Core_Controller_Front_Action
 
     /**
      * Prevent access if disabled
+     *
+     * @return $this
      */
     #[\Override]
     public function preDispatch()
@@ -24,10 +26,12 @@ class Gene_Braintree_ExpressController extends Mage_Core_Controller_Front_Action
         if (!Mage::getStoreConfig('payment/gene_braintree_paypal/express_active')) {
             $this->setFlag('', 'no-dispatch', true);
 
-            return;
+            return $this;
         }
 
         parent::preDispatch();
+
+        return $this;
     }
 
     /**
@@ -47,7 +51,7 @@ class Gene_Braintree_ExpressController extends Mage_Core_Controller_Front_Action
         } // Create the quote a'new
         else {
             $store = Mage::app()->getStore();
-            $this->_quote = Mage::getModel('sales/quote')->setStoreId($store->getId());
+            $this->_quote = Mage::getModel('sales/quote')->setStoreId($store ? (int) $store->getId() : 0);
             $quoteId = Mage::getSingleton('core/session')->getBraintreeExpressQuote();
 
             if ($quoteId) {
@@ -121,7 +125,7 @@ class Gene_Braintree_ExpressController extends Mage_Core_Controller_Front_Action
             // Should we link guest orders to customers if they match?
             if (Mage::getStoreConfigFlag('payment/gene_braintree_paypal/express_link_guest')) {
                 $customer = Mage::getModel('customer/customer')
-                    ->setWebsiteId(Mage::app()->getStore()->getWebsiteId())
+                    ->setWebsiteId(Mage::app()->getStore() ? (int) Mage::app()->getStore()->getWebsiteId() : 0)
                     ->loadByEmail($paypalData['email']);
                 if ($customer && $customer->getId()) {
                     $quote->setCustomer($customer);
@@ -131,7 +135,7 @@ class Gene_Braintree_ExpressController extends Mage_Core_Controller_Front_Action
 
         // Is this express checkout request coming from the product page?
         if (isset($formData['product']) && isset($formData['qty'])) {
-            $product = Mage::getModel('catalog/product')->load($formData['product']);
+            $product = Mage::getModel('catalog/product')->load((int) $formData['product']);
             if (!$product->getId()) {
                 Mage::getSingleton('core/session')->addError(
                     Mage::helper('gene_braintree')->__('We\'re unable to load that product.'),
@@ -158,6 +162,8 @@ class Gene_Braintree_ExpressController extends Mage_Core_Controller_Front_Action
         }
 
         // Build the address
+        $firstName = '';
+        $lastName = '';
         if (isset($paypalData['firstName']) && isset($paypalData['lastName'])) {
             $firstName = $paypalData['firstName'];
             $lastName = $paypalData['lastName'];
@@ -202,8 +208,8 @@ class Gene_Braintree_ExpressController extends Mage_Core_Controller_Front_Action
     /**
      * Retrieve the region_id based on various items
      *
-     * @param $address
-     * @param $regionId
+     * @param Mage_Sales_Model_Quote_Address $address
+     * @param string $regionId
      *
      * @return bool|mixed
      */
@@ -241,7 +247,7 @@ class Gene_Braintree_ExpressController extends Mage_Core_Controller_Front_Action
         // Recollect all totals for the quote
         $quote->setTotalsCollectedFlag(false);
         $quote->getBillingAddress();
-        $quote->getShippingAddress()->setCollectShippingRates(true);
+        $quote->getShippingAddress()->setCollectShippingRates(1);
         $quote->collectTotals();
         $quote->save();
 
@@ -301,7 +307,7 @@ class Gene_Braintree_ExpressController extends Mage_Core_Controller_Front_Action
 
         // collect shipping rates
         $quote->getShippingAddress()->removeAllShippingRates();
-        $quote->getShippingAddress()->setCollectShippingRates(true)->collectShippingRates();
+        $quote->getShippingAddress()->setCollectShippingRates(1)->collectShippingRates();
 
         // Save the shipping method
         $submitShipping = $this->getRequest()->getParam('submit_shipping');
@@ -353,7 +359,7 @@ class Gene_Braintree_ExpressController extends Mage_Core_Controller_Front_Action
             $codeLength = strlen($couponCode);
             $isCodeLengthValid = $codeLength && $codeLength <= Mage_Checkout_Helper_Cart::COUPON_CODE_MAX_LENGTH;
 
-            $this->_getQuote()->getShippingAddress()->setCollectShippingRates(true);
+            $this->_getQuote()->getShippingAddress()->setCollectShippingRates(1);
             $this->_getQuote()->setCouponCode($isCodeLengthValid ? $couponCode : '')
                 ->collectTotals()
                 ->save();
@@ -388,6 +394,8 @@ class Gene_Braintree_ExpressController extends Mage_Core_Controller_Front_Action
 
     /**
      * Take the payment.
+     *
+     * @return void
      */
     public function processAction()
     {
@@ -428,11 +436,11 @@ class Gene_Braintree_ExpressController extends Mage_Core_Controller_Front_Action
         } catch (Mage_Core_Exception $e) {
             $this->errorAction($e->getMessage());
 
-            return false;
+            return;
         } catch (Exception $e) {
             $this->errorAction($e->getMessage());
 
-            return false;
+            return;
         }
         $order = $service->getOrder();
 
@@ -445,16 +453,17 @@ class Gene_Braintree_ExpressController extends Mage_Core_Controller_Front_Action
         Mage::getSingleton('core/session')->setBraintreeExpressSource(null);
 
         // Redirect to thank you page
-        Mage::getSingleton('checkout/session')->setLastSuccessQuoteId($quote->getId());
-        Mage::getSingleton('checkout/session')->setLastQuoteId($quote->getId());
-        Mage::getSingleton('checkout/session')->setLastOrderId($order->getId());
+        Mage::getSingleton('checkout/session')->setLastSuccessQuoteId((int) $quote->getId());
+        Mage::getSingleton('checkout/session')->setLastQuoteId((int) $quote->getId());
+        Mage::getSingleton('checkout/session')->setLastOrderId((int) $order->getId());
         $this->getResponse()->setBody('complete');
     }
 
     /**
      * Display an error to the user
      *
-     * @param bool|false $errorMessage
+     * @param string|false $errorMessage
+     * @return void
      */
     public function errorAction($errorMessage = false)
     {
@@ -490,7 +499,7 @@ class Gene_Braintree_ExpressController extends Mage_Core_Controller_Front_Action
     /**
      * Return JSON to the browser
      *
-     * @param $array
+     * @param array $array
      *
      * @return $this
      */

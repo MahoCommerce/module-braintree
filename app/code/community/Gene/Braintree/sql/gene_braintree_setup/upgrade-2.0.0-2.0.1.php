@@ -5,6 +5,7 @@
  */
 
 /* @var $installer Gene_Braintree_Model_Entity_Setup */
+/** @var Gene_Braintree_Model_Entity_Setup $this */
 $installer = $this;
 $installer->startSetup();
 
@@ -20,7 +21,7 @@ if (Mage::helper('core')->isModuleEnabled('AnattaDesign_AwesomeCheckout')) {
     // Update values on the default scope
     if ($currentWhiteList = $this->getStoreConfig($whiteListConfigXmlPath)) {
         $currentWhiteListArray = explode("\n", $currentWhiteList);
-        if (is_array($currentWhiteListArray) && count($currentWhiteListArray) > 0) {
+        if (count($currentWhiteListArray) > 0) {
             $whiteList = array_merge($currentWhiteListArray, $whiteList);
         }
     }
@@ -40,7 +41,7 @@ if (Mage::helper('core')->isModuleEnabled('AnattaDesign_AwesomeCheckout')) {
         // Update values on the default scope
         if ($currentWhiteList = $this->getStoreConfig($whiteListConfigXmlPath, $store)) {
             $currentWhiteListArray = explode("\n", $currentWhiteList);
-            if (is_array($currentWhiteListArray) && count($currentWhiteListArray) > 0) {
+            if (count($currentWhiteListArray) > 0) {
                 $whiteList = array_merge($currentWhiteListArray, $whiteList);
             }
         }

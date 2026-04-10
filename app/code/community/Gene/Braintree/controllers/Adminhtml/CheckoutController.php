@@ -16,7 +16,7 @@ class Gene_Braintree_Adminhtml_CheckoutController extends Mage_Adminhtml_Control
     /**
      * Return a client token to the browser
      *
-     * @return \Gene_Braintree_CheckoutController
+     * @return $this
      */
     public function clientTokenAction()
     {
@@ -31,5 +31,20 @@ class Gene_Braintree_Adminhtml_CheckoutController extends Mage_Adminhtml_Control
                 'error' => $e->getMessage(),
             ]);
         }
+    }
+
+    /**
+     * Return JSON to the browser
+     *
+     * @param array $array
+     *
+     * @return $this
+     */
+    protected function _returnJson($array)
+    {
+        $this->getResponse()->setBody(Mage::helper('core')->jsonEncode($array));
+        $this->getResponse()->setHeader('Content-type', 'application/json');
+
+        return $this;
     }
 }

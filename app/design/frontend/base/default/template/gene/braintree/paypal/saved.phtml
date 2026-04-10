@@ -1,7 +1,12 @@
+<?php
+/** @var Gene_Braintree_Block_Paypal_Saved $this */
+/** @var int $count */
+/** @var Braintree\PayPalAccount $savedDetail */
+?>
 <?php if($this->hasSavedDetails() && $this->getMethod()->isVaultEnabled()): ?>
 
-    <label><?php echo $this->__('Linked Accounts'); ?></label>
-    <p><?php echo $this->__('The following PayPal accounts are currently linked with your account.'); ?></p>
+    <label><?php echo (string) $this->__('Linked Accounts'); ?></label>
+    <p><?php echo (string) $this->__('The following PayPal accounts are currently linked with your account.'); ?></p>
     <table width="100%" cellspacing="0" cellpadding="0" id="paypal-saved-accounts">
         <tbody>
         <?php
@@ -22,7 +27,7 @@
         endforeach; ?>
         <tr valign="middle" class="other-row">
             <td width="20"><input type="radio" name="payment[paypal_payment_method_token]" id="other-paypal" value="other" /></td>
-            <td><label for="other-paypal"><?php echo $this->__('New PayPal Account'); ?></label></td>
+            <td><label for="other-paypal"><?php echo (string) $this->__('New PayPal Account'); ?></label></td>
         </tr>
         </tbody>
     </table>

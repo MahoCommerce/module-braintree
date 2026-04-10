@@ -60,19 +60,20 @@ class Gene_Braintree_Model_Paymentmethod_Paypal extends Gene_Braintree_Model_Pay
             // Validate the configuration is okay
             if ($this->_getWrapper()->validateCredentialsOnce()) {
                 // This method is only active in the admin if the vault is enabled
-                if (Mage::app()->getStore()->isAdmin() && $this->isVaultEnabled()) {
+                $store = Mage::app()->getStore();
+                if ($store && $store->isAdmin() && $this->isVaultEnabled()) {
                     return true;
                 }
-                if (Mage::app()->getStore()->isAdmin()) {
+                if ($store && $store->isAdmin()) {
                     return false;
                 }
 
                 return true;
             }
-        } else {
-            // Otherwise it's a no
-            return false;
         }
+
+        // Otherwise it's a no
+        return false;
     }
 
     /**
@@ -136,11 +137,10 @@ class Gene_Braintree_Model_Paymentmethod_Paypal extends Gene_Braintree_Model_Pay
      * Should we save this method in the database?
      *
      * @param \Varien_Object $payment
-     * @param                $skipMultishipping
      *
      * @return mixed
      */
-    public function shouldSaveMethod($payment, $skipMultishipping = false)
+    public function shouldSaveMethod($payment, bool $skipMultishipping = false)
     {
         if ($skipMultishipping === false) {
             // We must always save the method for multi shipping requests
@@ -199,24 +199,14 @@ class Gene_Braintree_Model_Paymentmethod_Paypal extends Gene_Braintree_Model_Pay
     /**
      * Psuedo _authorize function so we can pass in extra data
      *
-     * @param                $amount
-     * @param bool|false     $shouldCapture
-     * @param bool|false     $token
-     *
      * @return $this
      * @throws \Mage_Core_Exception
      */
-    protected function _authorize(Varien_Object $payment, $amount, $shouldCapture = false, $token = false)
+    protected function _authorize(Varien_Object $payment, string|float $amount, bool $shouldCapture = false, string|false $token = false)
     {
         // Confirm that we have a nonce from Braintree
         // We cannot utilise the validate() function as these checks need to happen at the capture point
-        if (!$this->getPaymentMethodNonce()) {
-            if (!$this->getPaymentMethodToken()) {
-                Mage::throwException(
-                    $this->_getHelper()->__('There has been an issue processing your PayPal payment, please try again.'),
-                );
-            }
-        } elseif (!$this->getPaymentMethodNonce()) {
+        if (!$this->getPaymentMethodNonce() && !$this->getPaymentMethodToken()) {
             Mage::throwException(
                 $this->_getHelper()->__('There has been an issue processing your PayPal payment, please try again.'),
             );
@@ -374,7 +364,10 @@ class Gene_Braintree_Model_Paymentmethod_Paypal extends Gene_Braintree_Model_Pay
                 Gene_Braintree_Model_Debug::log(['capture:submitForSettlement' => $result]);
             }
 
-            if ($result->success) {
+            if (!$result) {
+                Gene_Braintree_Model_Wrapper_Braintree::cleanUp();
+                Mage::throwException('Unable to process the transaction.');
+            } elseif ($result->success) {
                 $this->_updateKountStatus($payment, 'A');
                 $this->_processSuccessResult($payment, $result, $amount);
             } elseif ($result->errors->deepSize() > 0) {
@@ -417,11 +410,9 @@ class Gene_Braintree_Model_Paymentmethod_Paypal extends Gene_Braintree_Model_Pay
     /**
      * Build up the payment request
      *
-     * @param $token
-     *
      * @return array
      */
-    protected function _buildPaymentRequest($token)
+    protected function _buildPaymentRequest(string|false $token)
     {
         // Build our payment array with either our token, or nonce
         $paymentArray = [];
@@ -478,11 +469,9 @@ class Gene_Braintree_Model_Paymentmethod_Paypal extends Gene_Braintree_Model_Pay
     /**
      * Process a successful result from the sale request
      *
-     * @param Braintree\Result\Successful $result
-     * @param                             $amount
      * @return Varien_Object
      */
-    protected function _processSuccessResult(Varien_Object $payment, $result, $amount)
+    protected function _processSuccessResult(Varien_Object $payment, Braintree\Result\Successful|Braintree\Result\Error $result, string|float $amount)
     {
         // Pass an event if the payment was a success
         Mage::dispatchEvent('gene_braintree_paypal_success', [
@@ -523,6 +512,7 @@ class Gene_Braintree_Model_Paymentmethod_Paypal extends Gene_Braintree_Model_Pay
 
         // Store the PayPal token if we have one
         if (isset($result->transaction->paypal['token']) && !empty($result->transaction->paypal['token'])) {
+            /** @var Mage_Sales_Model_Order_Payment $payment */
             $payment->setAdditionalInformation('token', $result->transaction->paypal['token']);
 
             // If the transaction is part of a multi shipping transaction store the token for the next order
@@ -545,12 +535,11 @@ class Gene_Braintree_Model_Paymentmethod_Paypal extends Gene_Braintree_Model_Pay
     /**
      * Get transaction id prefixed with incremented value
      *
-     * @param $result
      * @return null|string
      */
     protected function _getUpdatedTransactionId(
         Varien_Object $payment,
-        $result,
+        Braintree\Result\Successful|Braintree\Result\Error $result,
     ) {
         $updatedLastTransIds = null;
         $additionalInformation = $payment->getAdditionalInformation();
@@ -559,13 +548,12 @@ class Gene_Braintree_Model_Paymentmethod_Paypal extends Gene_Braintree_Model_Pay
             $allLastInvoiceTransIds = explode(',', $additionalInformation['last_invoice_trans_id']);
             $latestInvoiceTransIdKey = max(array_keys($allLastInvoiceTransIds));
             $latestInvoiceTransId = $allLastInvoiceTransIds[$latestInvoiceTransIdKey];
-            $allLastInvoiceTransIds[] = ($latestInvoiceTransId + 1) . '-' . $result->transaction->id;
+            $allLastInvoiceTransIds[] = ((int) $latestInvoiceTransId + 1) . '-' . $result->transaction->id;
             $updatedLastTransIds = implode(',', $allLastInvoiceTransIds);
             return $updatedLastTransIds;
         }
 
-        $updatedLastTransIds++;
-        $updatedLastTransIds = $updatedLastTransIds . '-' . $result->transaction->id;
+        $updatedLastTransIds = '1-' . $result->transaction->id;
 
         return $updatedLastTransIds;
     }

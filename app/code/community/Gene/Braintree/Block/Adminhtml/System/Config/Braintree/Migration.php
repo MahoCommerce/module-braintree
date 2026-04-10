@@ -13,6 +13,7 @@ class Gene_Braintree_Block_Adminhtml_System_Config_Braintree_Migration extends M
      *
      * @return string
      */
+    #[\Override]
     public function render(Varien_Data_Form_Element_Abstract $element)
     {
         // This option is only available if the migration can be ran

@@ -1,13 +1,20 @@
-
+<?php
+/** @var Gene_Braintree_Block_Creditcard_Info $this */
+/** @var array<string, mixed> $_specificInfo */
+/** @var string $_label */
+/** @var mixed $_value */
+?>
 <div id="braintree_creditcard_logo" style="padding-top: 5px;padding-left: 2px;">
-    <img src="/skin/adminhtml/base/default/images/gene/braintree/braintree-logo-black.png" height="24" alt="<?php echo $this->__('Credit Card - Braintree'); ?>" />
+    <img src="/skin/adminhtml/base/default/images/gene/braintree/braintree-logo-black.png" height="24" alt="<?php echo (string) $this->__('Credit Card - Braintree'); ?>" />
 </div>
 
-<?php if (Mage::app()->getStore()->isAdmin() && $this->getMethod()->getCode() == 'braintree_legacy'): ?>
+<?php /** @var Mage_Core_Model_Store $store */ ?>
+<?php $store = Mage::app()->getStore(); ?>
+<?php if ($store->isAdmin() && $this->getMethod()->getCode() == 'braintree_legacy'): ?>
     <div class="braintree_legacy_order">
-        <h4><?php echo $this->__('Legacy Payment'); ?></h4>
-        <p><?php echo $this->__('This order was imported from the legacy Braintree extension. The information displayed below maybe incomplete due to information not being provided by the original extension.'); ?></p>
-        <p><?php echo $this->__('Certain operations such as credit memos & voiding may not work with this order.'); ?></p>
+        <h4><?php echo (string) $this->__('Legacy Payment'); ?></h4>
+        <p><?php echo (string) $this->__('This order was imported from the legacy Braintree extension. The information displayed below maybe incomplete due to information not being provided by the original extension.'); ?></p>
+        <p><?php echo (string) $this->__('Certain operations such as credit memos & voiding may not work with this order.'); ?></p>
     </div>
 <?php endif; ?>
 
@@ -15,7 +22,7 @@
     <table>
         <?php foreach ($_specificInfo as $_label => $_value):?>
             <tr>
-                <th style="width: 220px"><?php echo $this->escapeHtml($_label)?>:</th>
+                <th style="width: 220px"><?php echo (string) $this->escapeHtml($_label)?>:</th>
                 <td><?php echo nl2br(implode("\n", $this->getValueAsArray($_value, false)))?></td>
             </tr>
         <?php endforeach; ?>
@@ -23,7 +30,7 @@
 <?php endif;?>
 
 <?php if (!$this->isSingleInvoice()): ?>
-    <p><?php echo $this->__('This order contains multiple Braintree transactions, to view more information on each transaction please view their corresponding invoice.'); ?></p>
+    <p><?php echo (string) $this->__('This order contains multiple Braintree transactions, to view more information on each transaction please view their corresponding invoice.'); ?></p>
 <?php endif; ?>
 
 <?php echo $this->getChildHtml()?>

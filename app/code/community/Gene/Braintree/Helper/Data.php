@@ -40,20 +40,20 @@ class Gene_Braintree_Helper_Data extends Mage_Core_Helper_Abstract
      * Magento sometimes doesn't return certain totals in the correct format, yet Braintree requires them to always
      * be in two decimal places, thus the need for this function
      *
-     * @param $price
+     * @param float|string $price
      *
      * @return string
      */
     public function formatPrice($price)
     {
         // Suppress errors from formatting the price, as we may have EUR12,00 etc
-        return @number_format($price, 2, '.', '');
+        return @number_format((float) $price, 2, '.', '');
     }
 
     /**
      * Convert a Braintree address into a Magento address
      *
-     * @param $address
+     * @param object|null $address
      *
      * @return \Mage_Customer_Model_Address
      */
@@ -65,19 +65,20 @@ class Gene_Braintree_Helper_Data extends Mage_Core_Helper_Abstract
         }
 
         $addressModel->addData([
-            'firstname' => $address->firstName,
-            'lastname' => $address->lastName,
-            'street' => $address->streetAddress . (isset($address->extendedAddress) ? "\n" . $address->extendedAddress : ''),
-            'city' => $address->locality,
-            'postcode' => $address->postalCode,
-            'country' => $address->countryCodeAlpha2,
+            'firstname' => $address->firstName, // @phpstan-ignore property.notFound
+            'lastname' => $address->lastName, // @phpstan-ignore property.notFound
+            'street' => $address->streetAddress . // @phpstan-ignore property.notFound
+                (isset($address->extendedAddress) ? "\n" . $address->extendedAddress : ''), // @phpstan-ignore property.notFound
+            'city' => $address->locality, // @phpstan-ignore property.notFound
+            'postcode' => $address->postalCode, // @phpstan-ignore property.notFound
+            'country' => $address->countryCodeAlpha2, // @phpstan-ignore property.notFound
         ]);
 
-        if (isset($address->region)) {
+        if (isset($address->region)) { // @phpstan-ignore property.notFound
             $addressModel->setData('region_code', $address->region);
         }
 
-        if (isset($address->company)) {
+        if (isset($address->company)) { // @phpstan-ignore property.notFound
             $addressModel->setData('company', $address->company);
         }
 
@@ -87,13 +88,14 @@ class Gene_Braintree_Helper_Data extends Mage_Core_Helper_Abstract
     /**
      * Convert a Magento address into a Braintree address
      *
-     * @param $address
+     * @param Mage_Customer_Model_Address|Mage_Sales_Model_Quote_Address|Mage_Sales_Model_Order_Address|object|null $address
      *
      * @return array
      */
     public function convertToBraintreeAddress($address)
     {
         if (is_object($address)) {
+            /** @var Mage_Customer_Model_Address|Mage_Sales_Model_Quote_Address|Mage_Sales_Model_Order_Address $address */
             // Build up the initial array
             $return = [
                 'firstName'         => $address->getFirstname(),
@@ -121,6 +123,8 @@ class Gene_Braintree_Helper_Data extends Mage_Core_Helper_Abstract
 
             return $return;
         }
+
+        return [];
     }
 
     /**
@@ -166,7 +170,7 @@ class Gene_Braintree_Helper_Data extends Mage_Core_Helper_Abstract
      * Utilising the 'setup_required' feature in XML files, loop through and determine if setup is required based on
      * various modules being "available"
      *
-     * @param $storeId
+     * @param int|false $storeId
      *
      * @return bool
      */
@@ -179,14 +183,25 @@ class Gene_Braintree_Helper_Data extends Mage_Core_Helper_Abstract
             $initialEnvironmentInfo = $appEmulation->startEnvironmentEmulation($storeId);
         }
 
-        $methodCodes = Mage::getConfig()->getNode('global/payment/setup_required')->asArray();
+        $config = Mage::getConfig();
+        if ($config === null) {
+            return false;
+        }
+        $setupRequiredNode = $config->getNode('global/payment/setup_required');
+        if (!$setupRequiredNode) {
+            return false;
+        }
+        $methodCodes = $setupRequiredNode->asArray();
         if (is_array($methodCodes) && count($methodCodes) > 0) {
             foreach (array_keys($methodCodes) as $methodCode) {
-                $methodModel = Mage::getConfig()->getNode('default/payment/' . (string) $methodCode . '/model');
+                $methodModel = $config->getNode('default/payment/' . (string) $methodCode . '/model');
                 if ($methodModel) {
                     $model = Mage::getModel($methodModel);
+                    if (!$model) {
+                        continue;
+                    }
                     $model->setIsSetupRequiredCall(true);
-                    if ($model && method_exists($model, 'isAvailable') && $model->isAvailable()) {
+                    if (method_exists($model, 'isAvailable') && $model->isAvailable()) {
                         // Stop the app emulation is running
                         if (isset($appEmulation) && isset($initialEnvironmentInfo)) {
                             $appEmulation->stopEnvironmentEmulation($initialEnvironmentInfo);
@@ -209,13 +224,17 @@ class Gene_Braintree_Helper_Data extends Mage_Core_Helper_Abstract
     /**
      * Determine if express is enabled by a page handle
      *
-     * @param $handle
+     * @param string $handle
      *
      * @return bool
      */
     public function isExpressEnabled($handle)
     {
-        $assetRequiredFunctions = Mage::getConfig()->getNode('global/payment/assets_required/' . $handle);
+        $config = Mage::getConfig();
+        if ($config === null) {
+            return false;
+        }
+        $assetRequiredFunctions = $config->getNode('global/payment/assets_required/' . $handle);
         if ($assetRequiredFunctions) {
             $checkFunctions = $assetRequiredFunctions->asArray();
             if (is_array($checkFunctions) && count($checkFunctions) > 0) {
@@ -238,7 +257,7 @@ class Gene_Braintree_Helper_Data extends Mage_Core_Helper_Abstract
 
     /**
      * Get button styling configuration settings as an array for PayPal button
-     * @param $scope
+     * @param string $scope
      * @return array
      */
     public function getStyleConfigArray($scope)
@@ -256,7 +275,7 @@ class Gene_Braintree_Helper_Data extends Mage_Core_Helper_Abstract
 
     /**
      * Get button styling configuration settings
-     * @param $scope
+     * @param string $scope
      * @return string
      */
     public function getStyleConfig($scope)
@@ -270,6 +289,10 @@ class Gene_Braintree_Helper_Data extends Mage_Core_Helper_Abstract
                 tagline: '" . $values['tagline'] . "'}";
     }
 
+    /**
+     * @param mixed $data
+     * @return void
+     */
     public function log($data)
     {
         // Check the debug flag in the admin

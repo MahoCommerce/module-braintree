@@ -1,8 +1,11 @@
 <?php
-/** @var $this Gene_Braintree_Block_Express_Setup */
+/** @var Gene_Braintree_Block_Express_Setup $this */
 if (!$this->isEnabledPdp()) {
     return;
 }
+/** @var Mage_Core_Model_Store $store */
+$store = Mage::app()->getStore();
+$product = $this->getProduct();
 ?>
 
 <script type="text/javascript">
@@ -12,8 +15,8 @@ if (!$this->isEnabledPdp()) {
 
     if (typeof Translator === 'object') {
         Translator.add({
-            "We were unable to complete the request. Please try again.": "<?php echo $this->__('We were unable to complete the request. Please try again.'); ?>",
-            "Checkout with PayPal": "<?php echo $this->__("Checkout with PayPal"); ?>"
+            "We were unable to complete the request. Please try again.": "<?php echo (string) $this->__('We were unable to complete the request. Please try again.'); ?>",
+            "Checkout with PayPal": "<?php echo (string) $this->__("Checkout with PayPal"); ?>"
         })
     }
 
@@ -31,7 +34,7 @@ if (!$this->isEnabledPdp()) {
         mahoOnReady(function() {
             var express = new BraintreePayPalExpress(
                 false,
-                '<?php echo addslashes(Mage::app()->getStore()->getFrontendName()); ?>',
+                '<?php echo addslashes($store->getFrontendName()); ?>',
                 '<?php echo Mage::getSingleton('core/session')->getFormKey(); ?>',
                 'product',
                 {
@@ -44,12 +47,12 @@ if (!$this->isEnabledPdp()) {
                 {
                     locale:         '<?php echo $this->getStoreLocale(); ?>',
                     token:          '<?php echo $this->getToken(); ?>',
-                    total:          '<?php echo $this->getProduct()->getPrice(); ?>',
+                    total:          '<?php echo $product ? $product->getPrice() : ''; ?>',
                     currency:       '<?php echo $this->getStoreCurrency(); ?>',
                     env:            '<?php echo $this->getEnv() ?>',
-                    displayName:    '<?php echo addslashes(Mage::app()->getStore()->getFrontendName()); ?>',
+                    displayName:    '<?php echo addslashes($store->getFrontendName()); ?>',
                     buttonStyle:    <?php echo $this->getStyleConfig('product'); ?>,
-                    productId:      <?php echo (int) $this->getProduct()->getId(); ?>,
+                    productId:      <?php echo $product ? (int) $product->getId() : 0; ?>,
                     singleUse:      <?php echo $this->getSingleUse(); ?>,
                     funding:        {<?php echo $this->getFunding(); ?>}
                 }

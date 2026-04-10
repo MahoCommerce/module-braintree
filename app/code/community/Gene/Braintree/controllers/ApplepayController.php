@@ -9,7 +9,7 @@ class Gene_Braintree_ApplepayController extends Mage_Core_Controller_Front_Actio
     /**
      * Setup our Express model with required data
      *
-     * @return Gene_Braintree_Model_Applepay_Express|$this
+     * @return Gene_Braintree_Model_Applepay_Express|null
      */
     protected function _setupExpress()
     {
@@ -23,7 +23,8 @@ class Gene_Braintree_ApplepayController extends Mage_Core_Controller_Front_Actio
             try {
                 $express->initProductQuote($this->getRequest()->getParam('productForm'));
             } catch (Exception $e) {
-                return $this->errorAction(Mage::helper('gene_braintree')->__('We\'re unable to load that product.'));
+                $this->errorAction(Mage::helper('gene_braintree')->__('We\'re unable to load that product.'));
+                return null;
             }
         }
 
@@ -52,10 +53,15 @@ class Gene_Braintree_ApplepayController extends Mage_Core_Controller_Front_Actio
 
     /**
      * Fetch the shipping methods available to a certain address
+     *
+     * @return void
      */
     public function fetchShippingMethodsAction()
     {
         $express = $this->_setupExpress();
+        if ($express === null) {
+            return;
+        }
 
         // Retrieve the countryId from the request
         $countryId = $this->getRequest()->getParam('countryCode', false);
@@ -78,7 +84,7 @@ class Gene_Braintree_ApplepayController extends Mage_Core_Controller_Front_Actio
         ];
         $response = $express->getAdditionalResponse($response);
 
-        return $this->_returnJson($response);
+        $this->_returnJson($response);
     }
 
     /**
@@ -89,6 +95,9 @@ class Gene_Braintree_ApplepayController extends Mage_Core_Controller_Front_Actio
     public function submitAction()
     {
         $express = $this->_setupExpress();
+        if ($express === null) {
+            return $this;
+        }
 
         $nonce = $this->getRequest()->getParam('nonce', false);
         $billingAddress = $this->getRequest()->getParam('billingAddress', false);
@@ -136,7 +145,7 @@ class Gene_Braintree_ApplepayController extends Mage_Core_Controller_Front_Actio
     /**
      * Return an error to the user
      *
-     * @param $message
+     * @param string $message
      *
      * @return $this
      */
@@ -151,7 +160,7 @@ class Gene_Braintree_ApplepayController extends Mage_Core_Controller_Front_Actio
     /**
      * Return JSON to the browser
      *
-     * @param $array
+     * @param array $array
      *
      * @return $this
      */

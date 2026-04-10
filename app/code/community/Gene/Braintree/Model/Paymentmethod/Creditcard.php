@@ -99,11 +99,9 @@ class Gene_Braintree_Model_Paymentmethod_Creditcard extends Gene_Braintree_Model
     /**
      * If we're trying to charge a 3D secure card in the vault we need to build a special nonce
      *
-     * @param $paymentMethodToken
-     *
      * @return mixed
      */
-    public function getThreeDSecureVaultNonce($paymentMethodToken)
+    public function getThreeDSecureVaultNonce(string $paymentMethodToken)
     {
         return $this->_getWrapper()->getThreeDSecureVaultNonce($paymentMethodToken);
     }
@@ -116,7 +114,8 @@ class Gene_Braintree_Model_Paymentmethod_Creditcard extends Gene_Braintree_Model
     public function is3DEnabled()
     {
         // 3D secure can never be enabled for the admin
-        if (Mage::app()->getStore()->isAdmin()) {
+        $store = Mage::app()->getStore();
+        if ($store && $store->isAdmin()) {
             return false;
         }
 
@@ -156,7 +155,8 @@ class Gene_Braintree_Model_Paymentmethod_Creditcard extends Gene_Braintree_Model
      */
     protected function _skipAdvancedFraudChecking()
     {
-        if (Mage::app()->getStore()->isAdmin() && $this->_getConfig('skip_advanced_fraud_checking')) {
+        $store = Mage::app()->getStore();
+        if ($store && $store->isAdmin() && $this->_getConfig('skip_advanced_fraud_checking')) {
             return true;
         }
 
@@ -167,11 +167,10 @@ class Gene_Braintree_Model_Paymentmethod_Creditcard extends Gene_Braintree_Model
      * Should we save this method in the database?
      *
      * @param \Varien_Object $payment
-     * @param                $skipMultishipping
      *
      * @return mixed
      */
-    public function shouldSaveMethod($payment, $skipMultishipping = false)
+    public function shouldSaveMethod($payment, bool $skipMultishipping = false)
     {
         if ($skipMultishipping === false) {
             // We must always save the method for multi shipping requests
@@ -245,7 +244,7 @@ class Gene_Braintree_Model_Paymentmethod_Creditcard extends Gene_Braintree_Model
 
         // Confirm that we have a nonce from Braintree
         if (!$this->getPaymentMethodToken() ||
-            ($this->getPaymentMethodToken() && $this->getPaymentMethodToken() == 'threedsecure')
+            $this->getPaymentMethodToken() == 'threedsecure'
         ) {
             if (!$this->getPaymentMethodNonce()) {
                 Mage::helper('gene_braintree')->log('Card payment has failed, missing token/nonce');
@@ -255,13 +254,6 @@ class Gene_Braintree_Model_Paymentmethod_Creditcard extends Gene_Braintree_Model
                     $this->_getHelper()->__('Your card payment has failed, please try again.'),
                 );
             }
-        } elseif (!$this->getPaymentMethodToken()) {
-            Mage::helper('gene_braintree')->log('No saved card token present');
-            Mage::helper('gene_braintree')->log($_SERVER['HTTP_USER_AGENT']);
-
-            Mage::throwException(
-                $this->_getHelper()->__('Your card payment has failed, please try again.'),
-            );
         }
 
         return $this;
@@ -270,14 +262,10 @@ class Gene_Braintree_Model_Paymentmethod_Creditcard extends Gene_Braintree_Model
     /**
      * Psuedo _authorize function so we can pass in extra data
      *
-     * @param                $amount
-     * @param bool|false     $shouldCapture
-     * @param bool|false     $token
-     *
      * @return $this
      * @throws \Mage_Core_Exception
      */
-    protected function _authorize(Varien_Object $payment, $amount, $shouldCapture = false, $token = false)
+    protected function _authorize(Varien_Object $payment, string|float $amount, bool $shouldCapture = false, string|false $token = false)
     {
         // Init the environment
         $this->_getWrapper()->init($payment->getOrder()->getStoreId());
@@ -288,7 +276,8 @@ class Gene_Braintree_Model_Paymentmethod_Creditcard extends Gene_Braintree_Model
         // Attempt to create the sale
         try {
             // Don't send device data if using the admin
-            if (Mage::app()->getStore()->isAdmin()) {
+            $authStore = Mage::app()->getStore();
+            if ($authStore && $authStore->isAdmin()) {
                 $deviceData = null;
             } else {
                 $deviceData = $this->getInfoInstance()->getAdditionalInformation('device_data');
@@ -430,7 +419,10 @@ class Gene_Braintree_Model_Paymentmethod_Creditcard extends Gene_Braintree_Model
                 Gene_Braintree_Model_Debug::log(['capture:submitForSettlement' => $result]);
             }
 
-            if ($result->success) {
+            if (!$result) {
+                Gene_Braintree_Model_Wrapper_Braintree::cleanUp();
+                Mage::throwException('Unable to process the transaction.');
+            } elseif ($result->success) {
                 $this->_updateKountStatus($payment, 'A');
                 $this->_processSuccessResult($payment, $result, $amount);
             } elseif ($result->errors->deepSize() > 0) {
@@ -459,14 +451,9 @@ class Gene_Braintree_Model_Paymentmethod_Creditcard extends Gene_Braintree_Model
     /**
      * Handle the result of the sale
      *
-     * @param $result
-     * @param $payment
-     * @param $amount
-     * @param $saleArray
-     *
      * @return $this
      */
-    protected function handleResult($result, $payment, $amount, $saleArray)
+    protected function handleResult(Braintree\Result\Successful|Braintree\Result\Error $result, Varien_Object $payment, string|float $amount, array $saleArray)
     {
         // Log the initial sale array, no protected data is included
         Gene_Braintree_Model_Debug::log(['_authorize:result' => $result]);
@@ -501,8 +488,9 @@ class Gene_Braintree_Model_Paymentmethod_Creditcard extends Gene_Braintree_Model
             // Dispatch an event for when a payment fails
             Mage::dispatchEvent('gene_braintree_creditcard_failed', ['payment' => $payment, 'result' => $result]);
 
+            $resultTransaction = $result->transaction;
             // Return a different message for declined cards
-            if (!isset($result->transaction->status)) {
+            if (!$resultTransaction || !isset($resultTransaction->status)) {
                 return $this->_processFailedResult(
                     $this->_getHelper()->__(
                         '%s Please try again or attempt refreshing the page.',
@@ -514,7 +502,7 @@ class Gene_Braintree_Model_Paymentmethod_Creditcard extends Gene_Braintree_Model
                 );
             }
             // Return a custom response for processor declined messages
-            if ($result->transaction->status == Braintree\Transaction::PROCESSOR_DECLINED) {
+            if ($resultTransaction->status == Braintree\Transaction::PROCESSOR_DECLINED) {
                 return $this->_processFailedResult(
                     $this->_getHelper()->__(
                         'Your transaction has been declined, please try another payment method or contacting ' .
@@ -524,9 +512,8 @@ class Gene_Braintree_Model_Paymentmethod_Creditcard extends Gene_Braintree_Model
                     $result,
                 );
             }
-            if ($result->transaction->status == Braintree\Transaction::GATEWAY_REJECTED
-                && isset($result->transaction->gatewayRejectionReason)
-                && $result->transaction->gatewayRejectionReason == Braintree\Transaction::THREE_D_SECURE) {
+            if ($resultTransaction->status == Braintree\Transaction::GATEWAY_REJECTED
+                && $result->transaction && $result->transaction->gatewayRejectionReason == Braintree\Transaction::THREE_D_SECURE) {
                 // An event for when 3D secure fails
                 Mage::dispatchEvent('gene_braintree_creditcard_failed_threed', [
                     'payment' => $payment,
@@ -562,11 +549,9 @@ class Gene_Braintree_Model_Paymentmethod_Creditcard extends Gene_Braintree_Model
     /**
      * The transaction has failed due to 3D secure
      *
-     * @param $result
-     *
      * @return $this
      */
-    protected function processFailedThreeDResult($result)
+    protected function processFailedThreeDResult(Braintree\Result\Successful|Braintree\Result\Error $result)
     {
         return $this->_processFailedResult(
             $this->_getHelper()->__(
@@ -581,12 +566,11 @@ class Gene_Braintree_Model_Paymentmethod_Creditcard extends Gene_Braintree_Model
     /**
      * Build up the payment request
      *
-     * @param $token
-     *
      * @return array
      */
-    protected function _buildPaymentRequest($token)
+    protected function _buildPaymentRequest(string|false $token)
     {
+        /** @var array<string, mixed> $paymentArray */
         $paymentArray = [];
 
         // If we have an original token use that for the subsequent requests
@@ -675,11 +659,9 @@ class Gene_Braintree_Model_Paymentmethod_Creditcard extends Gene_Braintree_Model
     /**
      * Processes successful authorize/clone result
      *
-     * @param Braintree\Result\Successful $result
-     * @param float                       $amount
      * @return Varien_Object
      */
-    protected function _processSuccessResult(Varien_Object $payment, $result, $amount)
+    protected function _processSuccessResult(Varien_Object $payment, Braintree\Result\Successful|Braintree\Result\Error $result, string|float $amount)
     {
         // Pass an event if the payment was a success
         Mage::dispatchEvent('gene_braintree_creditcard_success', [
@@ -749,6 +731,7 @@ class Gene_Braintree_Model_Paymentmethod_Creditcard extends Gene_Braintree_Model
         }
 
         if (isset($result->transaction->creditCard['token']) && $result->transaction->creditCard['token']) {
+            /** @var Mage_Sales_Model_Order_Payment $payment */
             $payment->setAdditionalInformation('token', $result->transaction->creditCard['token']);
 
             // If the transaction is part of a multi shipping transaction store the token for the next order

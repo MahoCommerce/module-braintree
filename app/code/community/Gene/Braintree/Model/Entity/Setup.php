@@ -14,12 +14,10 @@ class Gene_Braintree_Model_Entity_Setup extends Mage_Eav_Model_Entity_Setup
      *
      * This doesn't have support for website level configuration settings, as they're not used in the upgrade script.
      *
-     * @param     $path
      * @param int $storeId
-     *
      * @return null|string
      */
-    public function getStoreConfig($path, $storeId = 0)
+    public function getStoreConfig(string $path, $storeId = 0)
     {
         if ($storeId instanceof Mage_Core_Model_Store) {
             $storeId = $storeId->getId();
@@ -27,6 +25,9 @@ class Gene_Braintree_Model_Entity_Setup extends Mage_Eav_Model_Entity_Setup
 
         $resource = Mage::getModel('core/resource');
         $dbRead = $resource->getConnection('core_read');
+        if (!$dbRead) {
+            return null;
+        }
         $table = $resource->getTableName('core/config_data');
 
         // Select the config data directly from the database

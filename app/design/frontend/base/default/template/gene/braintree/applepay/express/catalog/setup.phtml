@@ -1,9 +1,17 @@
+<?php
+/** @var Gene_Braintree_Block_Applepay_Express_Setup $this */
+/** @var float|int $price */
+?>
 <?php if (!$this->isEnabled() || !$this->isEnabledPdp()) return; ?>
+<?php /** @var Mage_Core_Model_Store $store */ ?>
+<?php $store = Mage::app()->getStore(); ?>
 
 <?php
 // If we have a grouped product, assume the price as to allow the server side to determine the product price
-$price = $this->getProduct()->getFinalPrice();
-if ($this->getProduct() && $this->getProduct()->getTypeId() == Mage_Catalog_Model_Product_Type::TYPE_GROUPED) {
+/** @var Mage_Catalog_Model_Product $product */
+$product = $this->getProduct();
+$price = $product->getFinalPrice();
+if ($product->getTypeId() == Mage_Catalog_Model_Product_Type::TYPE_GROUPED) {
     $price = 1;
 }
 ?>
@@ -15,7 +23,7 @@ if ($this->getProduct() && $this->getProduct()->getTypeId() == Mage_Catalog_Mode
 
     if (typeof Translator === 'object') {
         Translator.add({
-            "We were unable to complete the request. Please try again.": "<?php echo $this->__('We were unable to complete the request. Please try again.'); ?>"
+            "We were unable to complete the request. Please try again.": "<?php echo (string) $this->__('We were unable to complete the request. Please try again.'); ?>"
         })
     }
 
@@ -23,7 +31,7 @@ if ($this->getProduct() && $this->getProduct()->getTypeId() == Mage_Catalog_Mode
         mahoOnReady(function() {
             var express = new BraintreeApplePayExpress(
                 '<?php echo $this->getToken(); ?>',
-                '<?php echo Mage::app()->getStore()->getFrontendName(); ?>',
+                '<?php echo $store->getFrontendName(); ?>',
                 '<?php echo Mage::getSingleton('core/session')->getFormKey(); ?>',
                 'product',
                 {
@@ -33,8 +41,8 @@ if ($this->getProduct() && $this->getProduct()->getTypeId() == Mage_Catalog_Mode
                     successUrl:     '<?php echo $this->getUrl('checkout/onepage/success'); ?>'
                 },
                 {
-                    productId:      <?php echo (int) $this->getProduct()->getId(); ?>,
-                    virtual:        <?php echo $this->getProduct()->isVirtual() ? 'true' : 'false'; ?>
+                    productId:      <?php echo (int) $product->getId(); ?>,
+                    virtual:        <?php echo $product->isVirtual() ? 'true' : 'false'; ?>
                 }
             );
 

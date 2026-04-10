@@ -3,7 +3,7 @@
 /**
  * Setup the JavaScript classes with their required fields
  */
-/* @var $this Gene_Braintree_Block_Applepay_Setup */
+/** @var Gene_Braintree_Block_Applepay_Setup $this */
 ?>
 <script type="text/javascript">
     if (typeof vZero !== 'undefined' && typeof vzero === 'undefined') {
@@ -33,7 +33,9 @@
         vzero.observeEvent('integration.onInit', function () {
             new vZeroApplePay(
                 false,
-                '<?php echo $this->jsQuoteEscape(Mage::app()->getStore()->getFrontendName()); ?>',
+                <?php /** @var Mage_Core_Model_Store $store */ ?>
+                <?php $store = Mage::app()->getStore(); ?>
+                '<?php echo $this->jsQuoteEscape($store->getFrontendName()); ?>',
                 this,
                 '#braintree-applepay-button',
                 '<?php echo Mage::getUrl('braintree/applepay/clientToken', array('_secure' => Mage::app()->getFrontController()->getRequest()->isSecure())); ?>'

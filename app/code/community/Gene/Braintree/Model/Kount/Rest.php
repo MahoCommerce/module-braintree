@@ -14,20 +14,24 @@ class Gene_Braintree_Model_Kount_Rest extends Mage_Core_Model_Abstract
     /**
      * Update the order status in Kount
      *
-     * @param                         $status
-     * @param bool|false              $note
+     * @param string|false            $note
      *
      * @return bool
      * @throws \Exception
      */
-    public function updateOrderStatus(Mage_Sales_Model_Order $order, $status, $note = false)
+    public function updateOrderStatus(Mage_Sales_Model_Order $order, string $status, $note = false)
     {
         if ($note == false) {
             $note = Mage::helper('gene_braintree')->__('Order status updated by Braintree from Magento.');
         }
 
+        $payment = $order->getPayment();
+        if (!$payment) {
+            return false;
+        }
+
         // Retrieve the transaction ID from the additional information
-        $transactionId = $order->getPayment()->getAdditionalInformation('kount_id');
+        $transactionId = $payment->getAdditionalInformation('kount_id');
 
         $request = [
             'status[' . $transactionId . ']' => $status,
@@ -55,13 +59,17 @@ class Gene_Braintree_Model_Kount_Rest extends Mage_Core_Model_Abstract
     /**
      * Mark an order in Kount as refunded
      *
-     *
      * @return bool
      */
     public function updateOrderRefund(Mage_Sales_Model_Order $order)
     {
+        $payment = $order->getPayment();
+        if (!$payment) {
+            return false;
+        }
+
         // Retrieve the transaction ID from the additional information
-        $transactionId = $order->getPayment()->getAdditionalInformation('kount_id');
+        $transactionId = $payment->getAdditionalInformation('kount_id');
 
         $request = [
             'rfcb[' . $transactionId . ']' => 'R',
@@ -88,13 +96,10 @@ class Gene_Braintree_Model_Kount_Rest extends Mage_Core_Model_Abstract
     /**
      * Make a request to the Kount API
      *
-     * @param $action
-     * @param $payload
-     *
      * @return mixed|false
      * @throws \Exception
      */
-    protected function _makeRequest($action, $payload)
+    protected function _makeRequest(string $action, array $payload)
     {
         $url = $this->_getApiUrl($action);
 
@@ -127,11 +132,9 @@ class Gene_Braintree_Model_Kount_Rest extends Mage_Core_Model_Abstract
     /**
      * Build up the API URL for a specific action
      *
-     * @param bool|false $action
-     *
      * @return string
      */
-    protected function _getApiUrl($action = false)
+    protected function _getApiUrl(string|false $action = false)
     {
         // If the system isn't set assume sandbox
         $url = self::TEST_URL;

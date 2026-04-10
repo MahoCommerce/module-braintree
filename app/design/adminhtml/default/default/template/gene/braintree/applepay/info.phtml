@@ -1,16 +1,19 @@
 <?php
-/* @var Gene_Braintree_Block_Applepay_Info $this */
+/** @var Gene_Braintree_Block_Applepay_Info $this */
+/** @var array<string, mixed> $_specificInfo */
+/** @var string $_label */
+/** @var mixed $_value */
 ?>
 <div class="braintree-applepay" style="background: white;padding: 9px 16px;border-radius:5px;margin: 0 0 8px 0;box-shadow: 0 0 7px rgba(0,0,0,0.15);">
     <div id="braintree_creditcard_logo" style="padding-top: 5px;padding-left: 2px;">
-        <img src="/skin/adminhtml/base/default/images/gene/braintree/apple-pay-logo.png" width="100" alt="<?php echo $this->__('Apple Pay - Braintree'); ?>" />
+        <img src="/skin/adminhtml/base/default/images/gene/braintree/apple-pay-logo.png" width="100" alt="<?php echo (string) $this->__('Apple Pay - Braintree'); ?>" />
     </div>
 
     <?php if ($_specificInfo = $this->getSpecificInformation()):?>
         <table>
             <?php foreach ($_specificInfo as $_label => $_value):?>
                 <tr>
-                    <th style="width: 220px"><?php echo $this->escapeHtml($_label)?>:</th>
+                    <th style="width: 220px"><?php echo (string) $this->escapeHtml($_label)?>:</th>
                     <td><?php echo nl2br(implode("\n", $this->getValueAsArray($_value, false)))?></td>
                 </tr>
             <?php endforeach; ?>
@@ -18,7 +21,7 @@
     <?php endif;?>
 
     <?php if (!$this->isSingleInvoice()): ?>
-        <p><?php echo $this->__('This order contains multiple Braintree transactions, to view more information on each transaction please view their corresponding invoice.'); ?></p>
+        <p><?php echo (string) $this->__('This order contains multiple Braintree transactions, to view more information on each transaction please view their corresponding invoice.'); ?></p>
     <?php endif; ?>
 </div>
 

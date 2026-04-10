@@ -1,3 +1,4 @@
+<?php /** @var Gene_Braintree_Block_Saved $this */ ?>
 <div id="braintree-saved-payments">
     <div class="page-title">
         <h1><?php echo $this->__('Saved Payment Information') ?></h1>
@@ -16,14 +17,20 @@
                     <?php if($this->hasSavedDetails(Gene_Braintree_Model_Saved::SAVED_CREDITCARD_ID)): ?>
                         <div class="payment-methods">
                             <h2 class="legend"><?php echo $this->__('Credit Cards') ?></h2>
-                            <?php echo $this->getChild('methods')->setType(Gene_Braintree_Model_Saved::SAVED_CREDITCARD_ID)->toHtml(); ?>
+                            <?php $methodsBlock = $this->getChild('methods'); ?>
+                            <?php if ($methodsBlock): ?>
+                                <?php echo $methodsBlock->setType(Gene_Braintree_Model_Saved::SAVED_CREDITCARD_ID)->toHtml(); ?>
+                            <?php endif; ?>
                         </div>
                     <?php endif; ?>
 
                     <?php if($this->hasSavedDetails(Gene_Braintree_Model_Saved::SAVED_PAYPAL_ID)): ?>
                         <div class="payment-methods">
                             <h2 class="legend"><?php echo $this->__('PayPal') ?></h2>
-                            <?php echo $this->getChild('methods')->setType(Gene_Braintree_Model_Saved::SAVED_PAYPAL_ID)->toHtml(); ?>
+                            <?php $methodsBlock = $this->getChild('methods'); ?>
+                            <?php if ($methodsBlock): ?>
+                                <?php echo $methodsBlock->setType(Gene_Braintree_Model_Saved::SAVED_PAYPAL_ID)->toHtml(); ?>
+                            <?php endif; ?>
                         </div>
                     <?php endif; ?>
                 </div>

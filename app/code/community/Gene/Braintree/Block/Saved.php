@@ -11,11 +11,9 @@ class Gene_Braintree_Block_Saved extends Mage_Core_Block_Template
     /**
      * Return whether the customer has saved details
      *
-     * @param bool $type
-     *
-     * @return bool
+     * @return bool|int
      */
-    public function hasSavedDetails($type = false)
+    public function hasSavedDetails(int|false $type = false)
     {
         return Mage::getSingleton('gene_braintree/saved')->hasType($type);
     }
@@ -23,11 +21,9 @@ class Gene_Braintree_Block_Saved extends Mage_Core_Block_Template
     /**
      * Retrieve those said saved details
      *
-     * @param bool $type
-     *
      * @return array
      */
-    public function getSavedDetails($type = false)
+    public function getSavedDetails(int|false $type = false)
     {
         return Mage::getSingleton('gene_braintree/saved')->getSavedMethodsByType($type);
     }
@@ -35,7 +31,7 @@ class Gene_Braintree_Block_Saved extends Mage_Core_Block_Template
     /**
      * Don't cache this block as it updates whenever the customers adds a new card
      *
-     * @return int
+     * @return int|null
      */
     #[\Override]
     public function getCacheLifetime()

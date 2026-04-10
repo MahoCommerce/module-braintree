@@ -9,9 +9,14 @@ class Gene_Braintree_Block_Creditcard extends Mage_Payment_Block_Form_Cc
     /**
      * We can use the same token twice
      *
-     * @var bool
+     * @var string|false
      */
     protected $_token = false;
+
+    /**
+     * @var array|null
+     */
+    protected $_savedDetails = null;
 
     /**
      * Set the template
@@ -30,10 +35,12 @@ class Gene_Braintree_Block_Creditcard extends Mage_Payment_Block_Form_Cc
      *
      * @return bool
      */
-    protected function canSaveCard()
+    public function canSaveCard()
     {
         // Validate that the vault is enabled and that the user is either logged in or registering
-        if ($this->getMethod()->isVaultEnabled()
+        /** @var Gene_Braintree_Model_Paymentmethod_Creditcard $method */
+        $method = $this->getMethod();
+        if ($method->isVaultEnabled()
             && (Mage::getSingleton('customer/session')->isLoggedIn()
                 || Mage::getSingleton('checkout/type_onepage')->getCheckoutMethod() == Mage_Checkout_Model_Type_Onepage::METHOD_REGISTER)
         ) {
@@ -41,7 +48,9 @@ class Gene_Braintree_Block_Creditcard extends Mage_Payment_Block_Form_Cc
         }
 
         // Is the vault enabled, and is the transaction occuring in the admin?
-        if ($this->getMethod()->isVaultEnabled() && Mage::app()->getStore()->isAdmin()) {
+        /** @var Mage_Core_Model_Store $store */
+        $store = Mage::app()->getStore();
+        if ($method->isVaultEnabled() && $store->isAdmin()) {
             return true;
         }
 
@@ -55,11 +64,13 @@ class Gene_Braintree_Block_Creditcard extends Mage_Payment_Block_Form_Cc
      */
     public function hasSavedDetails()
     {
-        if (!(Mage::getSingleton('customer/session')->isLoggedIn() || Mage::app()->getStore()->isAdmin())) {
+        /** @var Mage_Core_Model_Store $store */
+        $store = Mage::app()->getStore();
+        if (!(Mage::getSingleton('customer/session')->isLoggedIn() || $store->isAdmin())) {
             return false;
         }
         if ($this->getSavedDetails()) {
-            return sizeof($this->getSavedDetails());
+            return count($this->getSavedDetails());
         }
 
         return false;
@@ -68,7 +79,7 @@ class Gene_Braintree_Block_Creditcard extends Mage_Payment_Block_Form_Cc
     /**
      * Return the saved accounts
      *
-     * @return array
+     * @return array|null
      */
     public function getSavedDetails()
     {
@@ -115,7 +126,8 @@ class Gene_Braintree_Block_Creditcard extends Mage_Payment_Block_Form_Cc
     /**
      * Convert the available types into something
      *
-     * @return string
+     * @return string|false
+     * @phpstan-ignore method.childReturnType
      */
     #[\Override]
     public function getCcAvailableTypes()
@@ -130,11 +142,9 @@ class Gene_Braintree_Block_Creditcard extends Mage_Payment_Block_Form_Cc
     /**
      * Return the card icon
      *
-     * @param $cardType
-     *
      * @return string
      */
-    public static function getCardIcon($cardType)
+    public static function getCardIcon(string $cardType)
     {
         // Convert the card type to lower case, no spaces
         return match (str_replace(' ', '', strtolower($cardType))) {
@@ -153,7 +163,7 @@ class Gene_Braintree_Block_Creditcard extends Mage_Payment_Block_Form_Cc
     /**
      * Generate and return a token
      *
-     * @return string
+     * @return string|false
      */
     protected function getClientToken()
     {
@@ -169,7 +179,7 @@ class Gene_Braintree_Block_Creditcard extends Mage_Payment_Block_Form_Cc
      *
      * @return boolean
      */
-    protected function showAcceptedCards()
+    public function showAcceptedCards()
     {
         return Mage::getModel('gene_braintree/paymentmethod_creditcard')->getConfigData('display_cctypes');
     }

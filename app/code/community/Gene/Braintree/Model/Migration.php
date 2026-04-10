@@ -11,11 +11,9 @@ class Gene_Braintree_Model_Migration extends Mage_Core_Model_Abstract
     /**
      * Should we run the configuration migration?
      *
-     * @param $bool
-     *
      * @return \Varien_Object
      */
-    public function setRunConfiguration($bool)
+    public function setRunConfiguration(bool $bool)
     {
         return $this->setData('run_configuration', $bool);
     }
@@ -23,11 +21,9 @@ class Gene_Braintree_Model_Migration extends Mage_Core_Model_Abstract
     /**
      * Should we run the customer data migration?
      *
-     * @param $bool
-     *
      * @return \Varien_Object
      */
-    public function setRunCustomerData($bool)
+    public function setRunCustomerData(bool $bool)
     {
         return $this->setData('run_customer_data', $bool);
     }
@@ -35,11 +31,9 @@ class Gene_Braintree_Model_Migration extends Mage_Core_Model_Abstract
     /**
      * Should we update legacy orders with a new payment method?
      *
-     * @param $bool
-     *
      * @return \Varien_Object
      */
-    public function setRunOrderTransactionInfo($bool)
+    public function setRunOrderTransactionInfo(bool $bool)
     {
         return $this->setData('run_order_transaction_info', $bool);
     }
@@ -47,12 +41,9 @@ class Gene_Braintree_Model_Migration extends Mage_Core_Model_Abstract
     /**
      * Should we disable the legacy module?
      *
-     * @param $bool
-     * @param $deleteLegacy bool
-     *
-     * @return \Varien_Object
+     * @return $this
      */
-    public function setDisableLegacy($bool, $deleteLegacy = false)
+    public function setDisableLegacy(bool $bool, bool $deleteLegacy = false)
     {
         $this->setData('disable_legacy', $bool);
         $this->setData('delete_legacy', $deleteLegacy);
@@ -61,6 +52,8 @@ class Gene_Braintree_Model_Migration extends Mage_Core_Model_Abstract
         if ($deleteLegacy) {
             $this->setRunOrderTransactionInfo(true);
         }
+
+        return $this;
     }
 
     /**
@@ -94,8 +87,10 @@ class Gene_Braintree_Model_Migration extends Mage_Core_Model_Abstract
 
         // Update the configuration to log that the migration is complete
         $config = Mage::getConfig();
-        $config->saveConfig(Gene_Braintree_Helper_Data::MIGRATION_COMPLETE, 1);
-        $config->cleanCache();
+        if ($config) {
+            $config->saveConfig(Gene_Braintree_Helper_Data::MIGRATION_COMPLETE, '1');
+            $config->cleanCache();
+        }
 
         return $result;
     }
@@ -159,9 +154,15 @@ class Gene_Braintree_Model_Migration extends Mage_Core_Model_Abstract
         /* @var $resource Mage_Core_Model_Resource */
         $resource = Mage::getModel('core/resource');
         $dbRead = $resource->getConnection('core_read');
+        if (!$dbRead) {
+            return false;
+        }
 
         // Retrieve the entire config
         $config = Mage::getConfig();
+        if (!$config) {
+            return false;
+        }
         $config->cleanCache();
 
         // Retrieve all of the store ID's including the default
@@ -241,7 +242,7 @@ class Gene_Braintree_Model_Migration extends Mage_Core_Model_Abstract
      * Update customer accounts attribute braintree_customer_id with an MD5 of customer data, as per the Braintree_Payments
      * module
      *
-     * @return int
+     * @return int|false
      */
     protected function _runCustomerData()
     {
@@ -273,6 +274,9 @@ class Gene_Braintree_Model_Migration extends Mage_Core_Model_Abstract
             $resource = Mage::getModel('core/resource');
             /* @var $dbWrite Magento_Db_Adapter_Pdo_Mysql */
             $dbWrite = $resource->getConnection('core_write');
+            if (!$dbWrite) {
+                return false;
+            }
 
             // Insert the new rows into the database
             $dbWrite->insertOnDuplicate($updateTable, $tableUpdates);
@@ -293,6 +297,9 @@ class Gene_Braintree_Model_Migration extends Mage_Core_Model_Abstract
         /* @var $resource Mage_Core_Model_Resource */
         $resource = Mage::getModel('core/resource');
         $dbWrite = $resource->getConnection('core_write');
+        if (!$dbWrite) {
+            return false;
+        }
 
         $dbWrite->update($resource->getTableName('sales/order_payment'), ['method' => 'braintree_legacy'], "method = 'braintree'");
         $dbWrite->update($resource->getTableName('sales/order_payment'), ['method' => 'braintree_paypal_legacy'], "method = 'braintree_paypal'");
@@ -342,21 +349,25 @@ class Gene_Braintree_Model_Migration extends Mage_Core_Model_Abstract
         $resource = Mage::getModel('core/resource');
         /* @var $dbWrite Magento_Db_Adapter_Pdo_Mysql */
         $dbWrite = $resource->getConnection('core_write');
-
-        // Delete the system configuration values
-        $dbWrite->delete($resource->getTableName('core/config_data'), 'path LIKE "payment/braintree/%" OR path LIKE "payment/braintree_paypal/%"');
+        if ($dbWrite) {
+            // Delete the system configuration values
+            $dbWrite->delete($resource->getTableName('core/config_data'), 'path LIKE "payment/braintree/%" OR path LIKE "payment/braintree_paypal/%"');
+        }
 
         return true;
     }
 
     /**
      * Remove a directory recursively
-     *
-     * @param $dir
      */
-    protected function _rmDir($dir)
+    protected function _rmDir(string $dir): void
     {
-        foreach (glob($dir . '/' . '*') as $file) {
+        $files = glob($dir . '/' . '*');
+        if (!$files) {
+            @rmdir($dir);
+            return;
+        }
+        foreach ($files as $file) {
             if (is_dir($file)) {
                 $this->_rmDir($file);
             } else {
@@ -376,15 +387,16 @@ class Gene_Braintree_Model_Migration extends Mage_Core_Model_Abstract
         $resource = Mage::getModel('core/resource');
         /* @var $dbWrite Magento_Db_Adapter_Pdo_Mysql */
         $dbWrite = $resource->getConnection('core_write');
+        if ($dbWrite) {
+            // Update all the paths to be disabled
+            $dbWrite->update(
+                $resource->getTableName('core/config_data'),
+                ['value' => 0],
+                'path = "payment/braintree/paypal_active" OR path = "payment/braintree/active" OR path = "payment/braintree_paypal/active"',
+            );
+        }
 
-        // Update all the paths to be disabled
-        $dbWrite->update(
-            $resource->getTableName('core/config_data'),
-            ['value' => 0],
-            'path = "payment/braintree/paypal_active" OR path = "payment/braintree/active" OR path = "payment/braintree_paypal/active"',
-        );
-
-        Mage::getConfig()->cleanCache();
+        Mage::getConfig()?->cleanCache();
 
         return true;
     }

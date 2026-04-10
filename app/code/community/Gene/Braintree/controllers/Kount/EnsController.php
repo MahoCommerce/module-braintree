@@ -21,7 +21,7 @@ class Gene_Braintree_Kount_EnsController extends Mage_Core_Controller_Front_Acti
         $http = Mage::helper('core/http');
 
         // Validate the IP address of the request
-        if (!$ens->isValidEnsIp($http->getRemoteAddr())) {
+        if (!$ens->isValidEnsIp((string) $http->getRemoteAddr())) {
             Gene_Braintree_Model_Debug::log('Invalid IP for ENS request: ' . $http->getRemoteAddr());
             Mage::throwException('Invalid ENS request.');
         }
@@ -38,7 +38,9 @@ class Gene_Braintree_Kount_EnsController extends Mage_Core_Controller_Front_Acti
 
         try {
             // Parse the request into an array
+            /** @phpstan-ignore class.notFound */
             $xmlParser = new Mage_Xml_Parser();
+            /** @phpstan-ignore class.notFound */
             $events = $xmlParser->loadXML($request)->xmlToArray();
 
             // Ensure the events contain a value, and a merchant attribute

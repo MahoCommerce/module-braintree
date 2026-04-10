@@ -44,7 +44,9 @@ class Gene_Braintree_Block_Express_Abstract extends Mage_Core_Block_Template
      */
     public function getStoreCurrency()
     {
-        return Mage::app()->getStore()->getCurrentCurrencyCode();
+        /** @var Mage_Core_Model_Store $store */
+        $store = Mage::app()->getStore();
+        return $store->getCurrentCurrencyCode();
     }
 
     /**
@@ -59,20 +61,18 @@ class Gene_Braintree_Block_Express_Abstract extends Mage_Core_Block_Template
 
     /**
      * Get button styling configuration settings as an array
-     * @param $scope
      * @return array
      */
-    public function getStyleConfigArray($scope)
+    public function getStyleConfigArray(string $scope)
     {
         return Mage::helper('gene_braintree')->getStyleConfigArray($scope);
     }
 
     /**
      * Get button styling configuration settings
-     * @param $scope
      * @return string
      */
-    public function getStyleConfig($scope)
+    public function getStyleConfig(string $scope)
     {
         return Mage::helper('gene_braintree')->getStyleConfig($scope);
     }
@@ -115,9 +115,6 @@ class Gene_Braintree_Block_Express_Abstract extends Mage_Core_Block_Template
             $return[] = 'allowed: []';
         }
 
-        if ($return) {
-            return implode(',', $return);
-        }
-        return '';
+        return implode(',', $return);
     }
 }

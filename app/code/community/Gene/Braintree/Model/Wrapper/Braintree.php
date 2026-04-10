@@ -28,21 +28,22 @@ class Gene_Braintree_Model_Wrapper_Braintree extends Mage_Core_Model_Abstract
     /**
      * Store the customer
      *
-     * @var Braintree\Customer
+     * @var array<string, Braintree\Customer>|null
      */
     protected $_customer;
 
     /**
      * Store the Braintree ID
      *
-     * @var int
+     * @var string|int|null
      */
     protected $_braintreeId;
 
     /**
+    /**
      * Used to track whether the payment methods are available
      *
-     * @var bool
+     * @var bool|null
      */
     protected $_validated = null;
 
@@ -56,7 +57,7 @@ class Gene_Braintree_Model_Wrapper_Braintree extends Mage_Core_Model_Abstract
     /**
      * Setup the environment
      *
-     * @param null $store
+     * @param int|string|null $store
      *
      * @return $this
      */
@@ -80,7 +81,7 @@ class Gene_Braintree_Model_Wrapper_Braintree extends Mage_Core_Model_Abstract
             }
 
             // Set our flag
-            $this->_init = true;
+            $this->init = true;
         }
 
         return $this;
@@ -89,11 +90,9 @@ class Gene_Braintree_Model_Wrapper_Braintree extends Mage_Core_Model_Abstract
     /**
      * Find a transaction within Braintree
      *
-     * @param $transactionId
-     *
-     * @return object
+     * @return Braintree\Transaction
      */
-    public function findTransaction($transactionId)
+    public function findTransaction(string $transactionId)
     {
         return Braintree\Transaction::find($transactionId);
     }
@@ -101,11 +100,9 @@ class Gene_Braintree_Model_Wrapper_Braintree extends Mage_Core_Model_Abstract
     /**
      * If we're trying to charge a 3D secure card in the vault we need to build a special nonce
      *
-     * @param $paymentMethodToken
-     *
      * @return mixed
      */
-    public function getThreeDSecureVaultNonce($paymentMethodToken)
+    public function getThreeDSecureVaultNonce(string $paymentMethodToken)
     {
         $this->init();
 
@@ -117,16 +114,18 @@ class Gene_Braintree_Model_Wrapper_Braintree extends Mage_Core_Model_Abstract
     /**
      * Try and load the Braintree customer from the stored customer ID
      *
-     * @param $braintreeCustomerId
-     *
      * @return Braintree\Customer|false
      */
-    public function getCustomer($braintreeCustomerId)
+    public function getCustomer(string $braintreeCustomerId)
     {
         // Try and load it from the customer
-        if (!$this->_customer && !isset($this->_customer[$braintreeCustomerId])) {
+        if (!$this->_customer || !isset($this->_customer[$braintreeCustomerId])) {
             try {
-                $this->_customer[$braintreeCustomerId] = Braintree\Customer::find($braintreeCustomerId);
+                $customer = Braintree\Customer::find($braintreeCustomerId);
+                if (!$customer instanceof Braintree\Customer) {
+                    return false;
+                }
+                $this->_customer[$braintreeCustomerId] = $customer;
             } catch (Exception $e) {
                 return false;
             }
@@ -146,11 +145,13 @@ class Gene_Braintree_Model_Wrapper_Braintree extends Mage_Core_Model_Abstract
             // Check to see that we can generate a braintree ID
             if ($braintreeId = $this->getBraintreeId()) {
                 // Proxy this request to the other method which has caching
-                return $this->getCustomer($braintreeId);
+                return $this->getCustomer((string) $braintreeId);
             }
         } catch (Exception $e) {
             return false;
         }
+
+        return false;
     }
 
     /**
@@ -170,11 +171,9 @@ class Gene_Braintree_Model_Wrapper_Braintree extends Mage_Core_Model_Abstract
     /**
      * Check a customer owns the method we're trying to modify
      *
-     * @param $paymentMethod
-     *
      * @return bool
      */
-    public function customerOwnsMethod($paymentMethod)
+    public function customerOwnsMethod(object $paymentMethod)
     {
         // Grab the customer ID from the customers account
         $customerId = Mage::getSingleton('customer/session')->getCustomer()->getBraintreeCustomerId();
@@ -203,7 +202,7 @@ class Gene_Braintree_Model_Wrapper_Braintree extends Mage_Core_Model_Abstract
             return false;
         }
 
-        if (isset($paymentMethod->customerId) && $paymentMethod->customerId == $customerId) {
+        if (property_exists($paymentMethod, 'customerId') && $paymentMethod->customerId == $customerId) {
             return true;
         }
 
@@ -213,12 +212,13 @@ class Gene_Braintree_Model_Wrapper_Braintree extends Mage_Core_Model_Abstract
     /**
      * Retrieve the Braintree ID from Magento
      *
-     * @return bool|string
+     * @return string|int|null
      */
     protected function getBraintreeId()
     {
         // Retrieve the Braintree ID from the admin quote
-        if (Mage::app()->getStore()->isAdmin()) {
+        $store = Mage::app()->getStore();
+        if ($store && $store->isAdmin()) {
             // Get the admin quote
             $quote = $this->getQuote();
             $customer = $quote->getCustomer();
@@ -273,31 +273,21 @@ class Gene_Braintree_Model_Wrapper_Braintree extends Mage_Core_Model_Abstract
     /**
      * Return an admin configuration value, older versions of Magento don't implement getConfigDataValue
      *
-     * @param $path
-     *
      * @return mixed|\Varien_Simplexml_Element
      */
-    protected function getAdminConfigValue($path)
+    protected function getAdminConfigValue(string $path)
     {
-        // If we have the getConfigDataValue use that
-        if (method_exists('Mage_Adminhtml_Model_Config_Data', 'getConfigDataValue')) {
-            return Mage::getSingleton('adminhtml/config_data')->getConfigDataValue($path);
-        }
-
-        // Otherwise use the default amazing getStoreConfig
-        return Mage::getStoreConfig($path);
+        return Mage::getSingleton('adminhtml/config_data')->getConfigDataValue($path);
     }
 
     /**
      * If a transaction has been voided it's transaction ID can change
      *
-     * @param $transactionId
-     *
      * @return string
      */
-    public function getCleanTransactionId($transactionId)
+    public function getCleanTransactionId(string $transactionId)
     {
-        return strtok($transactionId, '-');
+        return strtok($transactionId, '-') ?: $transactionId;
     }
 
     /**
@@ -321,7 +311,8 @@ class Gene_Braintree_Model_Wrapper_Braintree extends Mage_Core_Model_Abstract
         try {
             if (!$alreadyInit) {
                 // If we're within the admin we want to grab these values from whichever store we're modifying
-                if (Mage::app()->getStore()->isAdmin()) {
+                $vcStore = Mage::app()->getStore();
+                if ($vcStore && $vcStore->isAdmin()) {
                     // Setup the various configuration variables
                     $environment = $this->getAdminConfigValue(self::BRAINTREE_ENVIRONMENT_PATH);
                     Braintree\Configuration::environment($environment);
@@ -366,7 +357,8 @@ class Gene_Braintree_Model_Wrapper_Braintree extends Mage_Core_Model_Abstract
 
         // Check to see if we've been passed the merchant account ID?
         if (!$merchantAccountId) {
-            if (Mage::app()->getStore()->isAdmin()) {
+            $maStore = Mage::app()->getStore();
+            if ($maStore && $maStore->isAdmin()) {
                 // Setup the various configuration variables
                 $environment = $this->getAdminConfigValue(self::BRAINTREE_ENVIRONMENT_PATH);
 
@@ -429,7 +421,7 @@ class Gene_Braintree_Model_Wrapper_Braintree extends Mage_Core_Model_Abstract
 
                 } else {
                     // Check to see if the connection is valid
-                    $this->_validated = $this->_getApiStatus();
+                    $this->_validated = (bool) $this->_getApiStatus();
                 }
             }
         }
@@ -464,12 +456,9 @@ class Gene_Braintree_Model_Wrapper_Braintree extends Mage_Core_Model_Abstract
     /**
      * Store a payment method nonce in the vault
      *
-     * @param $nonce
-     * @param $billingAddress
-     *
-     * @return bool
+     * @return Braintree\Result\Error|Braintree\Result\Successful
      */
-    public function storeInVault($nonce, $billingAddress = false)
+    public function storeInVault(string $nonce, array|false $billingAddress = false)
     {
         // Create the payment method with this data
         $paymentMethodCreate = [
@@ -506,12 +495,9 @@ class Gene_Braintree_Model_Wrapper_Braintree extends Mage_Core_Model_Abstract
     /**
      * If the customer is not logged in, but we still need to vault, we're going to create a fake customer
      *
-     * @param $nonce
-     * @param $billingAddress
-     *
      * @return \Braintree\Result\Error|\Braintree\Result\Successful
      */
-    public function storeInGuestVault($nonce, $billingAddress = false)
+    public function storeInGuestVault(string $nonce, array|false $billingAddress = false)
     {
         $guestCustomerCreate = [
             'id'         => $this->getBraintreeId(),
@@ -587,19 +573,17 @@ class Gene_Braintree_Model_Wrapper_Braintree extends Mage_Core_Model_Abstract
     /**
      * Build up the sale request
      *
-     * @param                        $amount
      * @param bool                   $submitForSettlement
-     * @param bool                   $deviceData
+     * @param string|bool            $deviceData
      * @param bool                   $storeInVault
      * @param bool                   $threeDSecure
      * @param array                  $extra
      *
      * @return array
-     *
      * @throws Mage_Core_Exception
      */
     public function buildSale(
-        $amount,
+        string $amount,
         array $paymentDataArray,
         Mage_Sales_Model_Order $order,
         $submitForSettlement = true,
@@ -684,7 +668,7 @@ class Gene_Braintree_Model_Wrapper_Braintree extends Mage_Core_Model_Abstract
                 $paymentMethodCreate = [
                     'customerId'         => $this->getBraintreeId(),
                     'paymentMethodNonce' => $paymentDataArray['paymentMethodNonce'],
-                    'billingAddress'     => $this->buildAddress($order->getBillingAddress()),
+                    'billingAddress'     => $order->getBillingAddress() ? $this->buildAddress($order->getBillingAddress()) : [],
                 ];
 
                 // Log the create array
@@ -718,7 +702,8 @@ class Gene_Braintree_Model_Wrapper_Braintree extends Mage_Core_Model_Abstract
         }
 
         // Pass the version through in the channel parameter
-        $channel = 'GeneVZero_' . Mage::getConfig()->getModuleConfig('Gene_Braintree')->version;
+        $config = Mage::getConfig();
+        $channel = 'GeneVZero_' . ($config ? $config->getModuleConfig('Gene_Braintree')->version : 'unknown');
 
         // Build up the initial request parameters
         $request = [
@@ -751,7 +736,7 @@ class Gene_Braintree_Model_Wrapper_Braintree extends Mage_Core_Model_Abstract
                 (Mage::getSingleton('checkout/type_onepage')->getCheckoutMethod() == 'login_in' || Mage::getSingleton('checkout/type_onepage')->getCheckoutMethod() == Mage_Checkout_Model_Type_Onepage::METHOD_REGISTER))
         ) {
             $request['customer'] = $this->buildCustomer($order);
-        } elseif (!$this->checkIsCustomer() && Mage::app()->getStore()->isAdmin() && $storeInVault) {
+        } elseif (!$this->checkIsCustomer() && ($bsStore = Mage::app()->getStore()) && $bsStore->isAdmin() && $storeInVault) {
             // Do we need to build a customer account from an admin request?
             $request['customer'] = $this->buildCustomer($order);
         } else {
@@ -780,14 +765,16 @@ class Gene_Braintree_Model_Wrapper_Braintree extends Mage_Core_Model_Abstract
         }
 
         // Include level 2 data if the user has provided a VAT ID
-        if ($order->getBillingAddress()->getVatId()) {
+        $billingAddr = $order->getBillingAddress();
+        if ($billingAddr && $billingAddr->getVatId()) {
             $request['taxAmount'] = Mage::helper('gene_braintree')->formatPrice($order->getTaxAmount());
             $request['taxExempt'] = true;
             $request['purchaseOrderNumber'] = $order->getIncrementId();
         }
 
         // If the order is being created in the admin, set the source as moto
-        if (Mage::app()->getStore()->isAdmin()) {
+        $adminStore = Mage::app()->getStore();
+        if ($adminStore && $adminStore->isAdmin()) {
             $request['transactionSource'] = 'moto';
         }
 
@@ -802,11 +789,9 @@ class Gene_Braintree_Model_Wrapper_Braintree extends Mage_Core_Model_Abstract
     /**
      * Check whether a payment method exists
      *
-     * @param $token
-     *
      * @return bool
      */
-    public function checkPaymentMethod($token)
+    public function checkPaymentMethod(string $token)
     {
         try {
             // Attempt to load the temporary payment method
@@ -817,16 +802,16 @@ class Gene_Braintree_Model_Wrapper_Braintree extends Mage_Core_Model_Abstract
         } catch (Exception $e) {
             return false;
         }
+
+        return false;
     }
 
     /**
      * Attempt to make a sale using the Braintree PHP SDK
      *
-     * @param $saleArray
-     *
-     * @return \Braintree\Exception\NotFound|\Braintree\Result\Successful
+     * @return \Braintree\Result\Error|\Braintree\Result\Successful
      */
-    public function makeSale($saleArray)
+    public function makeSale(array $saleArray)
     {
         // Call the braintree library
         return Braintree\Transaction::sale(
@@ -837,12 +822,9 @@ class Gene_Braintree_Model_Wrapper_Braintree extends Mage_Core_Model_Abstract
     /**
      * Submit a payment for settlement using the Braintree PHP SDK
      *
-     * @param $transactionId
-     * @param $amount
-     *
-     * @return object
+     * @return Braintree\Result\Error|Braintree\Result\Successful
      */
-    public function submitForSettlement($transactionId, $amount)
+    public function submitForSettlement(string $transactionId, string $amount)
     {
         // Attempt to submit for settlement
         $result = Braintree\Transaction::submitForSettlement($transactionId, $amount);
@@ -853,12 +835,9 @@ class Gene_Braintree_Model_Wrapper_Braintree extends Mage_Core_Model_Abstract
     /**
      * Submit a payment for partial settlement using the Braintree PHP SDK
      *
-     * @param $transactionId
-     * @param $amount
-     *
-     * @return object
+     * @return Braintree\Result\Error|Braintree\Result\Successful
      */
-    public function submitForPartialSettlement($transactionId, $amount)
+    public function submitForPartialSettlement(string $transactionId, string $amount)
     {
         // Attempt to submit for settlement
         $result = Braintree\Transaction::submitForPartialSettlement($transactionId, $amount);
@@ -876,7 +855,7 @@ class Gene_Braintree_Model_Wrapper_Braintree extends Mage_Core_Model_Abstract
         if (Mage::getSingleton('customer/session')->isLoggedIn()) {
             $customer = Mage::getSingleton('customer/session')->getCustomer();
             if ($customer && $customer->getId()) {
-                return $customer->getId();
+                return (string) $customer->getId();
             }
         }
         return hash('md5', uniqid('braintree_', true));
@@ -885,43 +864,36 @@ class Gene_Braintree_Model_Wrapper_Braintree extends Mage_Core_Model_Abstract
     /**
      * Convert the billing address into something Braintree can understand
      *
-     * @param $address
-     *
      * @return array
      */
-    public function convertBillingAddress($address)
+    public function convertBillingAddress(Mage_Sales_Model_Order_Address|Mage_Sales_Model_Quote_Address|Mage_Customer_Model_Address|array $address)
     {
         if ($address instanceof Mage_Sales_Model_Order_Address || $address instanceof Mage_Sales_Model_Quote_Address || $address instanceof Mage_Customer_Model_Address) {
             return $this->buildAddress($address);
         }
 
-        // Otherwise we're most likely dealing with a raw request
-        if (is_array($address)) {
-
-            // Is the user using a saved address?
-            if ($addressId = Mage::app()->getRequest()->getParam('billing_address_id', false)) {
-                $savedAddress = Mage::getModel('customer/address')->load($addressId);
-                if ($savedAddress->getId()) {
-                    return $this->buildAddress($savedAddress);
-                }
+        // Otherwise we're dealing with a raw request array
+        // Is the user using a saved address?
+        if ($addressId = Mage::app()->getRequest()->getParam('billing_address_id', false)) {
+            $savedAddress = Mage::getModel('customer/address')->load($addressId);
+            if ($savedAddress->getId()) {
+                return $this->buildAddress($savedAddress);
             }
-
-            // Utilise built in functionality to
-            $addressObject = Mage::getModel('sales/quote_address');
-            $addressForm = Mage::getModel('customer/form');
-            $addressForm->setFormCode('customer_address_edit')
-                ->setEntityType('customer_address')
-                ->setIsAjaxRequest(Mage::app()->getRequest()->isAjax());
-            $addressForm->setEntity($addressObject);
-
-            // Emulate request object
-            $addressData = $addressForm->extractData($addressForm->prepareRequest($address));
-            $addressObject->addData($addressData);
-
-            return $this->buildAddress($addressObject);
         }
 
-        return [];
+        // Utilise built in functionality to
+        $addressObject = Mage::getModel('sales/quote_address');
+        $addressForm = Mage::getModel('customer/form');
+        $addressForm->setFormCode('customer_address_edit')
+            ->setEntityType('customer_address')
+            ->setIsAjaxRequest(Mage::app()->getRequest()->isAjax());
+        $addressForm->setEntity($addressObject);
+
+        // Emulate request object
+        $addressData = $addressForm->extractData($addressForm->prepareRequest($address));
+        $addressObject->addData($addressData);
+
+        return $this->buildAddress($addressObject);
     }
 
     /**
@@ -938,7 +910,6 @@ class Gene_Braintree_Model_Wrapper_Braintree extends Mage_Core_Model_Abstract
 
     /**
      * Return the correct merchant account ID for the order
-     *
      *
      * @return bool|mixed
      */
@@ -967,7 +938,6 @@ class Gene_Braintree_Model_Wrapper_Braintree extends Mage_Core_Model_Abstract
     /**
      * Does the order have a mapped currency code?
      *
-     *
      * @return bool|string
      */
     public function hasMappedCurrencyCode(?Mage_Sales_Model_Order $order = null)
@@ -982,15 +952,18 @@ class Gene_Braintree_Model_Wrapper_Braintree extends Mage_Core_Model_Abstract
             if (is_array($mapping) && !empty($mapping)) {
 
                 // If we don't have an order but have a selected currency code use that
-                if (!$order && Mage::app()->getStore()->getCurrentCurrencyCode()) {
+                $currStore = Mage::app()->getStore();
+                if (!$order && $currStore && $currStore->getCurrentCurrencyCode()) {
                     // Use the current set current code
-                    $currency = Mage::app()->getStore()->getCurrentCurrencyCode();
+                    $currency = $currStore->getCurrentCurrencyCode();
                 } elseif (!$order && $this->getQuote()->getQuoteCurrencyCode()) {
                     // If we haven't been given an order use the quote currency code
                     $currency = $this->getQuote()->getQuoteCurrencyCode();
-                } else {
+                } elseif ($order) {
                     // Use the currency code for tomorrow
                     $currency = $order->getOrderCurrencyCode();
+                } else {
+                    return false;
                 }
 
                 // Verify we have a mapping value for this currency
@@ -1008,7 +981,6 @@ class Gene_Braintree_Model_Wrapper_Braintree extends Mage_Core_Model_Abstract
     /**
      * Determine whether or not currency mapping is enabled
      *
-     *
      * @return bool
      */
     public function currencyMappingEnabled(?Mage_Sales_Model_Order $order = null)
@@ -1025,7 +997,8 @@ class Gene_Braintree_Model_Wrapper_Braintree extends Mage_Core_Model_Abstract
     public function getQuote()
     {
         // If we're within the admin return the admin quote
-        if (Mage::app()->getStore()->isAdmin()) {
+        $qStore = Mage::app()->getStore();
+        if ($qStore && $qStore->isAdmin()) {
             return Mage::getSingleton('adminhtml/session_quote')->getQuote();
         }
 
@@ -1035,12 +1008,9 @@ class Gene_Braintree_Model_Wrapper_Braintree extends Mage_Core_Model_Abstract
     /**
      * If we have a mapped currency code we need to convert the currency
      *
-     * @param \Mage_Sales_Model_Order $order
-     * @param                         $amount
-     *
      * @return string
      */
-    public function getCaptureAmount(?Mage_Sales_Model_Order $order = null, $amount)
+    public function getCaptureAmount(?Mage_Sales_Model_Order $order, string|float $amount)
     {
         // If we've got a mapped currency code the amount is going to change
         if ($this->hasMappedCurrencyCode($order)) {
@@ -1059,14 +1029,12 @@ class Gene_Braintree_Model_Wrapper_Braintree extends Mage_Core_Model_Abstract
     }
 
     /**
-     * @param $amount
-     *
      * @return string
      */
-    public function convertCaptureAmount($baseCurrencyCode, $orderQuoteCurrencyCode, $amount)
+    public function convertCaptureAmount(string $baseCurrencyCode, string $orderQuoteCurrencyCode, string|float $amount)
     {
         // Convert the current
-        $convertedCurrency = Mage::helper('directory')->currencyConvert($amount, $baseCurrencyCode, $orderQuoteCurrencyCode);
+        $convertedCurrency = Mage::helper('directory')->currencyConvert((float) $amount, $baseCurrencyCode, $orderQuoteCurrencyCode);
 
         // Always make sure the number has two decimal places
         return Mage::helper('gene_braintree')->formatPrice($convertedCurrency);
@@ -1075,16 +1043,16 @@ class Gene_Braintree_Model_Wrapper_Braintree extends Mage_Core_Model_Abstract
     /**
      * Build up the customers data onto an object
      *
-     *
      * @return array
      */
-    private function buildCustomer(Mage_Sales_Model_Order $order, $includeId = true)
+    private function buildCustomer(Mage_Sales_Model_Order $order, bool $includeId = true)
     {
+        $billingAddress = $order->getBillingAddress();
         $customer = [
             'firstName' => $order->getCustomerFirstname(),
             'lastName'  => $order->getCustomerLastname(),
             'email'     => $order->getCustomerEmail(),
-            'phone'     => $order->getBillingAddress()->getTelephone(),
+            'phone'     => $billingAddress ? $billingAddress->getTelephone() : '',
         ];
 
         // Shall we include the customer ID?
@@ -1093,14 +1061,14 @@ class Gene_Braintree_Model_Wrapper_Braintree extends Mage_Core_Model_Abstract
         }
 
         // Handle empty data with alternatives
-        if (empty($customer['firstName'])) {
-            $customer['firstName'] = $order->getBillingAddress()->getFirstname();
+        if (empty($customer['firstName']) && $billingAddress) {
+            $customer['firstName'] = $billingAddress->getFirstname();
         }
-        if (empty($customer['lastName'])) {
-            $customer['lastName'] = $order->getBillingAddress()->getLastname();
+        if (empty($customer['lastName']) && $billingAddress) {
+            $customer['lastName'] = $billingAddress->getLastname();
         }
-        if (empty($customer['email'])) {
-            $customer['email'] = $order->getBillingAddress()->getEmail();
+        if (empty($customer['email']) && $billingAddress) {
+            $customer['email'] = $billingAddress->getEmail();
         }
 
         return $customer;
@@ -1109,11 +1077,9 @@ class Gene_Braintree_Model_Wrapper_Braintree extends Mage_Core_Model_Abstract
     /**
      * Delete a customer within Braintree
      *
-     * @param $customerId
-     *
      * @return \Braintree\Result\Successful|false
      */
-    public function deleteCustomer($customerId)
+    public function deleteCustomer(string $customerId)
     {
         try {
             return Braintree\Customer::delete($customerId);
@@ -1127,11 +1093,9 @@ class Gene_Braintree_Model_Wrapper_Braintree extends Mage_Core_Model_Abstract
     /**
      * Delete a payment method within Braintree
      *
-     * @param $token
-     *
      * @return \Braintree\Result\Successful|false
      */
-    public function deletePaymentMethod($token)
+    public function deletePaymentMethod(string $token)
     {
         try {
             return Braintree\PaymentMethod::delete($token);
@@ -1145,12 +1109,9 @@ class Gene_Braintree_Model_Wrapper_Braintree extends Mage_Core_Model_Abstract
     /**
      * Clone a transaction
      *
-     * @param $transactionId
-     * @param $amount
-     *
-     * @return bool|mixed
+     * @return Braintree\Result\Error|Braintree\Result\Successful|false
      */
-    public function cloneTransaction($transactionId, $amount, $submitForSettlement = true)
+    public function cloneTransaction(string $transactionId, string $amount, bool $submitForSettlement = true)
     {
         // Attempt to clone the transaction
         try {
@@ -1175,15 +1136,13 @@ class Gene_Braintree_Model_Wrapper_Braintree extends Mage_Core_Model_Abstract
     /**
      * Parse Braintree errors as a string
      *
-     * @param $braintreeErrors
-     *
      * @return string
      */
-    public function parseErrors($braintreeErrors)
+    public function parseErrors(array $braintreeErrors)
     {
         $errors = [];
         foreach ($braintreeErrors as $error) {
-            $errors[] = $error->code . ': ' . $this->parseMessage($error->message);
+            $errors[] = $error->code . ': ' . (string) $this->parseMessage($error->message);
         }
 
         return implode(', ', $errors);
@@ -1192,11 +1151,9 @@ class Gene_Braintree_Model_Wrapper_Braintree extends Mage_Core_Model_Abstract
     /**
      * Replace the word nonce with token as it could offend some of us british people
      *
-     * @param $string
-     *
-     * @return array|string|string[]
+     * @return string
      */
-    public function parseMessage($string)
+    public function parseMessage(string $string)
     {
         return str_replace('nonce', 'token', $string);
     }
@@ -1204,12 +1161,9 @@ class Gene_Braintree_Model_Wrapper_Braintree extends Mage_Core_Model_Abstract
     /**
      * Update the API status in the config
      *
-     * @param $status
-     * @param $storeId
-     *
      * @return mixed
      */
-    protected function _updateApiStatus($status, $storeId = 0)
+    protected function _updateApiStatus(bool $status, int $storeId = 0)
     {
         $apiStatus = Mage::getModel('core/variable')->setStoreId($storeId)->loadByCode(self::BRAINTREE_API_CONFIG_STATUS);
         if ($apiStatus->getId()) {
@@ -1229,15 +1183,14 @@ class Gene_Braintree_Model_Wrapper_Braintree extends Mage_Core_Model_Abstract
     /**
      * Get the API status from the core variable system
      *
-     * @param bool|false $storeId
-     *
      * @return bool|string
      * @throws \Exception
      */
-    protected function _getApiStatus($storeId = false)
+    protected function _getApiStatus(int|false $storeId = false)
     {
         if ($storeId === false) {
-            $storeId = Mage::app()->getStore()->getId();
+            $store = Mage::app()->getStore();
+            $storeId = $store ? (int) $store->getId() : 0;
         }
         $apiStatus = Mage::getModel('core/variable')->setStoreId($storeId)->loadByCode(self::BRAINTREE_API_CONFIG_STATUS)->getValue('text');
         if (!$apiStatus) {

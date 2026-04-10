@@ -105,13 +105,10 @@ class Gene_Braintree_Model_Paymentmethod_Applepay extends Gene_Braintree_Model_P
     /**
      * Pseudo _authorize function so we can pass in extra data
      *
-     * @param $amount
-     * @param bool|false $shouldCapture
-     * @param bool|false $token
      * @return $this
      * @throws Mage_Core_Exception
      */
-    protected function _authorize(Varien_Object $payment, $amount, $shouldCapture = false, $token = false)
+    protected function _authorize(Varien_Object $payment, string|float $amount, bool $shouldCapture = false, string|false $token = false)
     {
         // Confirm that we have a nonce from Braintree
         // We cannot utilise the validate() function as these checks need to happen at the capture point
@@ -182,11 +179,9 @@ class Gene_Braintree_Model_Paymentmethod_Applepay extends Gene_Braintree_Model_P
     /**
      * Build up the payment request
      *
-     * @param $token
-     *
      * @return array
      */
-    protected function _buildPaymentRequest($token)
+    protected function _buildPaymentRequest(string|false $token)
     {
         // Build our payment array with either our token, or nonce
         $paymentArray = [];
@@ -240,11 +235,9 @@ class Gene_Braintree_Model_Paymentmethod_Applepay extends Gene_Braintree_Model_P
     /**
      * Process a successful result from the sale request
      *
-     * @param Braintree\Result\Successful $result
-     * @param $amount
      * @return Varien_Object
      */
-    protected function _processSuccessResult(Varien_Object $payment, $result, $amount)
+    protected function _processSuccessResult(Varien_Object $payment, Braintree\Result\Successful|Braintree\Result\Error $result, string|float $amount)
     {
         // Pass an event if the payment was a success
         Mage::dispatchEvent('gene_braintree_applepay_success', [
@@ -350,7 +343,10 @@ class Gene_Braintree_Model_Paymentmethod_Applepay extends Gene_Braintree_Model_P
                 // Log the result
                 Gene_Braintree_Model_Debug::log(['capture:submitForSettlement' => $result]);
             }
-            if ($result->success) {
+            if (!$result) {
+                Gene_Braintree_Model_Wrapper_Braintree::cleanUp();
+                Mage::throwException('Unable to process the transaction.');
+            } elseif ($result->success) {
                 $this->_updateKountStatus($payment, 'A');
                 $this->_processSuccessResult($payment, $result, $amount);
             } elseif ($result->errors->deepSize() > 0) {

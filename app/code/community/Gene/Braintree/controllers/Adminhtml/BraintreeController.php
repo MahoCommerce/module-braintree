@@ -19,6 +19,8 @@ class Gene_Braintree_Adminhtml_BraintreeController extends Mage_Adminhtml_Contro
 
     /**
      * Settlement report from Braintree
+     *
+     * @return void
      */
     public function transactionsAction()
     {
@@ -56,26 +58,34 @@ class Gene_Braintree_Adminhtml_BraintreeController extends Mage_Adminhtml_Contro
 
         // Otherwise take them back
         $this->_redirectReferer();
+
+        return false;
     }
 
     /**
      * Process a request to export the current transactions to a CSV
+     *
+     * @return void
      */
     public function exportCsvAction()
     {
-        return $this->_prepareExport('csv');
+        $this->_prepareExport('csv');
     }
 
     /**
      * Process a request to export the current transaction to an Excel Document
+     *
+     * @return void
      */
     public function exportExcelAction()
     {
-        return $this->_prepareExport('xml');
+        $this->_prepareExport('xml');
     }
 
     /**
      * Validate the inputted configuration via Ajax
+     *
+     * @return void
      */
     public function validateConfigAction()
     {
@@ -119,7 +129,7 @@ class Gene_Braintree_Adminhtml_BraintreeController extends Mage_Adminhtml_Contro
         }
 
         // Do the validation within the wrapper
-        Mage::app()->getResponse()->setBody(Mage::getModel('gene_braintree/wrapper_braintree')->validateCredentials(
+        Mage::app()->getResponse()->setBody((string) Mage::getModel('gene_braintree/wrapper_braintree')->validateCredentials(
             true,
             true,
             $merchantAccountId,

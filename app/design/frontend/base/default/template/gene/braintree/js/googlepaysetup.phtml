@@ -1,5 +1,5 @@
 <!-- Gene GooglePay Setup -->
-<?php /* @var Gene_Braintree_Block_Googlepay_Setup $this */ ?>
+<?php /** @var Gene_Braintree_Block_Googlepay_Setup $this */ ?>
 <script type="text/javascript">
     if (typeof vZero !== 'undefined' && typeof vzero === 'undefined') {
         // Start an instance of vZero for the Google Pay instance
@@ -28,7 +28,9 @@
         vzero.observeEvent('integration.onInit', function () {
             new vZeroGooglePay(
                 false,
-                '<?php echo $this->jsQuoteEscape(Mage::app()->getStore()->getFrontendName()); ?>',
+                <?php /** @var Mage_Core_Model_Store $store */ ?>
+                <?php $store = Mage::app()->getStore(); ?>
+                '<?php echo $this->jsQuoteEscape($store->getFrontendName()); ?>',
                 this,
                 '<?php echo Mage::getUrl('braintree/googlepay/clientToken', array('_secure' => Mage::app()->getFrontController()->getRequest()->isSecure())); ?>',
                 {

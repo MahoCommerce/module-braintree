@@ -38,7 +38,8 @@ class Gene_Braintree_Model_Saved extends Mage_Core_Model_Abstract
                 $wrapper->init();
 
                 // Try and load the customer from Braintrees side
-                if ($customer = $wrapper->getCustomer($customer->getBraintreeCustomerId())) {
+                $braintreeCustomerId = $customer->getBraintreeCustomerId();
+                if ($braintreeCustomerId && $customer = $wrapper->getCustomer($braintreeCustomerId)) {
 
                     // Assign them into our model
                     $object = new Varien_Object();
@@ -61,11 +62,12 @@ class Gene_Braintree_Model_Saved extends Mage_Core_Model_Abstract
     /**
      * Return the current customer, if the session is an admin session use the admin quote
      *
-     * @return bool|\Mage_Customer_Model_Customer
+     * @return false|\Mage_Customer_Model_Customer
      */
     public function getCustomer()
     {
-        if (Mage::app()->getStore()->isAdmin()) {
+        $store = Mage::app()->getStore();
+        if ($store && $store->isAdmin()) {
             $adminQuote = Mage::getSingleton('adminhtml/session_quote');
             if ($customer = $adminQuote->getCustomer()) {
                 return $customer;
@@ -80,7 +82,7 @@ class Gene_Braintree_Model_Saved extends Mage_Core_Model_Abstract
     /**
      * Return a boolean value on whether the customer has a certain type of payment method
      *
-     * @param bool $type
+     * @param int|false $type
      *
      * @return bool|int
      */
@@ -119,15 +121,13 @@ class Gene_Braintree_Model_Saved extends Mage_Core_Model_Abstract
 
     /**
      * Return only those accounts which are a certain type
-
-     * @param $type
      *
      * @return array
      */
-    public function getSavedMethodsByType($type = false)
+    public function getSavedMethodsByType(int|false $type = false)
     {
         if (!$type) {
-            return $this->getCustomerSavedPaymentMethods();
+            return $this->getCustomerSavedPaymentMethods() ?: [];
         }
 
         // Start up our new collection

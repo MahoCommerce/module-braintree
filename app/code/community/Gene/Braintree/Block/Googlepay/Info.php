@@ -18,7 +18,7 @@ class Gene_Braintree_Block_Googlepay_Info extends Gene_Braintree_Block_Info
 
     /**
      * Prepare information specific to current payment method
-     * @param null $transport
+     * @param array|Maho\DataObject $transport
      * @return Varien_Object
      */
     #[\Override]
@@ -28,6 +28,7 @@ class Gene_Braintree_Block_Googlepay_Info extends Gene_Braintree_Block_Info
         $transport = parent::_prepareSpecificInformation($transport);
 
         // Only display this information if it's a single invoice
+        $data = [];
         if ($this->isSingleInvoice()) {
 
             // Display present data
@@ -40,15 +41,12 @@ class Gene_Braintree_Block_Googlepay_Info extends Gene_Braintree_Block_Info
             if ($this->getInfo()->getCcType()) {
                 $data[$this->__('Credit Card Type')] = $this->getInfo()->getCcType();
             }
-
-        } else {
-
-            // Never leave an empty array
-            $data = [];
         }
 
         // Check we're in the admin area
-        if (Mage::app()->getStore()->isAdmin()) {
+        /** @var Mage_Core_Model_Store $store */
+        $store = Mage::app()->getStore();
+        if ($store->isAdmin()) {
 
             // Include live details for this transaction
             $this->includeLiveDetails($data);

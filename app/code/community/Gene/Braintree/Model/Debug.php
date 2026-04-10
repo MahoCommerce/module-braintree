@@ -18,10 +18,8 @@ class Gene_Braintree_Model_Debug extends Mage_Core_Model_Abstract
 
     /**
      * Log any data passed to this method in the debug file
-     *
-     * @param $data
      */
-    public static function log($data)
+    public static function log(mixed $data): void
     {
         // Check the debug flag in the admin
         if (Mage::getStoreConfigFlag(self::GENE_BRAINTREE_DEBUG)) {

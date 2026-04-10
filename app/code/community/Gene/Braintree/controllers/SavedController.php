@@ -20,6 +20,8 @@ class Gene_Braintree_SavedController extends Mage_Core_Controller_Front_Action
 
     /**
      * Validate that the user is logged in
+     *
+     * @return $this
      */
     #[\Override]
     public function preDispatch()
@@ -29,12 +31,14 @@ class Gene_Braintree_SavedController extends Mage_Core_Controller_Front_Action
         if (!Mage::getSingleton('customer/session')->authenticate($this)) {
             $this->setFlag('', 'no-dispatch', true);
         }
+
+        return $this;
     }
 
     /**
      * Show the listing page of saved payment information
      *
-     * @return \Mage_Core_Controller_Varien_Action
+     * @return $this|Mage_Core_Controller_Varien_Action|null
      */
     public function indexAction()
     {
@@ -43,7 +47,10 @@ class Gene_Braintree_SavedController extends Mage_Core_Controller_Front_Action
         $this->_initLayoutMessages('customer/session');
         $this->_initLayoutMessages('catalog/session');
 
-        $this->getLayout()->getBlock('head')->setTitle($this->__('Saved Payment Information'));
+        $headBlock = $this->getLayout()->getBlock('head');
+        if ($headBlock) {
+            $headBlock->setTitle($this->__('Saved Payment Information'));
+        }
 
         return $this->renderLayout();
     }
@@ -102,7 +109,10 @@ class Gene_Braintree_SavedController extends Mage_Core_Controller_Front_Action
         $this->_initLayoutMessages('customer/session');
         $this->_initLayoutMessages('catalog/session');
 
-        $this->getLayout()->getBlock('head')->setTitle($this->__('Edit Payment Method'));
+        $headBlock = $this->getLayout()->getBlock('head');
+        if ($headBlock) {
+            $headBlock->setTitle($this->__('Edit Payment Method'));
+        }
 
         return $this->renderLayout();
     }

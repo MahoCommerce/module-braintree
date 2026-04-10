@@ -50,7 +50,7 @@ class Gene_Braintree_Block_Express_Setup extends Gene_Braintree_Block_Express_Ab
     /**
      * Get the current product
      *
-     * @return mixed
+     * @return Mage_Catalog_Model_Product|null
      */
     public function getProduct()
     {
@@ -101,7 +101,7 @@ class Gene_Braintree_Block_Express_Setup extends Gene_Braintree_Block_Express_Ab
     /**
      * Get payment Environment
      *
-     * @return string
+     * @return float|int
      */
     public function getProductTotals()
     {

@@ -17,7 +17,8 @@ class Gene_Braintree_CheckoutController extends Mage_Core_Controller_Front_Actio
             if (Mage::app()->getRequest()->getParam('store')) {
                 $storeId = (int) Mage::app()->getRequest()->getParam('store');
             } else {
-                $storeId = Mage::app()->getStore()->getStoreId();
+                $store = Mage::app()->getStore();
+                $storeId = $store ? $store->getStoreId() : null;
             }
 
             return $this->_returnJson([
@@ -49,9 +50,8 @@ class Gene_Braintree_CheckoutController extends Mage_Core_Controller_Front_Actio
         $billingCountryId = $quote->getBillingAddress()->getCountryId();
 
         // Has the request supplied the billing address ID?
-        if ($addressId = $this->getRequest()->getParam('addressId') &&
-            Mage::getSingleton('customer/session')->isLoggedIn()
-        ) {
+        $addressId = $this->getRequest()->getParam('addressId');
+        if ($addressId && Mage::getSingleton('customer/session')->isLoggedIn()) {
             // Retrieve the address
             $billingAddress = $quote->getCustomer()->getAddressById($addressId);
 
@@ -114,6 +114,8 @@ class Gene_Braintree_CheckoutController extends Mage_Core_Controller_Front_Actio
                 return $this->_returnJson($jsonResponse);
             }
         }
+
+        return $this->_returnJson(['success' => false]);
     }
 
     /**
@@ -172,6 +174,7 @@ class Gene_Braintree_CheckoutController extends Mage_Core_Controller_Front_Actio
                     ) {
                         // Store this customers ID in the session so we can remove the customer at the end of the
                         // checkout
+                        /** @phpstan-ignore property.notFound */
                         if (isset($response->customer->id)) {
                             Mage::getSingleton('checkout/session')->setGuestBraintreeCustomerId(
                                 $response->customer->id,
@@ -242,7 +245,7 @@ class Gene_Braintree_CheckoutController extends Mage_Core_Controller_Front_Actio
     /**
      * Return JSON to the browser
      *
-     * @param $array
+     * @param array $array
      *
      * @return $this
      */

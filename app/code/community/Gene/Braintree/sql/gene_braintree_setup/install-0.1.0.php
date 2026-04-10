@@ -5,12 +5,13 @@
  */
 
 /* @var $installer Gene_Braintree_Model_Entity_Setup */
+/** @var Gene_Braintree_Model_Entity_Setup $this */
 $installer = $this;
 $installer->startSetup();
 
 $entityTypeId     = $installer->getEntityTypeId('customer');
 $attributeSetId   = $installer->getDefaultAttributeSetId($entityTypeId);
-$attributeGroupId = $installer->getDefaultAttributeGroupId($entityTypeId, $attributeSetId);
+$attributeGroupId = $installer->getDefaultAttributeGroupId($entityTypeId, (int) $attributeSetId);
 
 // Add in a new attribute for the braintree's customer ID
 // This is generated and stored Magento side and is used for stored details
@@ -29,7 +30,7 @@ $installer->addAttributeToGroup(
     $attributeSetId,
     $attributeGroupId,
     'braintree_customer_id',
-    '999',
+    999,
 );
 
 $installer->endSetup();

@@ -14,11 +14,9 @@ class Gene_Braintree_Model_Kount_Ens extends Mage_Core_Model_Abstract
     /**
      * Process an event
      *
-     * @param $event
-     *
      * @return bool
      */
-    public function processEvent($event)
+    public function processEvent(array $event)
     {
         return match ($event['name']) {
             'WORKFLOW_STATUS_EDIT' => $this->_workflowStatusEdit($event),
@@ -30,17 +28,18 @@ class Gene_Braintree_Model_Kount_Ens extends Mage_Core_Model_Abstract
     /**
      * Event handler for a workflow status edit
      *
-     * @param $event
-     *
      * @return bool
      */
-    protected function _workflowStatusEdit($event)
+    protected function _workflowStatusEdit(array $event)
     {
         if (($incrementId = $this->_getOrderIncrementId($event))
             && ($kountTransactionId = $this->_getKountTransactionId($event))) {
             $order = Mage::getModel('sales/order')->load($incrementId, 'increment_id');
             if ($order->getId()) {
                 $payment = $order->getPayment();
+                if (!$payment) {
+                    return false;
+                }
 
                 // Ensure we're modifying the order with the same Kount transaction ID
                 if ($payment->getAdditionalInformation('kount_id') == $kountTransactionId) {
@@ -65,7 +64,6 @@ class Gene_Braintree_Model_Kount_Ens extends Mage_Core_Model_Abstract
 
     /**
      * Approve an order from Kount
-     *
      *
      * @return bool
      */
@@ -122,7 +120,6 @@ class Gene_Braintree_Model_Kount_Ens extends Mage_Core_Model_Abstract
      * If the payment is only voidable, we void the invoice cancelling the order. If the payment has settled we create
      * a credit memo and close the order that way.
      *
-     *
      * @return bool
      */
     protected function _declineOrder(Mage_Sales_Model_Order $order)
@@ -134,12 +131,16 @@ class Gene_Braintree_Model_Kount_Ens extends Mage_Core_Model_Abstract
             Mage::register('kount_ens_update', true);
 
             // Retrieve the Braintree ID
-            $braintreeId = $order->getPayment()->getCcTransId();
+            $payment = $order->getPayment();
+            if (!$payment) {
+                return false;
+            }
+            $braintreeId = $payment->getCcTransId();
 
             try {
                 /* @var $wrapper Gene_Braintree_Model_Wrapper_Braintree */
                 $wrapper = Mage::getModel('gene_braintree/wrapper_braintree');
-                $wrapper->init($order->getStoreId());
+                $wrapper->init((int) $order->getStoreId());
 
                 $transaction = Braintree\Transaction::find($braintreeId);
                 if ($transaction->id) {
@@ -165,7 +166,6 @@ class Gene_Braintree_Model_Kount_Ens extends Mage_Core_Model_Abstract
 
     /**
      * Void an order
-     *
      *
      * @return bool
      */
@@ -208,7 +208,6 @@ class Gene_Braintree_Model_Kount_Ens extends Mage_Core_Model_Abstract
 
     /**
      * Refund an order
-     *
      *
      * @return bool
      */
@@ -266,11 +265,9 @@ class Gene_Braintree_Model_Kount_Ens extends Mage_Core_Model_Abstract
     /**
      * Retrieve the Kount transaction ID from the ENS request
      *
-     * @param $event
-     *
-     * @return null
+     * @return string|null
      */
-    protected function _getKountTransactionId($event)
+    protected function _getKountTransactionId(array $event)
     {
         return $event['key']['_value'] ?? null;
     }
@@ -278,11 +275,9 @@ class Gene_Braintree_Model_Kount_Ens extends Mage_Core_Model_Abstract
     /**
      * Retrieve the order increment ID
      *
-     * @param $event
-     *
      * @return mixed|null
      */
-    protected function _getOrderIncrementId($event)
+    protected function _getOrderIncrementId(array $event)
     {
         return $event['key']['_attribute']['order_number'] ?? null;
     }
@@ -290,14 +285,12 @@ class Gene_Braintree_Model_Kount_Ens extends Mage_Core_Model_Abstract
     /**
      * Is the IP a valid ENS server?
      *
-     * @param $ip
-     *
      * @return bool
      */
-    public function isValidEnsIp($ip)
+    public function isValidEnsIp(string $ip)
     {
         $validIps = explode(',', Mage::getStoreConfig('payment/gene_braintree_creditcard/kount_ens_ips'));
-        if (is_array($validIps) && count($validIps) > 0) {
+        if (count($validIps) > 0) {
             $validIps = array_map('trim', $validIps);
             foreach ($validIps as $validIp) {
                 if ($this->isIpInRange($ip, $validIp)) {
@@ -315,14 +308,11 @@ class Gene_Braintree_Model_Kount_Ens extends Mage_Core_Model_Abstract
     /**
      * Determine whether an IP is within a range
      *
-     * @param $ip
-     * @param $range
-     *
      * @return bool
      *
      * @author https://gist.github.com/tott/7684443
      */
-    protected function isIpInRange($ip, $range)
+    protected function isIpInRange(string $ip, string $range)
     {
         if (!str_contains($range, '/')) {
             $range .= '/32';
@@ -331,7 +321,7 @@ class Gene_Braintree_Model_Kount_Ens extends Mage_Core_Model_Abstract
         [$range, $netmask] = explode('/', $range, 2);
         $range_decimal = ip2long($range);
         $ip_decimal = ip2long($ip);
-        $wildcard_decimal = 2 ** (32 - $netmask) - 1;
+        $wildcard_decimal = 2 ** (32 - (int) $netmask) - 1;
         $netmask_decimal = ~ $wildcard_decimal;
         return (($ip_decimal & $netmask_decimal) == ($range_decimal & $netmask_decimal));
     }
@@ -339,11 +329,9 @@ class Gene_Braintree_Model_Kount_Ens extends Mage_Core_Model_Abstract
     /**
      * Validate that the Kount merchant ID is set upon one of the stores
      *
-     * @param $merchantId
-     *
      * @return bool
      */
-    public function validateStoreForMerchantId($merchantId)
+    public function validateStoreForMerchantId(string $merchantId)
     {
         // Build up an array of all store ID's
         $storeIds = array_keys(Mage::app()->getStores());

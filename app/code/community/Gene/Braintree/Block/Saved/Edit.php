@@ -7,7 +7,7 @@
 class Gene_Braintree_Block_Saved_Edit extends Mage_Customer_Block_Address_Edit
 {
     /**
-     * @var null
+     * @var Mage_Customer_Model_Address|null
      */
     protected $_address = null;
 
@@ -19,6 +19,7 @@ class Gene_Braintree_Block_Saved_Edit extends Mage_Customer_Block_Address_Edit
     {
         parent::_prepareLayout();
         $this->_address = null;
+        return $this;
     }
 
     /**
@@ -126,7 +127,8 @@ class Gene_Braintree_Block_Saved_Edit extends Mage_Customer_Block_Address_Edit
     #[\Override]
     public function getCountryId()
     {
-        return $this->getAddress()->getCountry();
+        $address = $this->getAddress();
+        return $address ? $address->getCountry() : null;
     }
 
 }

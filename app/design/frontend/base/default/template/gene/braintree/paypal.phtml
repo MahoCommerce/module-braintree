@@ -1,11 +1,13 @@
 <?php
-/* @var $this Gene_Braintree_Block_Paypal */
+/** @var Gene_Braintree_Block_Paypal $this */
 ?>
 <div class="form-list" id="payment_form_<?php echo $this->getMethodCode() ?>" style="display: none;">
 
     <?php echo $this->getSavedChildHtml(); ?>
 
-    <div class="paypal-info"<?php echo ($this->hasSavedDetails() && $this->getMethod()->isVaultEnabled() ? ' style="display: none;"' : ''); ?>>
+    <?php /** @var Gene_Braintree_Model_Paymentmethod_Paypal $paypalMethod */
+    $paypalMethod = $this->getMethod(); ?>
+    <div class="paypal-info"<?php echo ($this->hasSavedDetails() && $paypalMethod->isVaultEnabled() ? ' style="display: none;"' : ''); ?>>
         <p><?php echo $this->__('You will complete your payment via PayPal after the order review step.'); ?></p>
 
         <?php if($this->canSavePayPal()): ?>

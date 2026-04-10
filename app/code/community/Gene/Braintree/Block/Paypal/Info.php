@@ -38,7 +38,9 @@ class Gene_Braintree_Block_Paypal_Info extends Gene_Braintree_Block_Info
         }
 
         // Check we're in the admin area
-        if (Mage::app()->getStore()->isAdmin()) {
+        /** @var Mage_Core_Model_Store $store */
+        $store = Mage::app()->getStore();
+        if ($store->isAdmin()) {
 
             // Include live details for this transaction
             $transaction = $this->includeLiveDetails($data);

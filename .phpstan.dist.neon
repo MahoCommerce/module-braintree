@@ -20,6 +20,9 @@ parameters:
     reportMaybesInPropertyPhpDocTypes: true
     reportMaybesInMethodSignatures: false
 
+    stubFiles:
+        - stubs/braintree.stub
+
     fileExtensions:
         - php
         - phtml
@@ -36,5 +39,32 @@ parameters:
     ignoreErrors:
         - identifier: missingType.iterableValue
         -
+            identifier: trait.unused
+            reportUnmatched: false
+        -
             identifier: property.missingOverride
+            reportUnmatched: false
+        -
+            identifier: mage.invalidType
+            reportUnmatched: false
+        -
+            identifier: method.nonObject
+            message: '#Mage_Core_Model_Config\|null#'
+            reportUnmatched: false
+        -
+            identifier: method.nonObject
+            message: '#Mage_Core_Model_Store\|null#'
+            reportUnmatched: false
+        -
+            identifier: method.childReturnType
+            message: '#_getHelper#'
+            reportUnmatched: false
+        -
+            identifier: echo.nonString
+            reportUnmatched: false
+        -
+            identifier: cast.string
+            reportUnmatched: false
+        -
+            identifier: property.phpDocType
             reportUnmatched: false

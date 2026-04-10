@@ -9,7 +9,6 @@ class Gene_Braintree_Block_Adminhtml_System_Config_Braintree_Kount_Ens extends M
     /**
      * Return the ENS URL
      *
-     *
      * @return string
      */
     #[\Override]

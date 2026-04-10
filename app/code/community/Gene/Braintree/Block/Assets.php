@@ -14,7 +14,7 @@ class Gene_Braintree_Block_Assets extends Mage_Core_Block_Template
     /**
      * Record the current version
      *
-     * @var null|string|float
+     * @var null|string|false
      */
     protected $version = null;
 
@@ -51,11 +51,9 @@ class Gene_Braintree_Block_Assets extends Mage_Core_Block_Template
     /**
      * Add internal JS
      *
-     * @param $url
-     *
      * @return $this
      */
-    public function addJs($url)
+    public function addJs(string $url)
     {
         $this->js[] = $url;
         return $this;
@@ -85,11 +83,9 @@ class Gene_Braintree_Block_Assets extends Mage_Core_Block_Template
     /**
      * Add an external JS asset to the page
      *
-     * @param $url
-     *
      * @return $this
      */
-    public function addExternalJs($url)
+    public function addExternalJs(string $url)
     {
         $this->externalJs[] = $url;
         return $this;
@@ -125,10 +121,19 @@ class Gene_Braintree_Block_Assets extends Mage_Core_Block_Template
     protected function isMethodActive($methodCode)
     {
         if (!isset($this->methodActiveCache[$methodCode])) {
-            $model = Mage::getConfig()->getNode('default/payment/' . $methodCode . '/model');
+            $config = Mage::getConfig();
+            if (!$config) {
+                $this->methodActiveCache[$methodCode] = false;
+                return false;
+            }
+            $model = $config->getNode('default/payment/' . $methodCode . '/model');
             if ($model) {
                 $instance = Mage::getModel((string) $model);
-                $this->methodActiveCache[$methodCode] = $instance && $instance->isAvailable();
+                if ($instance instanceof Mage_Payment_Model_Method_Abstract) {
+                    $this->methodActiveCache[$methodCode] = $instance->isAvailable();
+                } else {
+                    $this->methodActiveCache[$methodCode] = false;
+                }
             } else {
                 $this->methodActiveCache[$methodCode] = false;
             }
@@ -144,8 +149,9 @@ class Gene_Braintree_Block_Assets extends Mage_Core_Block_Template
     public function getModuleVersion()
     {
         if ($this->version === null) {
-            if ($version = Mage::getConfig()->getModuleConfig('Gene_Braintree')->version) {
-                $this->version = $version;
+            $config = Mage::getConfig();
+            if ($config && ($moduleConfig = $config->getModuleConfig('Gene_Braintree')) && $moduleConfig->version) {
+                $this->version = (string) $moduleConfig->version;
             } else {
                 $this->version = false;
             }
@@ -165,7 +171,7 @@ class Gene_Braintree_Block_Assets extends Mage_Core_Block_Template
     #[\Override]
     public function getJsUrl($fileName = '')
     {
-        $fileName = str_replace('{MODULE_VERSION}', $this->getModuleVersion(), $fileName);
+        $fileName = str_replace('{MODULE_VERSION}', (string) $this->getModuleVersion(), $fileName);
         $fileName = str_replace('{SDK_VERSION}', self::SDK_VERSION, $fileName);
 
         // Detect if the filename as :// within it meaning it's an external URL
@@ -183,11 +189,9 @@ class Gene_Braintree_Block_Assets extends Mage_Core_Block_Template
     /**
      * Get the last time the file was modified
      *
-     * @param $fileName
-     *
      * @return bool|int
      */
-    protected function getAssetModifiedTime($fileName)
+    protected function getAssetModifiedTime(string $fileName)
     {
         $filePath = Mage::getBaseDir() . DS . 'js' . DS . ltrim($fileName, '/');
         if (file_exists($filePath)) {
@@ -202,7 +206,7 @@ class Gene_Braintree_Block_Assets extends Mage_Core_Block_Template
      *
      * @throws \Exception
      */
-    protected function handleRequiresAssets()
+    protected function handleRequiresAssets(): bool
     {
         // Build up the request string
         $request = $this->getRequest();
@@ -259,7 +263,7 @@ class Gene_Braintree_Block_Assets extends Mage_Core_Block_Template
         /* @var $website Mage_Core_Model_Website */
         foreach ($websites as $website) {
             $defaultStoreId = $website->getDefaultStore()->getId();
-            if (Mage::helper('gene_braintree')->isSetupRequired($defaultStoreId)) {
+            if (Mage::helper('gene_braintree')->isSetupRequired((int) $defaultStoreId)) {
                 return true;
             }
         }
@@ -276,10 +280,12 @@ class Gene_Braintree_Block_Assets extends Mage_Core_Block_Template
     protected function _toHtml()
     {
         // Handle the blocks inclusion differently in the admin
-        if (Mage::app()->getStore()->isAdmin() && $this->isSetupRequiredInAdmin()) {
+        /** @var Mage_Core_Model_Store $store */
+        $store = Mage::app()->getStore();
+        if ($store->isAdmin() && $this->isSetupRequiredInAdmin()) {
             return parent::_toHtml();
         }
-        if (Mage::app()->getStore()->isAdmin()) {
+        if ($store->isAdmin()) {
             return false;
         }
 

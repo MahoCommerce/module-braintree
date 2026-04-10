@@ -1,0 +1,163 @@
+<?php
+
+namespace Braintree\Result;
+
+class Successful
+{
+    /** @var bool */
+    public $success = true;
+
+    /** @var \Braintree\Transaction|null */
+    public $transaction;
+
+    /** @var \Braintree\PaymentMethodNonce|null */
+    public $paymentMethodNonce;
+
+    /** @var object|null */
+    public $paymentMethod;
+}
+
+class Error
+{
+    /** @var bool */
+    public $success = false;
+
+    /** @var object */
+    public $errors;
+
+    /** @var string */
+    public $message;
+
+    /** @var \Braintree\Transaction|null */
+    public $transaction;
+}
+
+namespace Braintree;
+
+use Braintree\Result\Error;
+use Braintree\Result\Successful;
+
+class Transaction
+{
+    /** @var string */
+    public $id;
+
+    /** @var string */
+    public $status;
+
+    /** @var string */
+    public $amount;
+
+    /** @var RiskData|null */
+    public $riskData;
+
+    /** @var string|null */
+    public $gatewayRejectionReason;
+
+    /**
+     * @param string $id
+     * @return Transaction
+     */
+    public static function find($id) {}
+
+    /**
+     * @param array<mixed> $attribs
+     * @return Successful|Error
+     */
+    public static function sale($attribs) {}
+
+    /**
+     * @param string $transactionId
+     * @param string|null $amount
+     * @return Successful|Error
+     */
+    public static function refund($transactionId, $amount = null) {}
+
+    /**
+     * @param string $transactionId
+     * @return Successful|Error
+     */
+    public static function void($transactionId) {}
+
+    /**
+     * @param string $transactionId
+     * @param string|null $amount
+     * @param array<mixed> $attribs
+     * @return Successful|Error
+     */
+    public static function submitForSettlement($transactionId, $amount = null, $attribs = []) {}
+
+    /**
+     * @param string $transactionId
+     * @param string|null $amount
+     * @param array<mixed> $attribs
+     * @return Successful|Error
+     */
+    public static function submitForPartialSettlement($transactionId, $amount = null, $attribs = []) {}
+
+    /**
+     * @param string $transactionId
+     * @param array<mixed> $attribs
+     * @return Successful|Error
+     */
+    public static function cloneTransaction($transactionId, $attribs) {}
+}
+
+class RiskData
+{
+    /** @var string|null */
+    public $id;
+
+    /** @var string|null */
+    public $decision;
+}
+
+class PaymentMethod
+{
+    /**
+     * @param string $token
+     * @param array<mixed> $options
+     * @return Successful
+     */
+    public static function delete($token, $options = []) {}
+}
+
+class CreditCard
+{
+    /** @var string */
+    public $bin;
+
+    /** @var string */
+    public $last4;
+
+    /** @var string */
+    public $expirationMonth;
+
+    /** @var string */
+    public $expirationYear;
+
+    /** @var string */
+    public $token;
+
+    /** @var string */
+    public $cardType;
+}
+
+class PayPalAccount
+{
+    /** @var string */
+    public $email;
+
+    /** @var string */
+    public $token;
+}
+
+class PaymentMethodNonce
+{
+    /**
+     * @param string $token
+     * @param array<mixed> $params
+     * @return Successful
+     */
+    public static function create($token, $params = []) {}
+}

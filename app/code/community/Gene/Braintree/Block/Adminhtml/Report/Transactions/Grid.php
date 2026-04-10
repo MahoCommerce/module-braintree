@@ -26,10 +26,8 @@ class Gene_Braintree_Block_Adminhtml_Report_Transactions_Grid extends Mage_Admin
 
     /**
      * Allow anyone invoking this grid to overriding the search query
-     *
-     * @param $query
      */
-    public function setSearchQuery($query)
+    public function setSearchQuery(array|false $query): void
     {
         $this->searchQuery = $query;
     }
@@ -105,7 +103,7 @@ class Gene_Braintree_Block_Adminhtml_Report_Transactions_Grid extends Mage_Admin
 
             // Retrieve the order IDs
             $orderIds = [];
-            /* @var $transaction Braintree\Transaction */
+            /** @var Braintree\Transaction $transaction */
             foreach ($transactions as $transaction) {
                 $orderIds[] = $transaction->orderId;
             }
@@ -152,7 +150,7 @@ class Gene_Braintree_Block_Adminhtml_Report_Transactions_Grid extends Mage_Admin
             return false;
         }
 
-        $this->setCollection($collection);
+        $this->setCollection($collection); /** @phpstan-ignore argument.type */
         parent::_prepareCollection();
         return $this;
     }
@@ -261,29 +259,19 @@ class Gene_Braintree_Block_Adminhtml_Report_Transactions_Grid extends Mage_Admin
     /**
      * Format the amount into the currency of the transaction
      *
-     * @param $value
-     * @param $row
-     * @param $column
-     * @param $isExport
-     *
      * @return string
      */
-    public function handleAmount($value, $row, $column, $isExport)
+    public function handleAmount(mixed $value, mixed $row, mixed $column, bool $isExport)
     {
-        return Mage::app()->getLocale()->currency($row['currencyIsoCode'])->toCurrency($value);
+        return Mage::app()->getLocale()->currency($row['currencyIsoCode'])->toCurrency($value); /** @phpstan-ignore method.notFound */
     }
 
     /**
      * Return the date object as a timestamp
      *
-     * @param $value
-     * @param $row
-     * @param $column
-     * @param $isExport
-     *
-     * @return int
+     * @return string
      */
-    public function handleDate($value, $row, $column, $isExport)
+    public function handleDate(mixed $value, mixed $row, mixed $column, bool $isExport)
     {
         /* @var $date DateTime */
         $date = $row['createdAt'];
@@ -294,14 +282,9 @@ class Gene_Braintree_Block_Adminhtml_Report_Transactions_Grid extends Mage_Admin
     /**
      * Upper case the first letter of the type
      *
-     * @param $value
-     * @param $row
-     * @param $column
-     * @param $isExport
-     *
      * @return string
      */
-    public function handleType($value, $row, $column, $isExport)
+    public function handleType(mixed $value, mixed $row, mixed $column, bool $isExport)
     {
         return ucfirst($value);
     }
@@ -309,14 +292,9 @@ class Gene_Braintree_Block_Adminhtml_Report_Transactions_Grid extends Mage_Admin
     /**
      * Display payment information regarding the transaction
      *
-     * @param $value
-     * @param $row
-     * @param $column
-     * @param $isExport
-     *
      * @return string
      */
-    public function handlePaymentInformation($value, $row, $column, $isExport)
+    public function handlePaymentInformation(mixed $value, mixed $row, mixed $column, bool $isExport)
     {
         // Grab the image associated with this payment
         $image = false;
@@ -340,7 +318,7 @@ class Gene_Braintree_Block_Adminhtml_Report_Transactions_Grid extends Mage_Admin
      *
      * @param $row
      *
-     * @return string
+     * @return string|false
      */
     #[\Override]
     public function getRowUrl($row)

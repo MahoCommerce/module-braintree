@@ -10,6 +10,7 @@ class Gene_Braintree_Block_Paypal extends Mage_Payment_Block_Form
 {
     /**
      * Store this so we don't load it multiple times
+     * @var array|false
      */
     private $_savedDetails = false;
 
@@ -55,11 +56,14 @@ class Gene_Braintree_Block_Paypal extends Mage_Payment_Block_Form
      */
     public function hasSavedDetails()
     {
-        if (!(Mage::getSingleton('customer/session')->isLoggedIn() || Mage::app()->getStore()->isAdmin())) {
+        /** @var Mage_Core_Model_Store $store */
+        $store = Mage::app()->getStore();
+        if (!(Mage::getSingleton('customer/session')->isLoggedIn() || $store->isAdmin())) {
             return false;
         }
-        if ($this->getSavedDetails()) {
-            return sizeof($this->getSavedDetails());
+        $saved = $this->getSavedDetails();
+        if (is_array($saved)) {
+            return count($saved);
         }
 
         return false;
@@ -68,7 +72,7 @@ class Gene_Braintree_Block_Paypal extends Mage_Payment_Block_Form
     /**
      * Return the saved accounts
      *
-     * @return bool
+     * @return array|false
      */
     public function getSavedDetails()
     {
@@ -99,7 +103,9 @@ class Gene_Braintree_Block_Paypal extends Mage_Payment_Block_Form
      */
     public function canSavePayPal()
     {
-        if ($this->getMethod()->isVaultEnabled()
+        /** @var Gene_Braintree_Model_Paymentmethod_Paypal $method */
+        $method = $this->getMethod();
+        if ($method->isVaultEnabled()
             && (Mage::getSingleton('customer/session')->isLoggedIn()
                 || Mage::getSingleton('checkout/type_onepage')->getCheckoutMethod() == Mage_Checkout_Model_Type_Onepage::METHOD_REGISTER)
         ) {

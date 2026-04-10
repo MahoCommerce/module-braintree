@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 /**
  * @license    https://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
  * Trait Gene_Braintree_Traits_PaymentMethods
@@ -20,6 +22,7 @@ trait Gene_Braintree_Traits_PaymentMethods
      */
     protected function getStoreCurrency()
     {
-        return Mage::app()->getStore()->getCurrentCurrencyCode();
+        $store = Mage::app()->getStore();
+        return $store ? $store->getCurrentCurrencyCode() : '';
     }
 }

@@ -11,6 +11,7 @@ class Gene_Braintree_Block_Adminhtml_System_Config_Braintree_Config extends Mage
      *
      * @return string
      */
+    #[\Override]
     public function render(Varien_Data_Form_Element_Abstract $element)
     {
         return sprintf(

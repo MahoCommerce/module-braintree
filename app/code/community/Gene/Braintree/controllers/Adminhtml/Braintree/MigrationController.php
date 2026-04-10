@@ -59,9 +59,10 @@ class Gene_Braintree_Adminhtml_Braintree_MigrationController extends Mage_Adminh
         $this->_getSession()->addSuccess(Mage::helper('gene_braintree')->__('We have successfully migrated you from the Braintree Payments extension to the new Gene Braintree extension.'));
 
         // Return a JSON response to the browser
+        $debugData = $result->debug();
         return $this->_returnJson(array_merge([
             'success' => true,
-        ], $result->debug()));
+        ], is_array($debugData) ? $debugData : []));
     }
 
     /**
@@ -73,8 +74,10 @@ class Gene_Braintree_Adminhtml_Braintree_MigrationController extends Mage_Adminh
     {
         // Update the configuration to log that the migration is complete
         $config = Mage::getConfig();
-        $config->saveConfig(Gene_Braintree_Helper_Data::MIGRATION_COMPLETE, 1);
-        $config->cleanCache();
+        if ($config !== null) {
+            $config->saveConfig(Gene_Braintree_Helper_Data::MIGRATION_COMPLETE, '1');
+            $config->cleanCache();
+        }
 
         return $this->_returnJson(['success' => true]);
     }
@@ -82,7 +85,7 @@ class Gene_Braintree_Adminhtml_Braintree_MigrationController extends Mage_Adminh
     /**
      * Return JSON to the browser
      *
-     * @param $array
+     * @param array $array
      *
      * @return $this
      */

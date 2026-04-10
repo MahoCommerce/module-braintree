@@ -45,7 +45,9 @@ class Gene_Braintree_Block_Creditcard_Info extends Gene_Braintree_Block_Info
         }
 
         // Check we're in the admin area
-        if (Mage::app()->getStore()->isAdmin()) {
+        /** @var Mage_Core_Model_Store $store */
+        $store = Mage::app()->getStore();
+        if ($store->isAdmin()) {
 
             // Include the transaction statuses
             $this->includeLiveDetails($data);

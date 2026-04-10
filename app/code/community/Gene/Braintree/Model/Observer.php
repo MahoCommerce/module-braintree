@@ -55,7 +55,6 @@ class Gene_Braintree_Model_Observer
     /**
      * Detect which checkout is in use and add a new layout handle
      *
-     *
      * @return $this
      */
     public function addLayoutHandle(Varien_Event_Observer $observer)
@@ -75,13 +74,31 @@ class Gene_Braintree_Model_Observer
             }
 
             // Attempt to detect Unicode OP Checkout
-            if (Mage::helper('core')->isModuleEnabled('Uni_Opcheckout') && Mage::helper('opcheckout')->isActive()) {
-                $layout->getUpdate()->addHandle('unicode_onestep_checkout');
+            try {
+                if (Mage::helper('core')->isModuleEnabled('Uni_Opcheckout')
+                    && class_exists('Uni_Opcheckout_Helper_Data', true)
+                ) {
+                    $opcheckoutHelper = Mage::helper('opcheckout');
+                    if ($opcheckoutHelper && method_exists($opcheckoutHelper, 'isActive') && $opcheckoutHelper->isActive()) {
+                        $layout->getUpdate()->addHandle('unicode_onestep_checkout');
+                    }
+                }
+            } catch (\Exception $e) {
+                // Module not installed
             }
 
             // Detect the Oye one step checkout
-            if (Mage::helper('core')->isModuleEnabled('Oye_Checkout') && Mage::helper('oyecheckout')->isOneStepLayout()) {
-                $layout->getUpdate()->addHandle('oye_onestep_checkout');
+            try {
+                if (Mage::helper('core')->isModuleEnabled('Oye_Checkout')
+                    && class_exists('Oye_Checkout_Helper_Data', true)
+                ) {
+                    $oyecheckoutHelper = Mage::helper('oyecheckout');
+                    if ($oyecheckoutHelper && method_exists($oyecheckoutHelper, 'isOneStepLayout') && $oyecheckoutHelper->isOneStepLayout()) {
+                        $layout->getUpdate()->addHandle('oye_onestep_checkout');
+                    }
+                }
+            } catch (\Exception $e) {
+                // Module not installed
             }
         }
 
@@ -90,8 +107,13 @@ class Gene_Braintree_Model_Observer
 
             // Attempt to detect Magestore_Onestepcheckout
             if (Mage::helper('core')->isModuleEnabled('Magestore_Onestepcheckout')) {
-                if (Mage::helper('onestepcheckout')->enabledOnestepcheckout()) {
-                    $layout->getUpdate()->addHandle('magestore_onestepcheckout_index');
+                try {
+                    $onestepcheckoutHelper = Mage::helper('onestepcheckout');
+                    if ($onestepcheckoutHelper && method_exists($onestepcheckoutHelper, 'enabledOnestepcheckout') && $onestepcheckoutHelper->enabledOnestepcheckout()) {
+                        $layout->getUpdate()->addHandle('magestore_onestepcheckout_index');
+                    }
+                } catch (\Exception $e) {
+                    // Module not installed
                 }
             }
 
@@ -106,7 +128,6 @@ class Gene_Braintree_Model_Observer
 
     /**
      * Store the generated customer ID if it's present in the session
-     *
      *
      * @return $this
      */
@@ -134,7 +155,6 @@ class Gene_Braintree_Model_Observer
 
     /**
      * Capture payment on shipment if set
-     *
      *
      * @return $this
      */
@@ -184,7 +204,7 @@ class Gene_Braintree_Model_Observer
     /**
      * Add in the saved block
      */
-    public function addSavedChild(Varien_Event_Observer $observer)
+    public function addSavedChild(Varien_Event_Observer $observer): void
     {
         $block = $observer->getEvent()->getBlock();
 
@@ -234,7 +254,6 @@ class Gene_Braintree_Model_Observer
 
     /**
      * Handle multi shipping orders
-     *
      *
      * @return $this
      */

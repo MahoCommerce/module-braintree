@@ -104,8 +104,8 @@ class Gene_Braintree_Block_Adminhtml_Report_Transactions_Search extends Mage_Cor
      *
      * @return string
      */
-    public function formateDateBraintree($date)
+    public function formateDateBraintree(string|int $date)
     {
-        return date('d-m-Y G:i', $date);
+        return date('d-m-Y G:i', (int) $date);
     }
 }
