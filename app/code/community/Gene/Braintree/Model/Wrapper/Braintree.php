@@ -6,25 +6,24 @@
  */
 class Gene_Braintree_Model_Wrapper_Braintree extends Mage_Core_Model_Abstract
 {
+    public const BRAINTREE_ENVIRONMENT_PATH = 'payment/gene_braintree/environment';
+    public const BRAINTREE_MERCHANT_ID_PATH = 'payment/gene_braintree/merchant_id';
+    public const BRAINTREE_MERCHANT_ACCOUNT_ID_PATH = 'payment/gene_braintree/merchant_account_id';
+    public const BRAINTREE_PUBLIC_KEY_PATH = 'payment/gene_braintree/public_key';
+    public const BRAINTREE_PRIVATE_KEY_PATH = 'payment/gene_braintree/private_key';
 
-    CONST BRAINTREE_ENVIRONMENT_PATH = 'payment/gene_braintree/environment';
-    CONST BRAINTREE_MERCHANT_ID_PATH = 'payment/gene_braintree/merchant_id';
-    CONST BRAINTREE_MERCHANT_ACCOUNT_ID_PATH = 'payment/gene_braintree/merchant_account_id';
-    CONST BRAINTREE_PUBLIC_KEY_PATH = 'payment/gene_braintree/public_key';
-    CONST BRAINTREE_PRIVATE_KEY_PATH = 'payment/gene_braintree/private_key';
+    public const BRAINTREE_SANDBOX_MERCHANT_ID_PATH = 'payment/gene_braintree/sandbox_merchant_id';
+    public const BRAINTREE_SANDBOX_MERCHANT_ACCOUNT_ID_PATH = 'payment/gene_braintree/sandbox_merchant_account_id';
+    public const BRAINTREE_SANDBOX_PUBLIC_KEY_PATH = 'payment/gene_braintree/sandbox_public_key';
+    public const BRAINTREE_SANDBOX_PRIVATE_KEY_PATH = 'payment/gene_braintree/sandbox_private_key';
 
-    CONST BRAINTREE_SANDBOX_MERCHANT_ID_PATH = 'payment/gene_braintree/sandbox_merchant_id';
-    CONST BRAINTREE_SANDBOX_MERCHANT_ACCOUNT_ID_PATH = 'payment/gene_braintree/sandbox_merchant_account_id';
-    CONST BRAINTREE_SANDBOX_PUBLIC_KEY_PATH = 'payment/gene_braintree/sandbox_public_key';
-    CONST BRAINTREE_SANDBOX_PRIVATE_KEY_PATH = 'payment/gene_braintree/sandbox_private_key';
-
-    const BRAINTREE_MULTI_CURRENCY = 'payment/gene_braintree/multi_currency_enable';
-    const BRAINTREE_MULTI_CURRENCY_MAPPING = 'payment/gene_braintree/multi_currency_mapping';
+    public const BRAINTREE_MULTI_CURRENCY = 'payment/gene_braintree/multi_currency_enable';
+    public const BRAINTREE_MULTI_CURRENCY_MAPPING = 'payment/gene_braintree/multi_currency_mapping';
 
     /**
      * Store whether or not the system has recently connected to the Braintree API successfully
      */
-    const BRAINTREE_API_CONFIG_STATUS = 'payment/gene_braintree/api_config_status';
+    public const BRAINTREE_API_CONFIG_STATUS = 'payment/gene_braintree/api_config_status';
 
     /**
      * Store the customer
@@ -163,7 +162,7 @@ class Gene_Braintree_Model_Wrapper_Braintree extends Mage_Core_Model_Abstract
     {
         // Use the class to generate the token
         return Braintree\ClientToken::generate(
-            array("merchantAccountId" => $this->getMerchantAccountId())
+            ['merchantAccountId' => $this->getMerchantAccountId()],
         );
     }
 
@@ -179,16 +178,12 @@ class Gene_Braintree_Model_Wrapper_Braintree extends Mage_Core_Model_Abstract
     {
         // Grab the customer ID from the customers account
         $customerId = Mage::getSingleton('customer/session')->getCustomer()->getBraintreeCustomerId();
-
         // Detect which type of payment method we've got here
         if ($paymentMethod instanceof Braintree\PayPalAccount) {
-
             // Grab the customer
             $customer = $this->getCustomer($customerId);
-
             // Store all the tokens in an array
-            $customerTokens = array();
-
+            $customerTokens = [];
             // Check the customer has PayPal Accounts
             if (isset($customer->paypalAccounts)) {
 
@@ -201,16 +196,14 @@ class Gene_Braintree_Model_Wrapper_Braintree extends Mage_Core_Model_Abstract
             } else {
                 return false;
             }
-
             // Check to see if this customer account contains this token
             if (in_array($paymentMethod->token, $customerTokens)) {
                 return true;
             }
-
             return false;
+        }
 
-        } else if (isset($paymentMethod->customerId) && $paymentMethod->customerId == $customerId) {
-
+        if (isset($paymentMethod->customerId) && $paymentMethod->customerId == $customerId) {
             return true;
         }
 
@@ -319,7 +312,10 @@ class Gene_Braintree_Model_Wrapper_Braintree extends Mage_Core_Model_Abstract
      * @throws \Exception
      */
     public function validateCredentials(
-        $prettyResponse = false, $alreadyInit = false, $merchantAccountId = false, $throwException = false
+        $prettyResponse = false,
+        $alreadyInit = false,
+        $merchantAccountId = false,
+        $throwException = false,
     ) {
         // Try to init the environment
         try {
@@ -336,7 +332,7 @@ class Gene_Braintree_Model_Wrapper_Braintree extends Mage_Core_Model_Abstract
                         Braintree\Configuration::merchantId($this->getAdminConfigValue(self::BRAINTREE_MERCHANT_ID_PATH));
                         Braintree\Configuration::publicKey($this->getAdminConfigValue(self::BRAINTREE_PUBLIC_KEY_PATH));
                         Braintree\Configuration::privateKey($this->getAdminConfigValue(self::BRAINTREE_PRIVATE_KEY_PATH));
-                    } else if ($environment == Gene_Braintree_Model_Source_Environment::SANDBOX) {
+                    } elseif ($environment == Gene_Braintree_Model_Source_Environment::SANDBOX) {
                         Braintree\Configuration::merchantId($this->getAdminConfigValue(self::BRAINTREE_SANDBOX_MERCHANT_ID_PATH));
                         Braintree\Configuration::publicKey($this->getAdminConfigValue(self::BRAINTREE_SANDBOX_PUBLIC_KEY_PATH));
                         Braintree\Configuration::privateKey($this->getAdminConfigValue(self::BRAINTREE_SANDBOX_PRIVATE_KEY_PATH));
@@ -450,12 +446,13 @@ class Gene_Braintree_Model_Wrapper_Braintree extends Mage_Core_Model_Abstract
     {
         // Retrieve the environment
         $environment = Mage::getStoreConfig(self::BRAINTREE_ENVIRONMENT_PATH);
-
         if ($environment == Gene_Braintree_Model_Source_Environment::PRODUCTION) {
             return Mage::getStoreConfig(Gene_Braintree_Model_Wrapper_Braintree::BRAINTREE_MERCHANT_ID_PATH)
                 && Mage::getStoreConfig(Gene_Braintree_Model_Wrapper_Braintree::BRAINTREE_PUBLIC_KEY_PATH)
                 && Mage::getStoreConfig(Gene_Braintree_Model_Wrapper_Braintree::BRAINTREE_PRIVATE_KEY_PATH);
-        } elseif ($environment == Gene_Braintree_Model_Source_Environment::SANDBOX) {
+        }
+
+        if ($environment == Gene_Braintree_Model_Source_Environment::SANDBOX) {
             return Mage::getStoreConfig(Gene_Braintree_Model_Wrapper_Braintree::BRAINTREE_SANDBOX_MERCHANT_ID_PATH)
                 && Mage::getStoreConfig(Gene_Braintree_Model_Wrapper_Braintree::BRAINTREE_SANDBOX_PUBLIC_KEY_PATH)
                 && Mage::getStoreConfig(Gene_Braintree_Model_Wrapper_Braintree::BRAINTREE_SANDBOX_PRIVATE_KEY_PATH);
@@ -475,13 +472,13 @@ class Gene_Braintree_Model_Wrapper_Braintree extends Mage_Core_Model_Abstract
     public function storeInVault($nonce, $billingAddress = false)
     {
         // Create the payment method with this data
-        $paymentMethodCreate = array(
+        $paymentMethodCreate = [
             'paymentMethodNonce' => $nonce,
-            'options'            => array(
+            'options'            => [
                 'verifyCard'                    => true,
-                'verificationMerchantAccountId' => $this->getMerchantAccountId()
-            )
-        );
+                'verificationMerchantAccountId' => $this->getMerchantAccountId(),
+            ],
+        ];
 
         if ($customerId = $this->getBraintreeId()) {
             $paymentMethodCreate['customerId'] = $this->getBraintreeId();
@@ -499,7 +496,7 @@ class Gene_Braintree_Model_Wrapper_Braintree extends Mage_Core_Model_Abstract
         // Dispatch an event to allow modification of the store in vault
         $object = new Varien_Object();
         $object->setAttributes($paymentMethodCreate);
-        Mage::dispatchEvent('gene_braintree_store_in_vault', array('object' => $object));
+        Mage::dispatchEvent('gene_braintree_store_in_vault', ['object' => $object]);
         $paymentMethodCreate = $object->getAttributes();
 
         // Create a new billing method
@@ -516,16 +513,16 @@ class Gene_Braintree_Model_Wrapper_Braintree extends Mage_Core_Model_Abstract
      */
     public function storeInGuestVault($nonce, $billingAddress = false)
     {
-        $guestCustomerCreate = array(
+        $guestCustomerCreate = [
             'id'         => $this->getBraintreeId(),
-            'creditCard' => array(
+            'creditCard' => [
                 'paymentMethodNonce' => $nonce,
-                'options'            => array(
+                'options'            => [
                     'verifyCard'                    => true,
-                    'verificationMerchantAccountId' => $this->getMerchantAccountId()
-                )
-            )
-        );
+                    'verificationMerchantAccountId' => $this->getMerchantAccountId(),
+                ],
+            ],
+        ];
 
         // Include billing address information into the customer
         if ($billingAddress) {
@@ -552,7 +549,7 @@ class Gene_Braintree_Model_Wrapper_Braintree extends Mage_Core_Model_Abstract
         // Dispatch an event to allow modification of the store in vault
         $object = new Varien_Object();
         $object->setAttributes($guestCustomerCreate);
-        Mage::dispatchEvent('gene_braintree_store_in_guest_vault', array('object' => $object));
+        Mage::dispatchEvent('gene_braintree_store_in_guest_vault', ['object' => $object]);
         $guestCustomerCreate = $object->getAttributes();
 
         return Braintree\Customer::create($guestCustomerCreate);
@@ -591,8 +588,6 @@ class Gene_Braintree_Model_Wrapper_Braintree extends Mage_Core_Model_Abstract
      * Build up the sale request
      *
      * @param                        $amount
-     * @param array                  $paymentDataArray
-     * @param Mage_Sales_Model_Order $order
      * @param bool                   $submitForSettlement
      * @param bool                   $deviceData
      * @param bool                   $storeInVault
@@ -611,7 +606,7 @@ class Gene_Braintree_Model_Wrapper_Braintree extends Mage_Core_Model_Abstract
         $deviceData = false,
         $storeInVault = false,
         $threeDSecure = false,
-        $extra = array()
+        $extra = [],
     ) {
         // Check we always have an ID
         if (!$order->getIncrementId()) {
@@ -650,7 +645,7 @@ class Gene_Braintree_Model_Wrapper_Braintree extends Mage_Core_Model_Abstract
                     $deviceData,
                     $storeInVault,
                     $threeDSecure,
-                    $extra
+                    $extra,
                 );
             }
         } elseif ($storeInVault && $this->checkIsCustomer() && isset($paymentDataArray['paymentMethodNonce'])) {
@@ -686,20 +681,20 @@ class Gene_Braintree_Model_Wrapper_Braintree extends Mage_Core_Model_Abstract
 
             } else {
                 // Create the payment method with this data
-                $paymentMethodCreate = array(
+                $paymentMethodCreate = [
                     'customerId'         => $this->getBraintreeId(),
                     'paymentMethodNonce' => $paymentDataArray['paymentMethodNonce'],
-                    'billingAddress'     => $this->buildAddress($order->getBillingAddress())
-                );
+                    'billingAddress'     => $this->buildAddress($order->getBillingAddress()),
+                ];
 
                 // Log the create array
-                Gene_Braintree_Model_Debug::log(array('Braintree\PaymentMethod' => $paymentMethodCreate));
+                Gene_Braintree_Model_Debug::log([\Braintree\PaymentMethod::class => $paymentMethodCreate]);
 
                 // Create a new billing method
                 $result = Braintree\PaymentMethod::create($paymentMethodCreate);
 
                 // Log the response from Braintree
-                Gene_Braintree_Model_Debug::log(array('Braintree\PaymentMethod:result' => $result));
+                Gene_Braintree_Model_Debug::log(['Braintree\PaymentMethod:result' => $result]);
 
                 // Verify the storing of the card was a success
                 if (isset($result->success) && $result->success == true) {
@@ -726,19 +721,19 @@ class Gene_Braintree_Model_Wrapper_Braintree extends Mage_Core_Model_Abstract
         $channel = 'GeneVZero_' . Mage::getConfig()->getModuleConfig('Gene_Braintree')->version;
 
         // Build up the initial request parameters
-        $request = array(
+        $request = [
             'amount'            => $amount,
             'orderId'           => $order->getIncrementId(),
             'merchantAccountId' => $this->getMerchantAccountId($order),
             'channel'           => $channel,
-            'options'           => array(
+            'options'           => [
                 'submitForSettlement' => $submitForSettlement,
-                'storeInVault'        => $storeInVault
-            )
-        );
+                'storeInVault'        => $storeInVault,
+            ],
+        ];
 
         // Input the allowed payment method info
-        $allowedPaymentInfo = array('paymentMethodNonce', 'paymentMethodToken', 'token', 'cvv');
+        $allowedPaymentInfo = ['paymentMethodNonce', 'paymentMethodToken', 'token', 'cvv'];
         foreach ($paymentDataArray as $key => $value) {
             if (in_array($key, $allowedPaymentInfo)) {
                 if ($key == 'cvv') {
@@ -835,7 +830,7 @@ class Gene_Braintree_Model_Wrapper_Braintree extends Mage_Core_Model_Abstract
     {
         // Call the braintree library
         return Braintree\Transaction::sale(
-            $saleArray
+            $saleArray,
         );
     }
 
@@ -926,7 +921,7 @@ class Gene_Braintree_Model_Wrapper_Braintree extends Mage_Core_Model_Abstract
             return $this->buildAddress($addressObject);
         }
 
-        return array();
+        return [];
     }
 
     /**
@@ -944,11 +939,10 @@ class Gene_Braintree_Model_Wrapper_Braintree extends Mage_Core_Model_Abstract
     /**
      * Return the correct merchant account ID for the order
      *
-     * @param \Mage_Sales_Model_Order|null $order
      *
      * @return bool|mixed
      */
-    public function getMerchantAccountId(Mage_Sales_Model_Order $order = null)
+    public function getMerchantAccountId(?Mage_Sales_Model_Order $order = null)
     {
         // If multi-currency is enabled use the mapped merchant account ID
         if ($currencyCode = $this->hasMappedCurrencyCode($order)) {
@@ -960,7 +954,7 @@ class Gene_Braintree_Model_Wrapper_Braintree extends Mage_Core_Model_Abstract
         $environment = Mage::getStoreConfig(self::BRAINTREE_ENVIRONMENT_PATH, ($order ? $order->getStoreId() : null));
         if ($environment == Gene_Braintree_Model_Source_Environment::PRODUCTION) {
             $merchantAccountIdPath = self::BRAINTREE_MERCHANT_ACCOUNT_ID_PATH;
-        } else if ($environment == Gene_Braintree_Model_Source_Environment::SANDBOX) {
+        } elseif ($environment == Gene_Braintree_Model_Source_Environment::SANDBOX) {
             $merchantAccountIdPath = self::BRAINTREE_SANDBOX_MERCHANT_ACCOUNT_ID_PATH;
         } else {
             return false;
@@ -973,11 +967,10 @@ class Gene_Braintree_Model_Wrapper_Braintree extends Mage_Core_Model_Abstract
     /**
      * Does the order have a mapped currency code?
      *
-     * @param \Mage_Sales_Model_Order|null $order
      *
      * @return bool|string
      */
-    public function hasMappedCurrencyCode(Mage_Sales_Model_Order $order = null)
+    public function hasMappedCurrencyCode(?Mage_Sales_Model_Order $order = null)
     {
         // If multi-currency is enabled use the mapped merchant account ID
         if ($this->currencyMappingEnabled($order)) {
@@ -1015,11 +1008,10 @@ class Gene_Braintree_Model_Wrapper_Braintree extends Mage_Core_Model_Abstract
     /**
      * Determine whether or not currency mapping is enabled
      *
-     * @param \Mage_Sales_Model_Order|null $order
      *
      * @return bool
      */
-    public function currencyMappingEnabled(Mage_Sales_Model_Order $order = null)
+    public function currencyMappingEnabled(?Mage_Sales_Model_Order $order = null)
     {
         return Mage::getStoreConfigFlag(self::BRAINTREE_MULTI_CURRENCY)
             && Mage::getStoreConfig(self::BRAINTREE_MULTI_CURRENCY_MAPPING);
@@ -1048,7 +1040,7 @@ class Gene_Braintree_Model_Wrapper_Braintree extends Mage_Core_Model_Abstract
      *
      * @return string
      */
-    public function getCaptureAmount(Mage_Sales_Model_Order $order = null, $amount)
+    public function getCaptureAmount(?Mage_Sales_Model_Order $order = null, $amount)
     {
         // If we've got a mapped currency code the amount is going to change
         if ($this->hasMappedCurrencyCode($order)) {
@@ -1083,18 +1075,17 @@ class Gene_Braintree_Model_Wrapper_Braintree extends Mage_Core_Model_Abstract
     /**
      * Build up the customers data onto an object
      *
-     * @param Mage_Sales_Model_Order $order
      *
      * @return array
      */
     private function buildCustomer(Mage_Sales_Model_Order $order, $includeId = true)
     {
-        $customer = array(
+        $customer = [
             'firstName' => $order->getCustomerFirstname(),
             'lastName'  => $order->getCustomerLastname(),
             'email'     => $order->getCustomerEmail(),
-            'phone'     => $order->getBillingAddress()->getTelephone()
-        );
+            'phone'     => $order->getBillingAddress()->getTelephone(),
+        ];
 
         // Shall we include the customer ID?
         if ($includeId) {
@@ -1163,19 +1154,19 @@ class Gene_Braintree_Model_Wrapper_Braintree extends Mage_Core_Model_Abstract
     {
         // Attempt to clone the transaction
         try {
-            $result = Braintree\Transaction::cloneTransaction($transactionId, array(
+            $result = Braintree\Transaction::cloneTransaction($transactionId, [
                 'amount'  => $amount,
-                'options' => array(
-                    'submitForSettlement' => $submitForSettlement
-                )
-            ));
+                'options' => [
+                    'submitForSettlement' => $submitForSettlement,
+                ],
+            ]);
 
             return $result;
 
         } catch (Exception $e) {
 
             // Log the issue
-            Gene_Braintree_Model_Debug::log(array('cloneTransaction' => $e));
+            Gene_Braintree_Model_Debug::log(['cloneTransaction' => $e]);
 
             return false;
         }
@@ -1190,7 +1181,7 @@ class Gene_Braintree_Model_Wrapper_Braintree extends Mage_Core_Model_Abstract
      */
     public function parseErrors($braintreeErrors)
     {
-        $errors = array();
+        $errors = [];
         foreach ($braintreeErrors as $error) {
             $errors[] = $error->code . ': ' . $this->parseMessage($error->message);
         }
@@ -1224,12 +1215,12 @@ class Gene_Braintree_Model_Wrapper_Braintree extends Mage_Core_Model_Abstract
         if ($apiStatus->getId()) {
             $apiStatus->setPlainValue($status)->save();
         } else {
-            Mage::getModel('core/variable')->setData(array(
+            Mage::getModel('core/variable')->setData([
                 'code'        => self::BRAINTREE_API_CONFIG_STATUS,
                 'name'        => self::BRAINTREE_API_CONFIG_STATUS,
                 'store_id'    => $storeId,
-                'plain_value' => $status
-            ))->save();
+                'plain_value' => $status,
+            ])->save();
         }
 
         return $status;
@@ -1253,6 +1244,6 @@ class Gene_Braintree_Model_Wrapper_Braintree extends Mage_Core_Model_Abstract
             return $this->validateCredentials();
         }
 
-        return (bool)$apiStatus;
+        return (bool) $apiStatus;
     }
 }

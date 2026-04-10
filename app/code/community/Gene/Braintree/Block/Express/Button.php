@@ -6,8 +6,8 @@
  */
 class Gene_Braintree_Block_Express_Button extends Gene_Braintree_Block_Express_Abstract
 {
-    const TYPE_CART = 'cart';
-    const TYPE_CATALOG = 'catalog';
+    public const TYPE_CART = 'cart';
+    public const TYPE_CATALOG = 'catalog';
 
     /**
      * Registry entry to mark this block as instantiated
@@ -16,11 +16,13 @@ class Gene_Braintree_Block_Express_Button extends Gene_Braintree_Block_Express_A
      *
      * @return string
      */
-    public function _afterToHtml($html)
+    #[\Override]
+    protected function _afterToHtml($html)
     {
         if ($this->getExpressType() == self::TYPE_CART && $this->isEnabledCart()) {
             return $html;
-        } elseif ($this->getExpressType() == self::TYPE_CATALOG && $this->isEnabledPdp()) {
+        }
+        if ($this->getExpressType() == self::TYPE_CATALOG && $this->isEnabledPdp()) {
             return $html;
         }
 

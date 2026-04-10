@@ -7,6 +7,7 @@ class Gene_Braintree_Adminhtml_CheckoutController extends Mage_Adminhtml_Control
      *
      * @return bool
      */
+    #[\Override]
     protected function _isAllowed()
     {
         return Mage::getSingleton('admin/session')->isAllowed('sales/order');
@@ -20,15 +21,15 @@ class Gene_Braintree_Adminhtml_CheckoutController extends Mage_Adminhtml_Control
     public function clientTokenAction()
     {
         try {
-            return $this->_returnJson(array(
+            return $this->_returnJson([
                 'success' => true,
-                'client_token' => Mage::getSingleton('gene_braintree/wrapper_braintree')->init()->generateToken()
-            ));
+                'client_token' => Mage::getSingleton('gene_braintree/wrapper_braintree')->init()->generateToken(),
+            ]);
         } catch (Exception $e) {
-            return $this->_returnJson(array(
+            return $this->_returnJson([
                 'success' => false,
-                'error' => $e->getMessage()
-            ));
+                'error' => $e->getMessage(),
+            ]);
         }
     }
 }

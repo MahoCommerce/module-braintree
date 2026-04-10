@@ -61,7 +61,7 @@ class Gene_Braintree_Model_Applepay_Express extends Mage_Core_Model_Abstract
         $quote = Mage::getModel('sales/quote')->setStoreId(Mage::app()->getStore()->getId());
 
         // Build up the add request
-        $formData = array();
+        $formData = [];
         parse_str($productForm, $formData);
         $request = new Varien_Object($formData);
 
@@ -69,7 +69,7 @@ class Gene_Braintree_Model_Applepay_Express extends Mage_Core_Model_Abstract
         $item = $quote->addProduct($product, $request);
 
         // Fire the event for adding a product to cart
-        Mage::dispatchEvent('checkout_cart_product_add_after', array('quote_item' => $item, 'product' => $product));
+        Mage::dispatchEvent('checkout_cart_product_add_after', ['quote_item' => $item, 'product' => $product]);
 
         // Collect totals
         $quote->unsTotalsCollectedFlag()->collectTotals();
@@ -107,15 +107,15 @@ class Gene_Braintree_Model_Applepay_Express extends Mage_Core_Model_Abstract
             }
         }
 
-        $magentoAddress = array(
+        $magentoAddress = [
             'street' => implode("\n", $address['addressLines']),
             'firstname' => $address['givenName'],
             'lastname' => $address['familyName'],
             'city' => $address['locality'],
             'country_id' => $countryId,
             'postcode' => $address['postalCode'],
-            'telephone' => isset($address['phoneNumber']) ? $address['phoneNumber'] : '0000000000'
-        );
+            'telephone' => $address['phoneNumber'] ?? '0000000000',
+        ];
 
         // Determine if a region is required for the selected country
         if (Mage::helper('directory')->isRegionRequired($countryId) && isset($address['administrativeArea'])) {
@@ -139,11 +139,11 @@ class Gene_Braintree_Model_Applepay_Express extends Mage_Core_Model_Abstract
         $region = Mage::getResourceModel('directory/region_collection')
             ->addFieldToFilter('country_id', $magentoAddress['country_id'])
             ->addFieldToFilter(
-                array('code', 'default_name'),
-                array(
-                    array('eq' => $address['administrativeArea']),
-                    array('eq' => $address['administrativeArea'])
-                )
+                ['code', 'default_name'],
+                [
+                    ['eq' => $address['administrativeArea']],
+                    ['eq' => $address['administrativeArea']],
+                ],
             );
 
         // Check we have a region
@@ -222,13 +222,13 @@ class Gene_Braintree_Model_Applepay_Express extends Mage_Core_Model_Abstract
             $detail = '';
         }
 
-        return array(
+        return [
             'label' => $shippingRate->getCarrierTitle(),
             'amount' =>
                 (float) number_format(Mage::helper('core')->currency($shippingRate->getPrice(), false, false), 2),
             'detail' => $detail,
-            'identifier' => $shippingRate->getCode()
-        );
+            'identifier' => $shippingRate->getCode(),
+        ];
     }
 
     /**
@@ -251,10 +251,10 @@ class Gene_Braintree_Model_Applepay_Express extends Mage_Core_Model_Abstract
         $totals = $quote->getTotals();
         if (isset($totals['discount']) && $totals['discount']->getValue() < 0) {
             $label = Mage::helper('gene_braintree')->__('Discount%s', ($quote->getCouponCode() ? ' (' . $quote->getCouponCode() . ')' : ''));
-            $response['items'][] = array(
+            $response['items'][] = [
                 'label' => $label,
-                'amount' => number_format($totals['discount']->getValue(), 2)
-            );
+                'amount' => number_format($totals['discount']->getValue(), 2),
+            ];
         }
 
         return $response;

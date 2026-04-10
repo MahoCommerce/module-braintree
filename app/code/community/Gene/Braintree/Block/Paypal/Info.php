@@ -6,10 +6,10 @@
  */
 class Gene_Braintree_Block_Paypal_Info extends Gene_Braintree_Block_Info
 {
-
     /**
      * Use a custom template
      */
+    #[\Override]
     protected function _construct()
     {
         parent::_construct();
@@ -23,13 +23,14 @@ class Gene_Braintree_Block_Paypal_Info extends Gene_Braintree_Block_Info
      *
      * @return Varien_Object
      */
+    #[\Override]
     protected function _prepareSpecificInformation($transport = null)
     {
         // Get the original transport data
         $transport = parent::_prepareSpecificInformation($transport);
 
         // Start out data array
-        $data = array();
+        $data = [];
 
         // Build up the data we wish to pass through
         if ($this->getInfo()->getAdditionalInformation('paypal_email')) {

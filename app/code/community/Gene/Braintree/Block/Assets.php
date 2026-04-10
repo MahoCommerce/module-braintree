@@ -3,14 +3,13 @@
 /**
  * @author Dave Macaulay <braintreesupport@gene.co.uk>
  * @license https://opensource.org/licenses/osl-3.0.php Open Software License (OSL 3.0)
- *
  */
 class Gene_Braintree_Block_Assets extends Mage_Core_Block_Template
 {
     /**
      * Version of Braintree SDK to be included
      */
-    const SDK_VERSION = '3.48.0';
+    public const SDK_VERSION = '3.48.0';
 
     /**
      * Record the current version
@@ -24,14 +23,14 @@ class Gene_Braintree_Block_Assets extends Mage_Core_Block_Template
      *
      * @var array
      */
-    protected $js = array();
+    protected $js = [];
 
     /**
      * Any external JavaScript to be included
      *
      * @var array
      */
-    protected $externalJs = array();
+    protected $externalJs = [];
 
     /**
      * Cache for payment method active status
@@ -42,8 +41,8 @@ class Gene_Braintree_Block_Assets extends Mage_Core_Block_Template
 
     /**
      * Initialize template
-     *
      */
+    #[\Override]
     protected function _construct()
     {
         $this->setTemplate('gene/braintree/assets.phtml');
@@ -70,13 +69,13 @@ class Gene_Braintree_Block_Assets extends Mage_Core_Block_Template
     public function getJs()
     {
         return array_unique(array_filter($this->js, function ($url) {
-            if (strpos($url, 'vzero-paypal') !== false) {
+            if (str_contains($url, 'vzero-paypal')) {
                 return $this->isMethodActive('gene_braintree_paypal');
             }
-            if (strpos($url, 'vzero-googlepay') !== false) {
+            if (str_contains($url, 'vzero-googlepay')) {
                 return $this->isMethodActive('gene_braintree_googlepay');
             }
-            if (strpos($url, 'vzero-applepay') !== false) {
+            if (str_contains($url, 'vzero-applepay')) {
                 return $this->isMethodActive('gene_braintree_applepay');
             }
             return true;
@@ -104,13 +103,13 @@ class Gene_Braintree_Block_Assets extends Mage_Core_Block_Template
     public function getExternalJs()
     {
         return array_unique(array_filter($this->externalJs, function ($url) {
-            if (strpos($url, 'paypal-checkout') !== false || strpos($url, 'paypalobjects.com') !== false) {
+            if (str_contains($url, 'paypal-checkout') || str_contains($url, 'paypalobjects.com')) {
                 return $this->isMethodActive('gene_braintree_paypal');
             }
-            if (strpos($url, 'google-payment') !== false || strpos($url, 'pay.google.com') !== false) {
+            if (str_contains($url, 'google-payment') || str_contains($url, 'pay.google.com')) {
                 return $this->isMethodActive('gene_braintree_googlepay');
             }
-            if (strpos($url, 'apple-pay') !== false) {
+            if (str_contains($url, 'apple-pay')) {
                 return $this->isMethodActive('gene_braintree_applepay');
             }
             return true;
@@ -163,13 +162,14 @@ class Gene_Braintree_Block_Assets extends Mage_Core_Block_Template
      *
      * @return string
      */
+    #[\Override]
     public function getJsUrl($fileName = '')
     {
         $fileName = str_replace('{MODULE_VERSION}', $this->getModuleVersion(), $fileName);
         $fileName = str_replace('{SDK_VERSION}', self::SDK_VERSION, $fileName);
 
         // Detect if the filename as :// within it meaning it's an external URL
-        if (strpos($fileName, '://') === false) {
+        if (!str_contains($fileName, '://')) {
             $cacheBust = '';
             if ($modifiedTime = $this->getAssetModifiedTime($fileName)) {
                 $cacheBust = '?v=' . $modifiedTime;
@@ -208,11 +208,12 @@ class Gene_Braintree_Block_Assets extends Mage_Core_Block_Template
         $request = $this->getRequest();
         $requestString =
             $request->getModuleName() . '_' . $request->getControllerName() . '_' . $request->getActionName();
-
         // Determine if we're viewing a product or cart and handle different logic
         if ($requestString == 'catalog_product_view') {
             return $this->checkAssetsForProduct();
-        } elseif ($requestString == 'checkout_cart_index') {
+        }
+
+        if ($requestString == 'checkout_cart_index') {
             return $this->checkAssetsForCart();
         }
 
@@ -271,12 +272,14 @@ class Gene_Braintree_Block_Assets extends Mage_Core_Block_Template
      *
      * @return bool|string
      */
+    #[\Override]
     protected function _toHtml()
     {
         // Handle the blocks inclusion differently in the admin
         if (Mage::app()->getStore()->isAdmin() && $this->isSetupRequiredInAdmin()) {
             return parent::_toHtml();
-        } elseif (Mage::app()->getStore()->isAdmin()) {
+        }
+        if (Mage::app()->getStore()->isAdmin()) {
             return false;
         }
 

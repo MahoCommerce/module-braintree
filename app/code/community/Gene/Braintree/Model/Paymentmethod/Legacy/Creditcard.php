@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 /**
  * @author Dave Macaulay <braintreesupport@gene.co.uk>
  * @license https://opensource.org/licenses/osl-3.0.php Open Software License (OSL 3.0)
@@ -20,6 +22,7 @@ class Gene_Braintree_Model_Paymentmethod_Legacy_Creditcard extends Gene_Braintre
      *
      * @return bool
      */
+    #[\Override]
     public function isAvailable($quote = null)
     {
         return false;

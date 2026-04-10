@@ -1,4 +1,5 @@
 <?php
+
 /**
  * @author Dave Macaulay <dave@gene.co.uk>
  * @license https://opensource.org/licenses/osl-3.0.php Open Software License (OSL 3.0)
@@ -37,15 +38,15 @@ class Gene_Braintree_ApplepayController extends Mage_Core_Controller_Front_Actio
     public function clientTokenAction()
     {
         try {
-            return $this->_returnJson(array(
+            return $this->_returnJson([
                 'success' => true,
-                'client_token' => Mage::getSingleton('gene_braintree/wrapper_braintree')->init()->generateToken()
-            ));
+                'client_token' => Mage::getSingleton('gene_braintree/wrapper_braintree')->init()->generateToken(),
+            ]);
         } catch (Exception $e) {
-            return $this->_returnJson(array(
+            return $this->_returnJson([
                 'success' => false,
-                'error' => $e->getMessage()
-            ));
+                'error' => $e->getMessage(),
+            ]);
         }
     }
 
@@ -71,10 +72,10 @@ class Gene_Braintree_ApplepayController extends Mage_Core_Controller_Front_Actio
         $rates = $express->getShippingRates();
 
         // Build up our response
-        $response = array(
+        $response = [
             'success' => true,
-            'rates' => $rates
-        );
+            'rates' => $rates,
+        ];
         $response = $express->getAdditionalResponse($response);
 
         return $this->_returnJson($response);
@@ -124,7 +125,7 @@ class Gene_Braintree_ApplepayController extends Mage_Core_Controller_Front_Actio
         // Submit the express checkout
         try {
             $express->submit();
-            return $this->_returnJson(array('success' => true));
+            return $this->_returnJson(['success' => true]);
         } catch (Mage_Core_Exception $e) {
             return $this->errorAction($e->getMessage());
         } catch (Exception $e) {
@@ -141,10 +142,10 @@ class Gene_Braintree_ApplepayController extends Mage_Core_Controller_Front_Actio
      */
     public function errorAction($message)
     {
-        return $this->_returnJson(array(
+        return $this->_returnJson([
             'success' => false,
-            'message' => $message
-        ));
+            'message' => $message,
+        ]);
     }
 
     /**

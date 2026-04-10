@@ -13,6 +13,7 @@ class Gene_Braintree_Block_Creditcard_Threedsecure extends Mage_Core_Block_Templ
      *
      * @return string
      */
+    #[\Override]
     protected function _toHtml()
     {
         // Check the payment method is active

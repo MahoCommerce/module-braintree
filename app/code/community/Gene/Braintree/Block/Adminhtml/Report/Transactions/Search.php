@@ -15,7 +15,7 @@ class Gene_Braintree_Block_Adminhtml_Report_Transactions_Search extends Mage_Cor
      */
     public function getFromDate()
     {
-        if($fromDate = Mage::app()->getRequest()->getParam('from_date')) {
+        if ($fromDate = Mage::app()->getRequest()->getParam('from_date')) {
             return $fromDate;
         }
 
@@ -29,7 +29,7 @@ class Gene_Braintree_Block_Adminhtml_Report_Transactions_Search extends Mage_Cor
      */
     public function getToDate()
     {
-        if($toDate = Mage::app()->getRequest()->getParam('to_date')) {
+        if ($toDate = Mage::app()->getRequest()->getParam('to_date')) {
             return $toDate;
         }
 
@@ -60,11 +60,11 @@ class Gene_Braintree_Block_Adminhtml_Report_Transactions_Search extends Mage_Cor
      */
     public function getTypesAsArray()
     {
-        return array(
+        return [
             '' => 'All',
             'sale' => 'Sale',
-            'credit' => 'Credit'
-        );
+            'credit' => 'Credit',
+        ];
     }
 
     /**

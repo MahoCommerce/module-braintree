@@ -108,28 +108,28 @@ class Gene_Braintree_Model_Migration extends Mage_Core_Model_Abstract
     protected function _runConfiguration()
     {
         // The mapping from the Braintree_Payments configuration into the Gene_Braintree configuration
-        $configurationMapping = array(
-            'environment' => 'gene_braintree/environment'
-        );
+        $configurationMapping = [
+            'environment' => 'gene_braintree/environment',
+        ];
 
         // Sandbox details go into their own fields
         if (Mage::getStoreConfig('payment/braintree/environment') == Gene_Braintree_Model_Source_Environment::SANDBOX) {
-            $configurationMapping = array_merge($configurationMapping, array(
+            $configurationMapping = array_merge($configurationMapping, [
                 'merchant_id' => 'gene_braintree/sandbox_merchant_id',
                 'merchant_account_id' => 'gene_braintree/sandbox_merchant_account_id',
                 'public_key' => 'gene_braintree/sandbox_public_key',
-                'private_key' => 'gene_braintree/sandbox_private_key'
-            ));
+                'private_key' => 'gene_braintree/sandbox_private_key',
+            ]);
         } else {
-            $configurationMapping = array_merge($configurationMapping, array(
+            $configurationMapping = array_merge($configurationMapping, [
                 'merchant_id' => 'gene_braintree/merchant_id',
                 'merchant_account_id' => 'gene_braintree/merchant_account_id',
                 'public_key' => 'gene_braintree/public_key',
-                'private_key' => 'gene_braintree/private_key'
-            ));
+                'private_key' => 'gene_braintree/private_key',
+            ]);
         }
 
-        $configurationMapping = array_merge($configurationMapping, array(
+        $configurationMapping = array_merge($configurationMapping, [
             /* PayPal */
             'paypal_active' => 'gene_braintree_paypal/active',
             'paypal_title' => 'gene_braintree_paypal/title',
@@ -153,8 +153,8 @@ class Gene_Braintree_Model_Migration extends Mage_Core_Model_Abstract
             'kount_id' => 'gene_braintree_creditcard/kount_merchant_id',
             'kount_environment' => 'gene_braintree_creditcard/kount_environment',
             'allowspecific' => 'gene_braintree_creditcard/allowspecific',
-            'specificcountry' => 'gene_braintree_creditcard/specificcountry'
-        ));
+            'specificcountry' => 'gene_braintree_creditcard/specificcountry',
+        ]);
 
         /* @var $resource Mage_Core_Model_Resource */
         $resource = Mage::getModel('core/resource');
@@ -171,8 +171,7 @@ class Gene_Braintree_Model_Migration extends Mage_Core_Model_Abstract
         foreach ($stores as $store) {
 
             // Iterate through each field within a store updating it on the store view if it exists
-            foreach ($configurationMapping as $legacyKey => $newKey)
-            {
+            foreach ($configurationMapping as $legacyKey => $newKey) {
                 // Convert the aliases into the full paths
                 $legacyKey = 'payment/braintree/' . $legacyKey;
                 $newKey = 'payment/' . $newKey;
@@ -200,8 +199,7 @@ class Gene_Braintree_Model_Migration extends Mage_Core_Model_Abstract
         foreach ($websites as $website) {
 
             // Iterate through each field within a store updating it on the store view if it exists
-            foreach ($configurationMapping as $legacyKey => $newKey)
-            {
+            foreach ($configurationMapping as $legacyKey => $newKey) {
                 // Convert the aliases into the full paths
                 $legacyKey = 'payment/braintree/' . $legacyKey;
                 $newKey = 'payment/' . $newKey;
@@ -223,8 +221,7 @@ class Gene_Braintree_Model_Migration extends Mage_Core_Model_Abstract
         }
 
         // Finally update the default configuration data
-        foreach ($configurationMapping as $legacyKey => $newKey)
-        {
+        foreach ($configurationMapping as $legacyKey => $newKey) {
             // Convert the aliases into the full paths
             $legacyKey = 'payment/braintree/' . $legacyKey;
             $newKey = 'payment/' . $newKey;
@@ -257,16 +254,15 @@ class Gene_Braintree_Model_Migration extends Mage_Core_Model_Abstract
         $attribute = $customers->getAttribute('braintree_customer_id');
         if ($attribute->getId()) {
             $updatedCount = 0;
-            $tableUpdates = array();
-            foreach ($customers as $customer)
-            {
+            $tableUpdates = [];
+            foreach ($customers as $customer) {
                 if (!$customer->getData('braintree_customer_id')) {
-                    $tableUpdates[] = array(
+                    $tableUpdates[] = [
                         'entity_type_id' => $entityTypeId,
                         'attribute_id' => $attribute->getId(),
                         'entity_id' => $customer->getId(),
-                        'value' => hash('sha256', $customer->getId() . '-' . $customer->getEmail())
-                    );
+                        'value' => hash('sha256', $customer->getId() . '-' . $customer->getEmail()),
+                    ];
                     ++$updatedCount;
                 }
             }
@@ -298,8 +294,8 @@ class Gene_Braintree_Model_Migration extends Mage_Core_Model_Abstract
         $resource = Mage::getModel('core/resource');
         $dbWrite = $resource->getConnection('core_write');
 
-        $dbWrite->update($resource->getTableName('sales/order_payment'), array('method' => 'braintree_legacy'), "method = 'braintree'");
-        $dbWrite->update($resource->getTableName('sales/order_payment'), array('method' => 'braintree_paypal_legacy'), "method = 'braintree_paypal'");
+        $dbWrite->update($resource->getTableName('sales/order_payment'), ['method' => 'braintree_legacy'], "method = 'braintree'");
+        $dbWrite->update($resource->getTableName('sales/order_payment'), ['method' => 'braintree_paypal_legacy'], "method = 'braintree_paypal'");
 
         return true;
     }
@@ -312,7 +308,7 @@ class Gene_Braintree_Model_Migration extends Mage_Core_Model_Abstract
     protected function _deleteLegacy()
     {
         // The legacy files that need to be removed
-        $legacyFiles = array(
+        $legacyFiles = [
             'app/code/local/Braintree/',
             'app/design/adminhtml/default/default/layout/braintree.xml',
             'app/design/adminhtml/default/default/template/braintree/',
@@ -326,19 +322,18 @@ class Gene_Braintree_Model_Migration extends Mage_Core_Model_Abstract
             'lib/ssl/',
             'shell/braintreeIds.php',
             'skin/frontend/base/default/braintree/',
-            'var/package/Braintree_Payments-2.0.0.xml'
-        );
+            'var/package/Braintree_Payments-2.0.0.xml',
+        ];
 
         // If we know the document root, we can remove these files
         if (isset($_SERVER['DOCUMENT_ROOT'])) {
 
             // Iterate through removing the directories, and unlinking the files
-            foreach ($legacyFiles as $legacyFile)
-            {
+            foreach ($legacyFiles as $legacyFile) {
                 $file = $_SERVER['DOCUMENT_ROOT'] . DS . $legacyFile;
                 if (is_dir($file)) {
                     $this->_rmDir($file);
-                } else if (is_file($file)) {
+                } elseif (is_file($file)) {
                     @unlink($file);
                 }
             }
@@ -385,8 +380,8 @@ class Gene_Braintree_Model_Migration extends Mage_Core_Model_Abstract
         // Update all the paths to be disabled
         $dbWrite->update(
             $resource->getTableName('core/config_data'),
-            array('value' => 0),
-            'path = "payment/braintree/paypal_active" OR path = "payment/braintree/active" OR path = "payment/braintree_paypal/active"'
+            ['value' => 0],
+            'path = "payment/braintree/paypal_active" OR path = "payment/braintree/active" OR path = "payment/braintree_paypal/active"',
         );
 
         Mage::getConfig()->cleanCache();

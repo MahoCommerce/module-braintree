@@ -6,11 +6,10 @@
  */
 class Gene_Braintree_Model_Source_ButtonStyle_Color
 {
-
-    const COLOR_GOLD   = 'gold';
-    const COLOR_BLUE   = 'blue';
-    const COLOR_SILVER = 'silver';
-    const COLOUR_BLACK = 'black';
+    public const COLOR_GOLD   = 'gold';
+    public const COLOR_BLUE   = 'blue';
+    public const COLOR_SILVER = 'silver';
+    public const COLOUR_BLACK = 'black';
 
     /**
      * Availabe colours for button
@@ -19,23 +18,23 @@ class Gene_Braintree_Model_Source_ButtonStyle_Color
      */
     public function toOptionArray()
     {
-        return array(
-            array(
+        return [
+            [
                 'value' => self::COLOR_GOLD,
-                'label' => Mage::helper('gene_braintree')->__('Gold (Recommended)')
-            ),
-            array(
+                'label' => Mage::helper('gene_braintree')->__('Gold (Recommended)'),
+            ],
+            [
                 'value' => self::COLOR_BLUE,
-                'label' => Mage::helper('gene_braintree')->__('Blue')
-            ),
-            array(
+                'label' => Mage::helper('gene_braintree')->__('Blue'),
+            ],
+            [
                 'value' => self::COLOR_SILVER,
-                'label' => Mage::helper('gene_braintree')->__('Silver')
-            ),
-            array(
+                'label' => Mage::helper('gene_braintree')->__('Silver'),
+            ],
+            [
                 'value' => self::COLOUR_BLACK,
-                'label' => Mage::helper('gene_braintree')->__('Black')
-            ),
-        );
+                'label' => Mage::helper('gene_braintree')->__('Black'),
+            ],
+        ];
     }
 }

@@ -6,18 +6,17 @@
  */
 class Gene_Braintree_Model_Source_Paypal_Funding
 {
-
     /**
      * Return the array of options
      * @return array
      */
     public function getArray()
     {
-        return array(
+        return [
             'credit' => Mage::helper('gene_braintree')->__('PayPal Credit'),
             'card' => Mage::helper('gene_braintree')->__('PayPal Guest Checkout Credit Card Icons'),
-            'elv' => Mage::helper('gene_braintree')->__('Elektronisches Lastschriftverfahren – German ELV')
-        );
+            'elv' => Mage::helper('gene_braintree')->__('Elektronisches Lastschriftverfahren – German ELV'),
+        ];
     }
 
     /**
@@ -27,12 +26,12 @@ class Gene_Braintree_Model_Source_Paypal_Funding
      */
     public function toOptionArray()
     {
-        $response = array();
-        foreach($this->getArray() as $key => $value) {
-            $response[] = array(
+        $response = [];
+        foreach ($this->getArray() as $key => $value) {
+            $response[] = [
                 'value' => $key,
-                'label' => $value
-            );
+                'label' => $value,
+            ];
         }
         return $response;
     }

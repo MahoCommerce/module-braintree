@@ -11,6 +11,7 @@ class Gene_Braintree_Adminhtml_BraintreeController extends Mage_Adminhtml_Contro
      *
      * @return bool
      */
+    #[\Override]
     protected function _isAllowed()
     {
         return Mage::getSingleton('admin/session')->isAllowed('sales/order');
@@ -39,7 +40,7 @@ class Gene_Braintree_Adminhtml_BraintreeController extends Mage_Adminhtml_Contro
     protected function _prepareExport($type = 'csv')
     {
         // Validate the search query session is set
-        if($searchQuery = Mage::getSingleton('adminhtml/session')->getBraintreeSearchQuery()) {
+        if ($searchQuery = Mage::getSingleton('adminhtml/session')->getBraintreeSearchQuery()) {
 
             // Grab the grid block
             $grid = $this->getLayout()->createBlock('gene_braintree/adminhtml_report_transactions_grid');
@@ -85,17 +86,17 @@ class Gene_Braintree_Adminhtml_BraintreeController extends Mage_Adminhtml_Contro
         $merchantAccountId = false;
 
         // Check the form contains the valid data we need
-        if(isset($postData['groups']['gene_braintree']['fields'])) {
+        if (isset($postData['groups']['gene_braintree']['fields'])) {
 
             // Assign it for easy access
             $braintreeConfig = $postData['groups']['gene_braintree']['fields'];
 
             // Validate the required variables are set before trying to access them
-            if(isset($braintreeConfig['environment']) ) {
+            if (isset($braintreeConfig['environment'])) {
 
                 // Required fields to validate
-                if( $braintreeConfig['environment']['value'] == 'production' && isset($braintreeConfig['merchant_id']) && isset($braintreeConfig['public_key']) && isset($braintreeConfig['private_key']) ||
-                    $braintreeConfig['environment']['value'] == 'sandbox' && isset($braintreeConfig['sandbox_merchant_id']) && isset($braintreeConfig['sandbox_public_key']) && isset($braintreeConfig['sandbox_private_key']) ) {
+                if ($braintreeConfig['environment']['value'] == 'production' && isset($braintreeConfig['merchant_id']) && isset($braintreeConfig['public_key']) && isset($braintreeConfig['private_key']) ||
+                    $braintreeConfig['environment']['value'] == 'sandbox' && isset($braintreeConfig['sandbox_merchant_id']) && isset($braintreeConfig['sandbox_public_key']) && isset($braintreeConfig['sandbox_private_key'])) {
 
                     // Setup the various configuration variables
                     Braintree\Configuration::environment($braintreeConfig['environment']['value']);
@@ -106,12 +107,12 @@ class Gene_Braintree_Adminhtml_BraintreeController extends Mage_Adminhtml_Contro
                         Braintree\Configuration::merchantId($braintreeConfig['merchant_id']['value']);
                         Braintree\Configuration::publicKey($braintreeConfig['public_key']['value']);
                         Braintree\Configuration::privateKey($braintreeConfig['private_key']['value']);
-                        $merchantAccountId = (isset($braintreeConfig['merchant_account_id']['value']) ? $braintreeConfig['merchant_account_id']['value'] : false);
-                    } else if ($braintreeConfig['environment']['value'] == 'sandbox') {
+                        $merchantAccountId = ($braintreeConfig['merchant_account_id']['value'] ?? false);
+                    } elseif ($braintreeConfig['environment']['value'] == 'sandbox') {
                         Braintree\Configuration::merchantId($braintreeConfig['sandbox_merchant_id']['value']);
                         Braintree\Configuration::publicKey($braintreeConfig['sandbox_public_key']['value']);
                         Braintree\Configuration::privateKey($braintreeConfig['sandbox_private_key']['value']);
-                        $merchantAccountId = (isset($braintreeConfig['sandbox_merchant_account_id']['value']) ? $braintreeConfig['sandbox_merchant_account_id']['value'] : false);
+                        $merchantAccountId = ($braintreeConfig['sandbox_merchant_account_id']['value'] ?? false);
                     }
                 }
             }
@@ -121,7 +122,7 @@ class Gene_Braintree_Adminhtml_BraintreeController extends Mage_Adminhtml_Contro
         Mage::app()->getResponse()->setBody(Mage::getModel('gene_braintree/wrapper_braintree')->validateCredentials(
             true,
             true,
-            $merchantAccountId
+            $merchantAccountId,
         ));
     }
 

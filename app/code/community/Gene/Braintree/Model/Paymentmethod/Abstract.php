@@ -9,9 +9,9 @@ abstract class Gene_Braintree_Model_Paymentmethod_Abstract extends Mage_Payment_
     /**
      * The decision responses from braintree
      */
-    const ADVANCED_FRAUD_REVIEW = 'Review';
-    const ADVANCED_FRAUD_DECLINE = 'Decline';
-    const BRAINTREE_ORIGINAL_TOKEN = 'gene_braintree_original_token';
+    public const ADVANCED_FRAUD_REVIEW = 'Review';
+    public const ADVANCED_FRAUD_DECLINE = 'Decline';
+    public const BRAINTREE_ORIGINAL_TOKEN = 'gene_braintree_original_token';
 
     /**
      * Verify that the module has been setup
@@ -20,16 +20,16 @@ abstract class Gene_Braintree_Model_Paymentmethod_Abstract extends Mage_Payment_
      *
      * @return bool
      */
+    #[\Override]
     public function isAvailable($quote = null)
     {
         // Check Magento's internal methods allow us to run
         if (parent::isAvailable($quote)) {
             // Validate the configuration is okay
             return $this->_getWrapper()->validateCredentialsOnce();
-        } else {
-            // Otherwise it's a no
-            return false;
         }
+        // Otherwise it's a no
+        return false;
     }
 
     /**
@@ -37,6 +37,7 @@ abstract class Gene_Braintree_Model_Paymentmethod_Abstract extends Mage_Payment_
      *
      * @return Mage_Payment_Helper_Data
      */
+    #[\Override]
     protected function _getHelper()
     {
         return Mage::helper('gene_braintree');
@@ -61,14 +62,13 @@ abstract class Gene_Braintree_Model_Paymentmethod_Abstract extends Mage_Payment_
      */
     protected function _getConfig($key)
     {
-        return Mage::getStoreConfig('payment/'.$this->_code.'/'.$key);
+        return Mage::getStoreConfig('payment/' . $this->_code . '/' . $key);
     }
 
     /**
      * Handle any risk decision returned from Braintree
      *
      * @param                $result
-     * @param \Varien_Object $payment
      *
      * @return $this
      */
@@ -107,12 +107,12 @@ abstract class Gene_Braintree_Model_Paymentmethod_Abstract extends Mage_Payment_
     /**
      * Refund specified amount for payment
      *
-     * @param \Varien_Object $payment
      * @param float          $amount
      *
      * @return $this
      * @throws \Mage_Core_Exception
      */
+    #[\Override]
     public function refund(Varien_Object $payment, $amount)
     {
         try {
@@ -141,7 +141,7 @@ abstract class Gene_Braintree_Model_Paymentmethod_Abstract extends Mage_Payment_
                 if ($transaction->amount != $refundAmount) {
                     Mage::throwException(
                         $this->_getHelper()->__('This transaction has not yet settled, please wait until the ' .
-                        'transaction has settled to process a partial refund.')
+                        'transaction has settled to process a partial refund.'),
                     );
                 }
             }
@@ -149,7 +149,8 @@ abstract class Gene_Braintree_Model_Paymentmethod_Abstract extends Mage_Payment_
             // Determine if the transaction is settled, or settling
             if (($transaction->status == Braintree\Transaction::SETTLED ||
                     $transaction->status == Braintree\Transaction::SETTLING) ||
-                (isset($transaction->paypal) &&
+                (
+                    isset($transaction->paypal) &&
                     isset($transaction->paypal['paymentId']) &&
                     !empty($transaction->paypal['paymentId'])
                 )
@@ -185,7 +186,7 @@ abstract class Gene_Braintree_Model_Paymentmethod_Abstract extends Mage_Payment_
 
         } catch (Exception $e) {
             Mage::throwException(
-                $this->_getHelper()->__('An error occurred whilst trying to process the refund: ') . $e->getMessage()
+                $this->_getHelper()->__('An error occurred whilst trying to process the refund: ') . $e->getMessage(),
             );
         }
 
@@ -195,10 +196,10 @@ abstract class Gene_Braintree_Model_Paymentmethod_Abstract extends Mage_Payment_
     /**
      * Cancel a payment, refunding the order
      *
-     * @param \Varien_Object $payment
      *
      * @return $this
      */
+    #[\Override]
     public function cancel(Varien_Object $payment)
     {
         $this->void($payment);
@@ -209,10 +210,10 @@ abstract class Gene_Braintree_Model_Paymentmethod_Abstract extends Mage_Payment_
     /**
      * Void payment abstract method
      *
-     * @param Varien_Object $payment
      *
      * @return $this
      */
+    #[\Override]
     public function void(Varien_Object $payment)
     {
         try {
@@ -248,7 +249,7 @@ abstract class Gene_Braintree_Model_Paymentmethod_Abstract extends Mage_Payment_
 
         } catch (Exception $e) {
             Mage::throwException(
-                $this->_getHelper()->__('An error occurred whilst trying to void the transaction: %s', $e->getMessage())
+                $this->_getHelper()->__('An error occurred whilst trying to void the transaction: %s', $e->getMessage()),
             );
         }
 
@@ -262,6 +263,7 @@ abstract class Gene_Braintree_Model_Paymentmethod_Abstract extends Mage_Payment_
      * @param Mage_Sales_Model_Order_Payment $payment
      * @return $this
      */
+    #[\Override]
     public function processCreditmemo($creditmemo, $payment)
     {
         // Copy the refund transaction ID from the credit memo
@@ -272,7 +274,6 @@ abstract class Gene_Braintree_Model_Paymentmethod_Abstract extends Mage_Payment_
     /**
      * If we're doing authorize, has the payment already got more than one transaction?
      *
-     * @param \Varien_Object $payment
      *
      * @return int
      */
@@ -289,10 +290,10 @@ abstract class Gene_Braintree_Model_Paymentmethod_Abstract extends Mage_Payment_
     /**
      * Accept a payment that landed in payment review
      *
-     * @param \Mage_Payment_Model_Info $payment
      *
      * @return Mage_Sales_Model_Order_Invoice|bool
      */
+    #[\Override]
     public function acceptPayment(Mage_Payment_Model_Info $payment)
     {
         parent::acceptPayment($payment);
@@ -306,7 +307,8 @@ abstract class Gene_Braintree_Model_Paymentmethod_Abstract extends Mage_Payment_
             if ($invoice->getState() == Mage_Sales_Model_Order_Invoice::STATE_PAID) {
                 // Invoice is already paid and captured, just move the order into processing
                 return false;
-            } elseif ($invoice->canCapture()) {
+            }
+            if ($invoice->canCapture()) {
                 return $invoice->capture();
             }
         } elseif ($order->getPayment()->canCapture()) {
@@ -320,17 +322,17 @@ abstract class Gene_Braintree_Model_Paymentmethod_Abstract extends Mage_Payment_
         }
 
         Mage::throwException(
-            Mage::helper('payment')->__('Unable to load invoice to accept the payment for this order.')
+            Mage::helper('payment')->__('Unable to load invoice to accept the payment for this order.'),
         );
     }
 
     /**
      * Deny a payment that landed in payment review
      *
-     * @param \Mage_Payment_Model_Info $payment
      *
      * @return Mage_Sales_Model_Order_Invoice|bool
      */
+    #[\Override]
     public function denyPayment(Mage_Payment_Model_Info $payment)
     {
         parent::denyPayment($payment);
@@ -341,22 +343,20 @@ abstract class Gene_Braintree_Model_Paymentmethod_Abstract extends Mage_Payment_
             if ($invoice->getState() == Mage_Sales_Model_Order_Invoice::STATE_CANCELED) {
                 // Invoice has already been cancelled
                 return false;
-            } else {
-                return $invoice->void();
             }
-        } else {
-            // The order has no invoice, let's void the payment directly
-            $this->_getWrapper()->init();
-            $transaction = Braintree\Transaction::find($payment->getLastTransId());
-            if ($transaction->status == Braintree\Transaction::AUTHORIZED) {
-                try {
-                    Braintree\Transaction::void($payment->getLastTransId());
-                    return true;
-                } catch (Exception $e) {
-                    // Let's add the error into the session
-                    Mage::getSingleton('adminhtml/session')->addError($e->getMessage());
-                    return false;
-                }
+            return $invoice->void();
+        }
+        // The order has no invoice, let's void the payment directly
+        $this->_getWrapper()->init();
+        $transaction = Braintree\Transaction::find($payment->getLastTransId());
+        if ($transaction->status == Braintree\Transaction::AUTHORIZED) {
+            try {
+                Braintree\Transaction::void($payment->getLastTransId());
+                return true;
+            } catch (Exception $e) {
+                // Let's add the error into the session
+                Mage::getSingleton('adminhtml/session')->addError($e->getMessage());
+                return false;
             }
         }
 
@@ -366,9 +366,7 @@ abstract class Gene_Braintree_Model_Paymentmethod_Abstract extends Mage_Payment_
     /**
      * Update the order status within Kount
      *
-     * @param \Varien_Object $payment
      * @param string         $status
-     *
      * @return $this
      */
     protected function _updateKountStatus(Varien_Object $payment, $status = 'A')
@@ -386,7 +384,6 @@ abstract class Gene_Braintree_Model_Paymentmethod_Abstract extends Mage_Payment_
     /**
      * Update Kount when an order is refunded
      *
-     * @param \Varien_Object $payment
      *
      * @return $this
      */
@@ -418,13 +415,13 @@ abstract class Gene_Braintree_Model_Paymentmethod_Abstract extends Mage_Payment_
         $request->setData('sale_array', $saleArray);
 
         // Dispatch event for modifying the sale array
-        Mage::dispatchEvent($event, array('payment' => $payment, 'request' => $request));
+        Mage::dispatchEvent($event, ['payment' => $payment, 'request' => $request]);
 
         // Pull the saleArray back out
         $saleArray = $request->getData('sale_array');
 
         // Log the initial sale array, no protected data is included
-        Gene_Braintree_Model_Debug::log(array('_authorize:saleArray' => $saleArray));
+        Gene_Braintree_Model_Debug::log(['_authorize:saleArray' => $saleArray]);
 
         return $saleArray;
     }
@@ -480,9 +477,7 @@ abstract class Gene_Braintree_Model_Paymentmethod_Abstract extends Mage_Payment_
     /**
      * Return invoice model for transaction
      *
-     * @param \Varien_Object $payment
      * @param                $transactionId
-     *
      * @return bool
      */
     protected function _getInvoiceForTransactionId(Varien_Object $payment, $transactionId)

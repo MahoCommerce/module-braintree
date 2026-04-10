@@ -7,14 +7,13 @@
  */
 class Gene_Braintree_Model_Source_Paypal_Locale
 {
-
     /**
      * Return the array of options
      * @return array
      */
     public function getArray()
     {
-        return array(
+        return [
             'en_AU' => Mage::helper('gene_braintree')->__('Australia'),
             'de_AT' => Mage::helper('gene_braintree')->__('Austria'),
             'en_BE' => Mage::helper('gene_braintree')->__('Belgium'),
@@ -32,8 +31,8 @@ class Gene_Braintree_Model_Source_Paypal_Locale
             'sv_SE' => Mage::helper('gene_braintree')->__('Sweden'),
             'en_CH' => Mage::helper('gene_braintree')->__('Switzerland'),
             'tr_TR' => Mage::helper('gene_braintree')->__('Turkey'),
-            'en_US' => Mage::helper('gene_braintree')->__('United States')
-        );
+            'en_US' => Mage::helper('gene_braintree')->__('United States'),
+        ];
     }
 
     /**
@@ -43,12 +42,12 @@ class Gene_Braintree_Model_Source_Paypal_Locale
      */
     public function toOptionArray()
     {
-        $response = array();
-        foreach($this->getArray() as $key => $value) {
-            $response[] = array(
+        $response = [];
+        foreach ($this->getArray() as $key => $value) {
+            $response[] = [
                 'value' => $key,
-                'label' => $value
-            );
+                'label' => $value,
+            ];
         }
         return $response;
     }

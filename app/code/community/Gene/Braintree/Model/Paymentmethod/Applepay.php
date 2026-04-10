@@ -50,6 +50,7 @@ class Gene_Braintree_Model_Paymentmethod_Applepay extends Gene_Braintree_Model_P
      * @param null $quote
      * @return bool
      */
+    #[\Override]
     public function isAvailable($quote = null)
     {
         // Check Magento's internal methods allow us to run
@@ -76,6 +77,7 @@ class Gene_Braintree_Model_Paymentmethod_Applepay extends Gene_Braintree_Model_P
      * @return $this
      * @throws Mage_Core_Exception
      */
+    #[\Override]
     public function assignData($data)
     {
         if (!($data instanceof Varien_Object)) {
@@ -103,7 +105,6 @@ class Gene_Braintree_Model_Paymentmethod_Applepay extends Gene_Braintree_Model_P
     /**
      * Pseudo _authorize function so we can pass in extra data
      *
-     * @param Varien_Object $payment
      * @param $amount
      * @param bool|false $shouldCapture
      * @param bool|false $token
@@ -116,7 +117,7 @@ class Gene_Braintree_Model_Paymentmethod_Applepay extends Gene_Braintree_Model_P
         // We cannot utilise the validate() function as these checks need to happen at the capture point
         if (!$this->getPaymentMethodNonce()) {
             Mage::throwException(
-                $this->_getHelper()->__('There has been an issue processing your Apple Pay payment, please try again.')
+                $this->_getHelper()->__('There has been an issue processing your Apple Pay payment, please try again.'),
             );
         }
 
@@ -134,28 +135,28 @@ class Gene_Braintree_Model_Paymentmethod_Applepay extends Gene_Braintree_Model_P
                 $this->_buildPaymentRequest($token),
                 $payment->getOrder(),
                 $shouldCapture,
-                $this->getInfoInstance()->getAdditionalInformation('device_data')
+                $this->getInfoInstance()->getAdditionalInformation('device_data'),
             );
 
             // Attempt to make the sale, firstly dispatching an event
             $result = $this->_getWrapper()->makeSale(
-                $this->_dispatchSaleArrayEvent('gene_braintree_applepay_sale_array', $saleArray, $payment)
+                $this->_dispatchSaleArrayEvent('gene_braintree_applepay_sale_array', $saleArray, $payment),
             );
 
         } catch (Exception $e) {
             // Dispatch an event for when a payment fails
-            Mage::dispatchEvent('gene_braintree_applepay_failed_exception', array('payment' => $payment, 'exception' => $e));
+            Mage::dispatchEvent('gene_braintree_applepay_failed_exception', ['payment' => $payment, 'exception' => $e]);
 
             return $this->_processFailedResult($this->_getHelper()->__('We were unable to complete your purchase through Apple Pay, please try again or an alternative payment method.'), $e);
         }
 
         // Log the result
-        Gene_Braintree_Model_Debug::log(array('result' => $result));
+        Gene_Braintree_Model_Debug::log(['result' => $result]);
 
         // If the sale has failed
         if ($result->success !== true) {
             // Dispatch an event for when a payment fails
-            Mage::dispatchEvent('gene_braintree_applepay_failed', array('payment' => $payment, 'result' => $result));
+            Mage::dispatchEvent('gene_braintree_applepay_failed', ['payment' => $payment, 'result' => $result]);
 
             // Return a friendly message for processor declined transactions
             if (isset($result->transaction->status)
@@ -163,10 +164,10 @@ class Gene_Braintree_Model_Paymentmethod_Applepay extends Gene_Braintree_Model_P
             ) {
                 return $this->_processFailedResult(
                     $this->_getHelper()->__(
-                        'Your transaction has been declined, please try another payment method or contacting your issuing bank.'
+                        'Your transaction has been declined, please try another payment method or contacting your issuing bank.',
                     ),
                     false,
-                    $result
+                    $result,
                 );
             }
 
@@ -188,7 +189,7 @@ class Gene_Braintree_Model_Paymentmethod_Applepay extends Gene_Braintree_Model_P
     protected function _buildPaymentRequest($token)
     {
         // Build our payment array with either our token, or nonce
-        $paymentArray = array();
+        $paymentArray = [];
 
         // If we have an original token use that for the subsequent requests
         if ($originalToken = $this->_getOriginalToken()) {
@@ -214,11 +215,11 @@ class Gene_Braintree_Model_Paymentmethod_Applepay extends Gene_Braintree_Model_P
     /**
      * Authorize the requested amount
      *
-     * @param Varien_Object $payment
      * @param float $amount
      * @return Gene_Braintree_Model_Paymentmethod_Applepay
      * @throws Mage_Core_Exception
      */
+    #[\Override]
     public function authorize(Varien_Object $payment, $amount)
     {
         return $this->_authorize($payment, $amount, false);
@@ -227,10 +228,10 @@ class Gene_Braintree_Model_Paymentmethod_Applepay extends Gene_Braintree_Model_P
     /**
      * Process capturing of a payment
      *
-     * @param Varien_Object $payment
      * @param float $amount
      * @return $this
      */
+    #[\Override]
     public function capture(Varien_Object $payment, $amount)
     {
         return $this->_captureAuthorized($payment, $amount);
@@ -239,7 +240,6 @@ class Gene_Braintree_Model_Paymentmethod_Applepay extends Gene_Braintree_Model_P
     /**
      * Process a successful result from the sale request
      *
-     * @param Varien_Object $payment
      * @param Braintree\Result\Successful $result
      * @param $amount
      * @return Varien_Object
@@ -247,11 +247,11 @@ class Gene_Braintree_Model_Paymentmethod_Applepay extends Gene_Braintree_Model_P
     protected function _processSuccessResult(Varien_Object $payment, $result, $amount)
     {
         // Pass an event if the payment was a success
-        Mage::dispatchEvent('gene_braintree_applepay_success', array(
+        Mage::dispatchEvent('gene_braintree_applepay_success', [
             'payment' => $payment,
             'result' => $result,
-            'amount' => $amount
-        ));
+            'amount' => $amount,
+        ]);
 
         // Set some basic things
         $payment->setStatus(self::STATUS_APPROVED)
@@ -278,7 +278,6 @@ class Gene_Braintree_Model_Paymentmethod_Applepay extends Gene_Braintree_Model_P
     /**
      * Capture the payment on the checkout page
      *
-     * @param Varien_Object $payment
      * @param float         $amount
      * @return $this
      */
@@ -338,19 +337,18 @@ class Gene_Braintree_Model_Paymentmethod_Applepay extends Gene_Braintree_Model_P
                     // We pass $amount instead of $captureAmount as the authorize function contains the conversion
                     $this->_authorize($payment, $amount, true, $token);
                     return $this;
-                } else {
-                    // Attempt to clone the transaction
-                    $result = $this->_getWrapper()->init(
-                        $payment->getOrder()->getStoreId()
-                    )->cloneTransaction($lastTransactionId, $captureAmount);
                 }
+                // Attempt to clone the transaction
+                $result = $this->_getWrapper()->init(
+                    $payment->getOrder()->getStoreId(),
+                )->cloneTransaction($lastTransactionId, $captureAmount);
             } else {
                 // Init the environment
                 $result = $this->_getWrapper()->init(
-                    $payment->getOrder()->getStoreId()
+                    $payment->getOrder()->getStoreId(),
                 )->submitForSettlement($payment->getCcTransId(), $captureAmount);
                 // Log the result
-                Gene_Braintree_Model_Debug::log(array('capture:submitForSettlement' => $result));
+                Gene_Braintree_Model_Debug::log(['capture:submitForSettlement' => $result]);
             }
             if ($result->success) {
                 $this->_updateKountStatus($payment, 'A');
@@ -363,8 +361,8 @@ class Gene_Braintree_Model_Paymentmethod_Applepay extends Gene_Braintree_Model_P
                 // Clean up
                 Gene_Braintree_Model_Wrapper_Braintree::cleanUp();
                 Mage::throwException(
-                    $result->transaction->processorSettlementResponseCode.':
-                    '.$result->transaction->processorSettlementResponseText
+                    $result->transaction->processorSettlementResponseCode . ':
+                    ' . $result->transaction->processorSettlementResponseText,
                 );
             }
         } else {

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 /**
  * @license    https://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
  * Class Gene_Braintree_Model_Paymentmethod_Legacy_Paypal
@@ -22,6 +24,7 @@ class Gene_Braintree_Model_Paymentmethod_Legacy_Paypal extends Gene_Braintree_Mo
      *
      * @return bool
      */
+    #[\Override]
     public function isAvailable($quote = null)
     {
         return false;

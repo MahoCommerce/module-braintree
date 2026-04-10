@@ -6,10 +6,10 @@
  */
 class Gene_Braintree_Model_Kount_Ens extends Mage_Core_Model_Abstract
 {
-    const RESPONSE_DECLINE = 'D';
-    const RESPONSE_APPROVE = 'A';
-    const RESPONSE_REVIEW = 'R';
-    const RESPONSE_ESCALATE = 'E';
+    public const RESPONSE_DECLINE = 'D';
+    public const RESPONSE_APPROVE = 'A';
+    public const RESPONSE_REVIEW = 'R';
+    public const RESPONSE_ESCALATE = 'E';
 
     /**
      * Process an event
@@ -20,13 +20,11 @@ class Gene_Braintree_Model_Kount_Ens extends Mage_Core_Model_Abstract
      */
     public function processEvent($event)
     {
-        switch ($event['name']) {
-            case 'WORKFLOW_STATUS_EDIT':
-                return $this->_workflowStatusEdit($event);
-        }
-
-        // If we don't support the event, assume it was a success
-        return true;
+        return match ($event['name']) {
+            'WORKFLOW_STATUS_EDIT' => $this->_workflowStatusEdit($event),
+            // If we don't support the event, assume it was a success
+            default => true,
+        };
     }
 
     /**
@@ -39,8 +37,7 @@ class Gene_Braintree_Model_Kount_Ens extends Mage_Core_Model_Abstract
     protected function _workflowStatusEdit($event)
     {
         if (($incrementId = $this->_getOrderIncrementId($event))
-            && ($kountTransactionId = $this->_getKountTransactionId($event)))
-        {
+            && ($kountTransactionId = $this->_getKountTransactionId($event))) {
             $order = Mage::getModel('sales/order')->load($incrementId, 'increment_id');
             if ($order->getId()) {
                 $payment = $order->getPayment();
@@ -54,7 +51,8 @@ class Gene_Braintree_Model_Kount_Ens extends Mage_Core_Model_Abstract
                         // Is the new value approve or decline?
                         if ($event['new_value'] == self::RESPONSE_APPROVE) {
                             return $this->_approveOrder($order);
-                        } else if ($event['new_value'] == self::RESPONSE_DECLINE) {
+                        }
+                        if ($event['new_value'] == self::RESPONSE_DECLINE) {
                             return $this->_declineOrder($order);
                         }
                     }
@@ -68,7 +66,6 @@ class Gene_Braintree_Model_Kount_Ens extends Mage_Core_Model_Abstract
     /**
      * Approve an order from Kount
      *
-     * @param \Mage_Sales_Model_Order $order
      *
      * @return bool
      */
@@ -125,7 +122,6 @@ class Gene_Braintree_Model_Kount_Ens extends Mage_Core_Model_Abstract
      * If the payment is only voidable, we void the invoice cancelling the order. If the payment has settled we create
      * a credit memo and close the order that way.
      *
-     * @param \Mage_Sales_Model_Order $order
      *
      * @return bool
      */
@@ -151,7 +147,8 @@ class Gene_Braintree_Model_Kount_Ens extends Mage_Core_Model_Abstract
                     // If the transaction is yet to settle we can void the transaction in Braintree
                     if ($transaction->status == Braintree\Transaction::AUTHORIZED || $transaction->status == Braintree\Transaction::SUBMITTED_FOR_SETTLEMENT) {
                         return $this->_voidOrder($order);
-                    } else if ($transaction->status == Braintree\Transaction::SETTLED) {
+                    }
+                    if ($transaction->status == Braintree\Transaction::SETTLED) {
                         return $this->_refundOrder($order);
                     }
                 }
@@ -169,7 +166,6 @@ class Gene_Braintree_Model_Kount_Ens extends Mage_Core_Model_Abstract
     /**
      * Void an order
      *
-     * @param \Mage_Sales_Model_Order $order
      *
      * @return bool
      */
@@ -213,7 +209,6 @@ class Gene_Braintree_Model_Kount_Ens extends Mage_Core_Model_Abstract
     /**
      * Refund an order
      *
-     * @param \Mage_Sales_Model_Order $order
      *
      * @return bool
      */
@@ -277,11 +272,7 @@ class Gene_Braintree_Model_Kount_Ens extends Mage_Core_Model_Abstract
      */
     protected function _getKountTransactionId($event)
     {
-        if (isset($event['key']['_value'])) {
-            return $event['key']['_value'];
-        }
-
-        return null;
+        return $event['key']['_value'] ?? null;
     }
 
     /**
@@ -293,11 +284,7 @@ class Gene_Braintree_Model_Kount_Ens extends Mage_Core_Model_Abstract
      */
     protected function _getOrderIncrementId($event)
     {
-        if (isset($event['key']['_attribute']['order_number'])) {
-            return $event['key']['_attribute']['order_number'];
-        }
-
-        return null;
+        return $event['key']['_attribute']['order_number'] ?? null;
     }
 
     /**
@@ -337,16 +324,16 @@ class Gene_Braintree_Model_Kount_Ens extends Mage_Core_Model_Abstract
      */
     protected function isIpInRange($ip, $range)
     {
-        if ( strpos( $range, '/' ) === false ) {
+        if (!str_contains($range, '/')) {
             $range .= '/32';
         }
         // $range is in IP/CIDR format eg 127.0.0.1/24
-        list( $range, $netmask ) = explode( '/', $range, 2 );
-        $range_decimal = ip2long( $range );
-        $ip_decimal = ip2long( $ip );
-        $wildcard_decimal = pow( 2, ( 32 - $netmask ) ) - 1;
+        [$range, $netmask] = explode('/', $range, 2);
+        $range_decimal = ip2long($range);
+        $ip_decimal = ip2long($ip);
+        $wildcard_decimal = 2 ** (32 - $netmask) - 1;
         $netmask_decimal = ~ $wildcard_decimal;
-        return ( ( $ip_decimal & $netmask_decimal ) == ( $range_decimal & $netmask_decimal ) );
+        return (($ip_decimal & $netmask_decimal) == ($range_decimal & $netmask_decimal));
     }
 
     /**
@@ -367,7 +354,7 @@ class Gene_Braintree_Model_Kount_Ens extends Mage_Core_Model_Abstract
         // Iterate through each store, check if the merchant ID matches
         foreach ($storeIds as $storeId) {
             $storeMerchantId = Mage::getStoreConfig('payment/gene_braintree_creditcard/kount_merchant_id', $storeId);
-            if (intval($storeMerchantId) == intval($merchantId)) {
+            if ((int) $storeMerchantId == (int) $merchantId) {
                 return true;
             }
         }

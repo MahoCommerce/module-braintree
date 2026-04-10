@@ -1,4 +1,5 @@
 <?php
+
 /**
  * @license    https://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
  * Class Gene_Braintree_Model_Saved
@@ -7,12 +8,11 @@
  */
 class Gene_Braintree_Model_Saved extends Mage_Core_Model_Abstract
 {
-
     /**
      * The ID's associated with the two different payment methods
      */
-    const SAVED_PAYPAL_ID = 1;
-    const SAVED_CREDITCARD_ID = 2;
+    public const SAVED_PAYPAL_ID = 1;
+    public const SAVED_CREDITCARD_ID = 2;
 
     /**
      * @var bool|array
@@ -29,7 +29,7 @@ class Gene_Braintree_Model_Saved extends Mage_Core_Model_Abstract
         // Do we have a valid customer?
         if ($customer = $this->getCustomer()) {
 
-            if(!$this->_savedAccounts) {
+            if (!$this->_savedAccounts) {
 
                 // Grab a new instance of the wrapper
                 $wrapper = Mage::getModel('gene_braintree/wrapper_braintree');
@@ -44,7 +44,7 @@ class Gene_Braintree_Model_Saved extends Mage_Core_Model_Abstract
                     $object = new Varien_Object();
                     $object->setSavedAccounts(array_merge($customer->creditCards, $customer->paypalAccounts));
 
-                    Mage::dispatchEvent('gene_braintree_get_saved_methods', array('object' => $object));
+                    Mage::dispatchEvent('gene_braintree_get_saved_methods', ['object' => $object]);
 
                     $this->_savedAccounts = $object->getSavedAccounts();
                 }
@@ -70,7 +70,7 @@ class Gene_Braintree_Model_Saved extends Mage_Core_Model_Abstract
             if ($customer = $adminQuote->getCustomer()) {
                 return $customer;
             }
-        } else if (Mage::getSingleton('customer/session')->isLoggedIn()) {
+        } elseif (Mage::getSingleton('customer/session')->isLoggedIn()) {
             return Mage::getSingleton('customer/session')->getCustomer();
         }
 
@@ -87,15 +87,15 @@ class Gene_Braintree_Model_Saved extends Mage_Core_Model_Abstract
     public function hasType($type = false)
     {
         // If no type is set just count the saved methods
-        if(!$type) {
-            if(!$this->getCustomerSavedPaymentMethods()) {
+        if (!$type) {
+            if (!$this->getCustomerSavedPaymentMethods()) {
                 return false;
             }
             return count($this->getCustomerSavedPaymentMethods());
         }
 
         // Check there are some saved accounts
-        if($savedAccounts = $this->getCustomerSavedPaymentMethods()) {
+        if ($savedAccounts = $this->getCustomerSavedPaymentMethods()) {
 
             // Iterate through the saved accounts
             foreach ($savedAccounts as $savedAccount) {
@@ -126,14 +126,14 @@ class Gene_Braintree_Model_Saved extends Mage_Core_Model_Abstract
      */
     public function getSavedMethodsByType($type = false)
     {
-        if(!$type) {
+        if (!$type) {
             return $this->getCustomerSavedPaymentMethods();
         }
 
         // Start up our new collection
-        $savedDetails = array();
+        $savedDetails = [];
 
-        if($this->getCustomerSavedPaymentMethods()) {
+        if ($this->getCustomerSavedPaymentMethods()) {
             foreach ($this->getCustomerSavedPaymentMethods() as $savedAccount) {
 
                 // Check which type we're after

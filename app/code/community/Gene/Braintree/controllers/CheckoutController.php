@@ -20,15 +20,15 @@ class Gene_Braintree_CheckoutController extends Mage_Core_Controller_Front_Actio
                 $storeId = Mage::app()->getStore()->getStoreId();
             }
 
-            return $this->_returnJson(array(
+            return $this->_returnJson([
                 'success' => true,
-                'client_token' => Mage::getSingleton('gene_braintree/wrapper_braintree')->init($storeId)->generateToken()
-            ));
+                'client_token' => Mage::getSingleton('gene_braintree/wrapper_braintree')->init($storeId)->generateToken(),
+            ]);
         } catch (Exception $e) {
-            return $this->_returnJson(array(
+            return $this->_returnJson([
                 'success' => false,
-                'error' => $e->getMessage()
-            ));
+                'error' => $e->getMessage(),
+            ]);
         }
     }
 
@@ -74,14 +74,14 @@ class Gene_Braintree_CheckoutController extends Mage_Core_Controller_Front_Actio
         }
 
         // Build up our JSON response
-        $jsonResponse = array(
+        $jsonResponse = [
             'billingName'      => $billingName,
             'billingPostcode'  => $billingPostcode,
             'billingCountryId' => $billingCountryId,
             'grandTotal'       => Mage::helper('gene_braintree')->formatPrice($grandTotal),
             'currencyCode'     => $currencyCode,
-            'threeDSecure'     => Mage::getSingleton('gene_braintree/paymentmethod_creditcard')->is3DEnabled()
-        );
+            'threeDSecure'     => Mage::getSingleton('gene_braintree/paymentmethod_creditcard')->is3DEnabled(),
+        ];
 
         return $this->_returnJson($jsonResponse);
     }
@@ -96,10 +96,10 @@ class Gene_Braintree_CheckoutController extends Mage_Core_Controller_Front_Actio
         // Are tokens set in the request
         if ($tokens = $this->getRequest()->getParam('tokens')) {
             // Build up our response
-            $jsonResponse = array(
+            $jsonResponse = [
                 'success' => true,
-                'tokens'  => array()
-            );
+                'tokens'  => [],
+            ];
 
             // Json decode the tokens
             $tokens = Mage::helper('core')->jsonDecode($tokens);
@@ -127,10 +127,10 @@ class Gene_Braintree_CheckoutController extends Mage_Core_Controller_Front_Actio
         if ($nonce = $this->getRequest()->getParam('nonce')) {
             // Retrieve the billing address
             if (!$this->getRequest()->getParam('billing')) {
-                return $this->_returnJson(array(
+                return $this->_returnJson([
                     'success' => false,
-                    'error'   => 'Billing address is not present'
-                ));
+                    'error'   => 'Billing address is not present',
+                ]);
             }
 
             // Pull the billing address from the multishipping experience
@@ -174,7 +174,7 @@ class Gene_Braintree_CheckoutController extends Mage_Core_Controller_Front_Actio
                         // checkout
                         if (isset($response->customer->id)) {
                             Mage::getSingleton('checkout/session')->setGuestBraintreeCustomerId(
-                                $response->customer->id
+                                $response->customer->id,
                             );
                         }
 
@@ -187,49 +187,56 @@ class Gene_Braintree_CheckoutController extends Mage_Core_Controller_Front_Actio
                     }
                 }
             } catch (Exception $e) {
-                return $this->_returnJson(array(
+                return $this->_returnJson([
                     'success' => false,
-                    'error'   => $e->getMessage()
-                ));
+                    'error'   => $e->getMessage(),
+                ]);
             }
 
             // Was the request to store this in the vault a success?
             if ($token) {
                 // Build up our response
-                $response = array(
+                $response = [
                     'success' => true,
-                    'nonce'   => $wrapper->getThreeDSecureVaultNonce($token)
-                );
+                    'nonce'   => $wrapper->getThreeDSecureVaultNonce($token),
+                ];
 
             } else {
                 // Return a different message for declined cards
-                if (isset($response->transaction->status)) {
-                    // Return a custom response for processor declined messages
-                    if ($response->transaction->status == Braintree\Transaction::PROCESSOR_DECLINED) {
-                        return $this->_returnJson(array(
-                            'success' => false,
-                            'error'   => Mage::helper('gene_braintree')->__(
-                                'Your transaction has been declined, please try another payment method or contacting ' .
-                                'your issuing bank.'
-                            )
-                        ));
-                    }
+                if (!isset($response->transaction->status)) {
+                    return $this->_returnJson([
+                        'success' => false,
+                        'error'   => Mage::helper('gene_braintree')->__(
+                            '%s. Please try again or attempt refreshing the page.',
+                            $wrapper->parseMessage($response->message),
+                        ),
+                    ]);
+                }
+                // Return a custom response for processor declined messages
+                if ($response->transaction->status == Braintree\Transaction::PROCESSOR_DECLINED) {
+                    return $this->_returnJson([
+                        'success' => false,
+                        'error'   => Mage::helper('gene_braintree')->__(
+                            'Your transaction has been declined, please try another payment method or contacting ' .
+                            'your issuing bank.',
+                        ),
+                    ]);
                 }
 
-                return $this->_returnJson(array(
+                return $this->_returnJson([
                     'success' => false,
                     'error'   => Mage::helper('gene_braintree')->__(
                         '%s. Please try again or attempt refreshing the page.',
-                        $wrapper->parseMessage($response->message)
-                    )
-                ));
+                        $wrapper->parseMessage($response->message),
+                    ),
+                ]);
 
             }
 
             return $this->_returnJson($response);
         }
 
-        return $this->_returnJson(array('success' => false));
+        return $this->_returnJson(['success' => false]);
     }
 
     /**

@@ -7,10 +7,10 @@
  */
 class Gene_Braintree_Block_Applepay_Express_Abstract extends Mage_Core_Block_Template
 {
-    const GENE_BRAINTREE_APPLEPAY_ACTIVE = 'payment/gene_braintree_applepay/active';
-    const GENE_BRAINTREE_APPLEPAY_EXPRESS_ACTIVE = 'payment/gene_braintree_applepay/express_active';
-    const GENE_BRAINTREE_APPLEPAY_EXPRESS_PDP = 'payment/gene_braintree_applepay/express_pdp';
-    const GENE_BRAINTREE_APPLEPAY_EXPRESS_CART = 'payment/gene_braintree_applepay/express_cart';
+    public const GENE_BRAINTREE_APPLEPAY_ACTIVE = 'payment/gene_braintree_applepay/active';
+    public const GENE_BRAINTREE_APPLEPAY_EXPRESS_ACTIVE = 'payment/gene_braintree_applepay/express_active';
+    public const GENE_BRAINTREE_APPLEPAY_EXPRESS_PDP = 'payment/gene_braintree_applepay/express_pdp';
+    public const GENE_BRAINTREE_APPLEPAY_EXPRESS_CART = 'payment/gene_braintree_applepay/express_cart';
 
     /**
      * Retrieve the current quote

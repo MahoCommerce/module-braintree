@@ -6,6 +6,7 @@
  */
 class Gene_Braintree_Block_Applepay extends Mage_Payment_Block_Form
 {
+    #[\Override]
     protected function _construct()
     {
         parent::_construct();

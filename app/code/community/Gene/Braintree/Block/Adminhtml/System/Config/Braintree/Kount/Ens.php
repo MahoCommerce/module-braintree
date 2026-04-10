@@ -9,13 +9,13 @@ class Gene_Braintree_Block_Adminhtml_System_Config_Braintree_Kount_Ens extends M
     /**
      * Return the ENS URL
      *
-     * @param \Varien_Data_Form_Element_Abstract $element
      *
      * @return string
      */
+    #[\Override]
     protected function _getElementHtml(Varien_Data_Form_Element_Abstract $element)
     {
-        $url = $this->getUrl('braintree/kount_ens/', array('_secure' => true));
-        return substr($url, 0, (strpos($url, "kount_ens/") + 10));
+        $url = $this->getUrl('braintree/kount_ens/', ['_secure' => true]);
+        return substr($url, 0, (strpos($url, 'kount_ens/') + 10));
     }
 }

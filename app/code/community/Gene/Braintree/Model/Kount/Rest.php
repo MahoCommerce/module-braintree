@@ -8,13 +8,12 @@
  */
 class Gene_Braintree_Model_Kount_Rest extends Mage_Core_Model_Abstract
 {
-    const TEST_URL = 'https://api.test.kount.net/rpc/v1';
-    const PRODUCTION_URL = 'https://api.kount.net/rpc/v1';
+    public const TEST_URL = 'https://api.test.kount.net/rpc/v1';
+    public const PRODUCTION_URL = 'https://api.kount.net/rpc/v1';
 
     /**
      * Update the order status in Kount
      *
-     * @param \Mage_Sales_Model_Order $order
      * @param                         $status
      * @param bool|false              $note
      *
@@ -30,10 +29,10 @@ class Gene_Braintree_Model_Kount_Rest extends Mage_Core_Model_Abstract
         // Retrieve the transaction ID from the additional information
         $transactionId = $order->getPayment()->getAdditionalInformation('kount_id');
 
-        $request = array(
+        $request = [
             'status[' . $transactionId . ']' => $status,
-            'note[' . $transactionId . ']' => $note
-        );
+            'note[' . $transactionId . ']' => $note,
+        ];
 
         try {
             $response = $this->_makeRequest('orders/status', $request);
@@ -41,9 +40,8 @@ class Gene_Braintree_Model_Kount_Rest extends Mage_Core_Model_Abstract
                 if (isset($response['count']['success']) && $response['count']['success'] == 1) {
                     $order->addStatusHistoryComment('Kount has been successfully updated to status: ' . $status . '.');
                     return true;
-                } else {
-                    $order->addStatusHistoryComment('An issue has occured whilst trying to update the Kount order status: ' . implode(', ', $response['errors']));
                 }
+                $order->addStatusHistoryComment('An issue has occured whilst trying to update the Kount order status: ' . implode(', ', $response['errors']));
             } else {
                 $order->addStatusHistoryComment('Unable to update Kount order status.');
             }
@@ -57,7 +55,6 @@ class Gene_Braintree_Model_Kount_Rest extends Mage_Core_Model_Abstract
     /**
      * Mark an order in Kount as refunded
      *
-     * @param \Mage_Sales_Model_Order $order
      *
      * @return bool
      */
@@ -66,9 +63,9 @@ class Gene_Braintree_Model_Kount_Rest extends Mage_Core_Model_Abstract
         // Retrieve the transaction ID from the additional information
         $transactionId = $order->getPayment()->getAdditionalInformation('kount_id');
 
-        $request = array(
-            'rfcb[' . $transactionId . ']' => 'R'
-        );
+        $request = [
+            'rfcb[' . $transactionId . ']' => 'R',
+        ];
 
         try {
             $response = $this->_makeRequest('orders/rfcb', $request);
@@ -76,9 +73,8 @@ class Gene_Braintree_Model_Kount_Rest extends Mage_Core_Model_Abstract
                 if (isset($response['count']['success']) && $response['count']['success'] == 1) {
                     $order->addStatusHistoryComment('Kount has been successfully updated with the new refunded status.');
                     return true;
-                } else {
-                    $order->addStatusHistoryComment('An issue has occurred whilst trying to update Kount with the refund status: ' . implode(', ', $response['errors']));
                 }
+                $order->addStatusHistoryComment('An issue has occurred whilst trying to update Kount with the refund status: ' . implode(', ', $response['errors']));
             } else {
                 $order->addStatusHistoryComment('Unable to update Kount refund status.');
             }

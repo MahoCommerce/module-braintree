@@ -8,12 +8,12 @@
  */
 class Gene_Braintree_Block_Cart_Totals extends Mage_Checkout_Block_Cart_Totals
 {
-
     /**
      * Check if we have display grand total in base currency
      *
      * @return bool
      */
+    #[\Override]
     public function needDisplayBaseGrandtotal()
     {
         // If we have a mapped currency code never display base grand total

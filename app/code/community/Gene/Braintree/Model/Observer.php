@@ -23,24 +23,24 @@ class Gene_Braintree_Model_Observer
                 return $observer;
             }
 
-            if (Mage::app()->getRequest()->getRequestedControllerName() == "sales_order_creditmemo") {
+            if (Mage::app()->getRequest()->getRequestedControllerName() == 'sales_order_creditmemo') {
                 return $observer;
             }
 
-            if (Mage::app()->getRequest()->getRequestedControllerName() == "sales_order_invoice"
-                && Mage::app()->getRequest()->getActionName() == "view") {
+            if (Mage::app()->getRequest()->getRequestedControllerName() == 'sales_order_invoice'
+                && Mage::app()->getRequest()->getActionName() == 'view') {
                 return $observer;
             }
 
             $allLastInvoiceTransIds = explode(
-                ",",
+                ',',
                 $invoice->getOrder()->getPayment()
-                    ->getAdditionalInformation()['last_invoice_trans_id']
+                    ->getAdditionalInformation()['last_invoice_trans_id'],
             );
             $latestInvoiceTransIdKey = max(array_keys($allLastInvoiceTransIds));
             $latestInvoiceTransId = explode(
-                "-",
-                $allLastInvoiceTransIds[$latestInvoiceTransIdKey]
+                '-',
+                $allLastInvoiceTransIds[$latestInvoiceTransIdKey],
             );
 
             $invoice->setData('transaction_id', $latestInvoiceTransId[1]);
@@ -55,7 +55,6 @@ class Gene_Braintree_Model_Observer
     /**
      * Detect which checkout is in use and add a new layout handle
      *
-     * @param Varien_Event_Observer $observer
      *
      * @return $this
      */
@@ -68,7 +67,7 @@ class Gene_Braintree_Model_Observer
         $layout = $observer->getLayout();
 
         // We only want to run this action on the checkout
-        if($action->getFullActionName() == 'checkout_onepage_index') {
+        if ($action->getFullActionName() == 'checkout_onepage_index') {
 
             // Attempt to detect Amasty_Scheckout
             if (Mage::helper('core')->isModuleEnabled('Amasty_Scheckout')) {
@@ -81,17 +80,17 @@ class Gene_Braintree_Model_Observer
             }
 
             // Detect the Oye one step checkout
-            if(Mage::helper('core')->isModuleEnabled('Oye_Checkout') && Mage::helper('oyecheckout')->isOneStepLayout()) {
+            if (Mage::helper('core')->isModuleEnabled('Oye_Checkout') && Mage::helper('oyecheckout')->isOneStepLayout()) {
                 $layout->getUpdate()->addHandle('oye_onestep_checkout');
             }
         }
 
         // As some 3rd party checkouts use the same handles, and URL we have to dynamically add new handles
-        if($action->getFullActionName() == 'onestepcheckout_index_index') {
+        if ($action->getFullActionName() == 'onestepcheckout_index_index') {
 
             // Attempt to detect Magestore_Onestepcheckout
             if (Mage::helper('core')->isModuleEnabled('Magestore_Onestepcheckout')) {
-                if(Mage::helper('onestepcheckout')->enabledOnestepcheckout()) {
+                if (Mage::helper('onestepcheckout')->enabledOnestepcheckout()) {
                     $layout->getUpdate()->addHandle('magestore_onestepcheckout_index');
                 }
             }
@@ -108,14 +107,13 @@ class Gene_Braintree_Model_Observer
     /**
      * Store the generated customer ID if it's present in the session
      *
-     * @param \Varien_Event_Observer $observer
      *
      * @return $this
      */
     public function completeCheckout(Varien_Event_Observer $observer)
     {
         // Do we have a customer ID within the session?
-        if(Mage::getSingleton('checkout/session')->getBraintreeCustomerId() &&
+        if (Mage::getSingleton('checkout/session')->getBraintreeCustomerId() &&
             Mage::getSingleton('checkout/type_onepage')->getCheckoutMethod() == Mage_Checkout_Model_Type_Onepage::METHOD_CUSTOMER) {
 
             // Get the customer
@@ -137,7 +135,6 @@ class Gene_Braintree_Model_Observer
     /**
      * Capture payment on shipment if set
      *
-     * @param Varien_Event_Observer $observer
      *
      * @return $this
      */
@@ -153,7 +150,7 @@ class Gene_Braintree_Model_Observer
         if ($this->_shouldCaptureShipment($order)) {
             // Check the order can be invoiced
             if ($shipment->getTotalQty() && $order->canInvoice()) {
-                $invoiceItems = array();
+                $invoiceItems = [];
                 /* @var $item Mage_Sales_Model_Order_Shipment_Item */
                 foreach ($shipment->getAllItems() as $item) {
                     $invoiceItems[$item->getOrderItemId()] = $item->getQty();
@@ -186,8 +183,6 @@ class Gene_Braintree_Model_Observer
 
     /**
      * Add in the saved block
-     *
-     * @param \Varien_Event_Observer $observer
      */
     public function addSavedChild(Varien_Event_Observer $observer)
     {
@@ -218,9 +213,8 @@ class Gene_Braintree_Model_Observer
     protected function _shouldCaptureShipment($order)
     {
         // Check the store configuration settings are set to capture shipment
-        if(Mage::getStoreConfig(Gene_Braintree_Model_Source_Creditcard_PaymentAction::PAYMENT_ACTION_XML_PATH, $order->getStoreId()) == Mage_Payment_Model_Method_Abstract::ACTION_AUTHORIZE
-            && Mage::getStoreConfig(Gene_Braintree_Model_Source_Creditcard_CaptureAction::CAPTURE_ACTION_XML_PATH, $order->getStoreId()) == Gene_Braintree_Model_Source_Creditcard_CaptureAction::CAPTURE_SHIPMENT)
-        {
+        if (Mage::getStoreConfig(Gene_Braintree_Model_Source_Creditcard_PaymentAction::PAYMENT_ACTION_XML_PATH, $order->getStoreId()) == Mage_Payment_Model_Method_Abstract::ACTION_AUTHORIZE
+            && Mage::getStoreConfig(Gene_Braintree_Model_Source_Creditcard_CaptureAction::CAPTURE_ACTION_XML_PATH, $order->getStoreId()) == Gene_Braintree_Model_Source_Creditcard_CaptureAction::CAPTURE_SHIPMENT) {
             return true;
         }
         return false;
@@ -241,7 +235,6 @@ class Gene_Braintree_Model_Observer
     /**
      * Handle multi shipping orders
      *
-     * @param \Varien_Event_Observer $observer
      *
      * @return $this
      */

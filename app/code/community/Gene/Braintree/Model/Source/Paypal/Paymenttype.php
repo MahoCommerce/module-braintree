@@ -8,9 +8,8 @@
  */
 class Gene_Braintree_Model_Source_Paypal_Paymenttype
 {
-
-    const GENE_BRAINTREE_PAYPAL_SINGLE_PAYMENT = 'single';
-    const GENE_BRAINTREE_PAYPAL_FUTURE_PAYMENTS = 'future';
+    public const GENE_BRAINTREE_PAYPAL_SINGLE_PAYMENT = 'single';
+    public const GENE_BRAINTREE_PAYPAL_FUTURE_PAYMENTS = 'future';
 
     /**
      * Return our options
@@ -19,16 +18,16 @@ class Gene_Braintree_Model_Source_Paypal_Paymenttype
      */
     public function toOptionArray()
     {
-        return array(
-            array(
+        return [
+            [
                 'value' => self::GENE_BRAINTREE_PAYPAL_SINGLE_PAYMENT,
                 'label' => Mage::helper('gene_braintree')->__('Checkout'),
-            ),
-            array(
+            ],
+            [
                 'value' => self::GENE_BRAINTREE_PAYPAL_FUTURE_PAYMENTS,
-                'label' => Mage::helper('gene_braintree')->__('Vault')
-            )
-        );
+                'label' => Mage::helper('gene_braintree')->__('Vault'),
+            ],
+        ];
     }
 
 }

@@ -1,1 +1,10 @@
-.idea
+/vendor/
+composer.lock
+.idea/
+.vscode/
+.DS_Store
+.phpstan.cache/
+.php-cs-fixer.cache
+/maho
+/public/
+/lib/

@@ -1,4 +1,5 @@
 <?php
+
 /**
  * @author Paul Canning <paul.canning@gene.co.uk>
  * @license    https://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
@@ -18,15 +19,15 @@ class Gene_Braintree_GooglepayController extends Mage_Core_Controller_Front_Acti
     public function clientTokenAction()
     {
         try {
-            return $this->_returnJson(array(
+            return $this->_returnJson([
                 'success' => true,
-                'client_token' => Mage::getSingleton('gene_braintree/wrapper_braintree')->init()->generateToken()
-            ));
+                'client_token' => Mage::getSingleton('gene_braintree/wrapper_braintree')->init()->generateToken(),
+            ]);
         } catch (Exception $e) {
-            return $this->_returnJson(array(
+            return $this->_returnJson([
                 'success' => false,
-                'error' => $e->getMessage()
-            ));
+                'error' => $e->getMessage(),
+            ]);
         }
     }
 
@@ -41,7 +42,7 @@ class Gene_Braintree_GooglepayController extends Mage_Core_Controller_Front_Acti
         // Retrieve the form_key from the request
         $formKey = $this->getRequest()->getParam(
             'form_key',
-            (isset($formData['form_key']) ? $formData['form_key'] : false)
+            ($formData['form_key'] ?? false),
         );
 
         // Validate form key
@@ -57,7 +58,7 @@ class Gene_Braintree_GooglepayController extends Mage_Core_Controller_Front_Acti
 
         // Where the user came from - product or cart page
         Mage::getSingleton('core/session')->setBraintreeExpressSource(
-            $this->getRequest()->getParam('source', 'product')
+            $this->getRequest()->getParam('source', 'product'),
         );
 
         $googlepay = json_decode($this->getRequest()->getParam('googlepay'), true);
@@ -92,7 +93,7 @@ class Gene_Braintree_GooglepayController extends Mage_Core_Controller_Front_Acti
             $product = Mage::getModel('catalog/product')->load($formData['product']);
             if (!$product->getId()) {
                 Mage::getSingleton('core/session')->addError(
-                    Mage::helper('gene_braintree')->__("We're unable to load that product.")
+                    Mage::helper('gene_braintree')->__("We're unable to load that product."),
                 );
 
                 return $this->_redirect('braintree/googlepay/error', ['_secure' => Mage::app()->getFrontController()->getRequest()->isSecure()]);
@@ -106,7 +107,7 @@ class Gene_Braintree_GooglepayController extends Mage_Core_Controller_Front_Acti
                 $quote->addProduct($product, $request);
             } catch (Exception $e) {
                 Mage::getSingleton('core/session')->addError(
-                    Mage::helper('gene_braintree')->__('Sorry, we were unable to process your request. Please try again.')
+                    Mage::helper('gene_braintree')->__('Sorry, we were unable to process your request. Please try again.'),
                 );
 
                 return $this->_redirect('braintree/googlepay/error', ['_secure' => Mage::app()->getFrontController()->getRequest()->isSecure()]);
@@ -118,7 +119,7 @@ class Gene_Braintree_GooglepayController extends Mage_Core_Controller_Front_Acti
         $shippingAddress = $googlepay['shippingAddress'];
 
         if (isset($billingAddress['name'])) {
-            list($firstName, $lastName) = explode(' ', $billingAddress['name'], 2);
+            [$firstName, $lastName] = explode(' ', $billingAddress['name'], 2);
         }
 
         // Retrieve the street
@@ -347,8 +348,8 @@ class Gene_Braintree_GooglepayController extends Mage_Core_Controller_Front_Acti
                 ['code', 'default_name'],
                 [
                     ['eq' => $regionId],
-                    ['eq' => $regionId]
-                ]
+                    ['eq' => $regionId],
+                ],
             );
 
         // Check we have a region

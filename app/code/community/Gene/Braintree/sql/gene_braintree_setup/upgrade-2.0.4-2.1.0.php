@@ -11,12 +11,12 @@ $installer->startSetup();
 // Update the white list for AnattaDesign Awesome Checkout
 if (Mage::helper('core')->isModuleEnabled('AnattaDesign_AwesomeCheckout')) {
     $whiteListConfigXmlPath = 'awesomecheckout/advanced/whitelisted_css_js';
-    $whiteList = array(
+    $whiteList = [
         'gene/braintree/vzero-min.js',
         'gene/braintree/vzero-paypal-min.js',
         'gene/braintree/vzero-integration-min.js',
-        'css/gene/braintree/awesomecheckout.css'
-    );
+        'css/gene/braintree/awesomecheckout.css',
+    ];
 
     // Update values on the default scope
     if ($currentWhiteList = $this->getStoreConfig($whiteListConfigXmlPath)) {
@@ -31,7 +31,7 @@ if (Mage::helper('core')->isModuleEnabled('AnattaDesign_AwesomeCheckout')) {
         $whiteListConfigXmlPath,
         implode("\n", $whiteList),
         'default',
-        0
+        0,
     );
 
     // Loop through the stores and ensure they're all up to date
@@ -51,7 +51,7 @@ if (Mage::helper('core')->isModuleEnabled('AnattaDesign_AwesomeCheckout')) {
             $whiteListConfigXmlPath,
             implode("\n", $whiteList),
             'stores',
-            $store->getId()
+            $store->getId(),
         );
     }
 

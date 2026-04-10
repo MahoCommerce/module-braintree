@@ -8,14 +8,13 @@
  */
 class Gene_Braintree_Block_Adminhtml_System_Config_Migration extends Mage_Core_Block_Template
 {
-
-
     /**
      * Only render the block if the migration should run
      *
      * @return string
      */
-    public function _toHtml()
+    #[\Override]
+    protected function _toHtml()
     {
         if ($this->_runMigration()) {
             return parent::_toHtml();

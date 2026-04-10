@@ -47,7 +47,8 @@ class Gene_Braintree_Block_Applepay_Setup extends Mage_Core_Block_Template
      * @param   array $params
      * @return  string
      */
-    public function getUrl($route = '', $params = array())
+    #[\Override]
+    public function getUrl($route = '', $params = [])
     {
         // Always force secure on getUrl calls
         if (!isset($params['_forced_secure'])) {
@@ -62,6 +63,7 @@ class Gene_Braintree_Block_Applepay_Setup extends Mage_Core_Block_Template
      *
      * @return string
      */
+    #[\Override]
     protected function _toHtml()
     {
         // Check the payment method is active, block duplicate rendering of this block

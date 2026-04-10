@@ -14,14 +14,14 @@ $attributeGroupId = $installer->getDefaultAttributeGroupId($entityTypeId, $attri
 
 // Add in a new attribute for the braintree's customer ID
 // This is generated and stored Magento side and is used for stored details
-$installer->addAttribute('customer', 'braintree_customer_id', array(
+$installer->addAttribute('customer', 'braintree_customer_id', [
     'input'         => 'text',
     'type'          => 'varchar',
     'label'         => 'Generated Braintree Customer Account ID',
     'visible'       => 0,
     'required'      => 0,
     'user_defined' => 1,
-));
+]);
 
 // Add the attribute into the group
 $installer->addAttributeToGroup(
@@ -29,7 +29,7 @@ $installer->addAttributeToGroup(
     $attributeSetId,
     $attributeGroupId,
     'braintree_customer_id',
-    '999'
+    '999',
 );
 
 $installer->endSetup();

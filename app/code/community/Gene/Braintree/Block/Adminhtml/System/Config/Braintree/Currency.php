@@ -4,15 +4,14 @@
  * @author Dave Macaulay <braintreesupport@gene.co.uk>
  * @license https://opensource.org/licenses/osl-3.0.php Open Software License (OSL 3.0)
  */
-class Gene_Braintree_Block_Adminhtml_System_Config_Braintree_Currency
-    extends Mage_Adminhtml_Block_System_Config_Form_Field
+class Gene_Braintree_Block_Adminhtml_System_Config_Braintree_Currency extends Mage_Adminhtml_Block_System_Config_Form_Field
 {
     /**
      * Return the currency table HTML for the element
      *
-     * @param Varien_Data_Form_Element_Abstract $element
      * @return string
      */
+    #[\Override]
     protected function _getElementHtml(Varien_Data_Form_Element_Abstract $element)
     {
         return $this->getCurrencyTableHtml($element);
@@ -24,7 +23,7 @@ class Gene_Braintree_Block_Adminhtml_System_Config_Braintree_Currency
      */
     protected function getCurrencyTableHtml(Varien_Data_Form_Element_Abstract $element)
     {
-        $currencies = array();
+        $currencies = [];
 
         /* @var $adminConfigData Mage_Adminhtml_Model_Config_Data */
         $adminConfigData = Mage::getSingleton('adminhtml/config_data');
@@ -32,7 +31,7 @@ class Gene_Braintree_Block_Adminhtml_System_Config_Braintree_Currency
         // Determine the available currencies for the current scope
         if ($adminConfigData->getScope() == 'default') {
             $currencies = Mage::app()->getStore(0)->getAvailableCurrencyCodes();
-        } else if ($adminConfigData->getScope() == 'websites') {
+        } elseif ($adminConfigData->getScope() == 'websites') {
             /* @var $website Mage_Core_Model_Website */
             $website = Mage::getModel('core/website')->load($adminConfigData->getWebsite(), 'code');
             if ($website->getId()) {
@@ -41,7 +40,7 @@ class Gene_Braintree_Block_Adminhtml_System_Config_Braintree_Currency
                     $currencies = array_merge($currencies, $store->getAvailableCurrencyCodes());
                 }
             }
-        } else if ($adminConfigData->getScope() == 'stores') {
+        } elseif ($adminConfigData->getScope() == 'stores') {
             $currencies = Mage::app()->getStore($adminConfigData->getStore())->getAvailableCurrencyCodes();
         }
 
@@ -57,10 +56,10 @@ class Gene_Braintree_Block_Adminhtml_System_Config_Braintree_Currency
             </tr>';
 
         // Loop through each currency and add a value
-        foreach($currencies as $currency) {
+        foreach ($currencies as $currency) {
             $response .= '<tr>
                 <td> ' . $currency . '</td>
-                <td><input class="input-text" type="text" name=" ' . $element->getName() . '[' . $currency . ']" style="width: 100%;" value="'. (isset($values->$currency) ? $values->$currency : '') . '" /></td>
+                <td><input class="input-text" type="text" name=" ' . $element->getName() . '[' . $currency . ']" style="width: 100%;" value="' . ($values->$currency ?? '') . '" /></td>
             </tr>';
         }
 

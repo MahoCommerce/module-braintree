@@ -13,6 +13,7 @@ class Gene_Braintree_Adminhtml_Braintree_MigrationController extends Mage_Adminh
      *
      * @return bool
      */
+    #[\Override]
     protected function _isAllowed()
     {
         return Mage::getSingleton('admin/session')->isAllowed('sales/order');
@@ -38,17 +39,17 @@ class Gene_Braintree_Adminhtml_Braintree_MigrationController extends Mage_Adminh
 
         // Pass the users choices through to the migration model
         $migration->setRunConfiguration(
-            (isset($actions['configuration-settings']) && $actions['configuration-settings'] == 'on')
+            (isset($actions['configuration-settings']) && $actions['configuration-settings'] == 'on'),
         );
         $migration->setRunCustomerData(
-            (isset($actions['customer-data']) && $actions['customer-data'] == 'on')
+            (isset($actions['customer-data']) && $actions['customer-data'] == 'on'),
         );
         $migration->setDisableLegacy(
             (isset($actions['disable-legacy']) && $actions['disable-legacy'] == 'on'),
-            (isset($actions['remove-legacy']) && $actions['remove-legacy'] == 'on')
+            (isset($actions['remove-legacy']) && $actions['remove-legacy'] == 'on'),
         );
         $migration->setRunOrderTransactionInfo(
-            (isset($actions['order-transaction-info']) && $actions['order-transaction-info'] == 'on')
+            (isset($actions['order-transaction-info']) && $actions['order-transaction-info'] == 'on'),
         );
 
         // Run the migration process
@@ -58,9 +59,9 @@ class Gene_Braintree_Adminhtml_Braintree_MigrationController extends Mage_Adminh
         $this->_getSession()->addSuccess(Mage::helper('gene_braintree')->__('We have successfully migrated you from the Braintree Payments extension to the new Gene Braintree extension.'));
 
         // Return a JSON response to the browser
-        return $this->_returnJson(array_merge(array(
-            'success' => true
-        ), $result->debug()));
+        return $this->_returnJson(array_merge([
+            'success' => true,
+        ], $result->debug()));
     }
 
     /**
@@ -75,7 +76,7 @@ class Gene_Braintree_Adminhtml_Braintree_MigrationController extends Mage_Adminh
         $config->saveConfig(Gene_Braintree_Helper_Data::MIGRATION_COMPLETE, 1);
         $config->cleanCache();
 
-        return $this->_returnJson(array('success' => true));
+        return $this->_returnJson(['success' => true]);
     }
 
     /**

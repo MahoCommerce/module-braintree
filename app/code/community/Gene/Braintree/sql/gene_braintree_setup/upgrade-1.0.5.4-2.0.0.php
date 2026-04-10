@@ -9,12 +9,12 @@ $installer = $this;
 $installer->startSetup();
 
 // The config paths that need to be transferred to sandbox
-$transferConfig = array(
+$transferConfig = [
     Gene_Braintree_Model_Wrapper_Braintree::BRAINTREE_MERCHANT_ACCOUNT_ID_PATH => Gene_Braintree_Model_Wrapper_Braintree::BRAINTREE_SANDBOX_MERCHANT_ACCOUNT_ID_PATH,
     Gene_Braintree_Model_Wrapper_Braintree::BRAINTREE_PUBLIC_KEY_PATH => Gene_Braintree_Model_Wrapper_Braintree::BRAINTREE_SANDBOX_PUBLIC_KEY_PATH,
     Gene_Braintree_Model_Wrapper_Braintree::BRAINTREE_PRIVATE_KEY_PATH => Gene_Braintree_Model_Wrapper_Braintree::BRAINTREE_SANDBOX_PRIVATE_KEY_PATH,
-    Gene_Braintree_Model_Wrapper_Braintree::BRAINTREE_MERCHANT_ID_PATH => Gene_Braintree_Model_Wrapper_Braintree::BRAINTREE_SANDBOX_MERCHANT_ID_PATH
-);
+    Gene_Braintree_Model_Wrapper_Braintree::BRAINTREE_MERCHANT_ID_PATH => Gene_Braintree_Model_Wrapper_Braintree::BRAINTREE_SANDBOX_MERCHANT_ID_PATH,
+];
 
 // Update values on the default scope
 if ($this->getStoreConfig(Gene_Braintree_Model_Wrapper_Braintree::BRAINTREE_ENVIRONMENT_PATH) == 'sandbox') {
@@ -25,7 +25,7 @@ if ($this->getStoreConfig(Gene_Braintree_Model_Wrapper_Braintree::BRAINTREE_ENVI
             $sandboxPath,
             $this->getStoreConfig($productionPath),
             'default',
-            0
+            0,
         );
     }
 
@@ -35,7 +35,7 @@ if ($this->getStoreConfig(Gene_Braintree_Model_Wrapper_Braintree::BRAINTREE_ENVI
             Gene_Braintree_Model_Source_Creditcard_FormIntegration::INTEGRATION_ACTION_XML_PATH,
             Gene_Braintree_Model_Source_Creditcard_FormIntegration::INTEGRATION_HOSTED,
             'default',
-            0
+            0,
         );
     }
 }
@@ -56,7 +56,7 @@ foreach ($stores as $store) {
                     $sandboxPath,
                     $this->getStoreConfig($productionPath, $store),
                     'stores',
-                    $store->getId()
+                    $store->getId(),
                 );
             }
         }
@@ -68,7 +68,7 @@ foreach ($stores as $store) {
             Gene_Braintree_Model_Source_Creditcard_FormIntegration::INTEGRATION_ACTION_XML_PATH,
             Gene_Braintree_Model_Source_Creditcard_FormIntegration::INTEGRATION_HOSTED,
             'stores',
-            $store->getId()
+            $store->getId(),
         );
     }
 }

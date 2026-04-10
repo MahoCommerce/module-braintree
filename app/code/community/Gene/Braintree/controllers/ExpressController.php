@@ -10,7 +10,6 @@
  */
 class Gene_Braintree_ExpressController extends Mage_Core_Controller_Front_Action
 {
-
     /**
      * @var Mage_Sales_Model_Quote
      */
@@ -19,6 +18,7 @@ class Gene_Braintree_ExpressController extends Mage_Core_Controller_Front_Action
     /**
      * Prevent access if disabled
      */
+    #[\Override]
     public function preDispatch()
     {
         if (!Mage::getStoreConfig('payment/gene_braintree_paypal/express_active')) {
@@ -73,14 +73,14 @@ class Gene_Braintree_ExpressController extends Mage_Core_Controller_Front_Action
         // Retrieve the form_key from the request
         $formKey = $this->getRequest()->getParam(
             'form_key',
-            (isset($formData['form_key']) ? $formData['form_key'] : false)
+            ($formData['form_key'] ?? false),
         );
 
         // Validate form key
         if (Mage::getSingleton('core/session')->getFormKey() != $formKey) {
             Mage::getSingleton('core/session')->addError(Mage::helper('gene_braintree')->__('We were unable to start the express checkout.'));
 
-            return $this->_redirect("braintree/express/error");
+            return $this->_redirect('braintree/express/error');
         }
 
         // Clean up
@@ -89,7 +89,7 @@ class Gene_Braintree_ExpressController extends Mage_Core_Controller_Front_Action
 
         // Where the user came from - product or cart page
         Mage::getSingleton('core/session')->setBraintreeExpressSource(
-            $this->getRequest()->getParam('source', 'product')
+            $this->getRequest()->getParam('source', 'product'),
         );
 
         $paypal = json_decode($this->getRequest()->getParam('paypal'), true);
@@ -97,14 +97,14 @@ class Gene_Braintree_ExpressController extends Mage_Core_Controller_Front_Action
         if (!isset($paypal['nonce']) || empty($paypal['nonce'])) {
             Mage::getSingleton('core/session')->addError(Mage::helper('gene_braintree')->__('We were unable to process the response from PayPal. Please try again.'));
 
-            return $this->_redirect("braintree/express/error");
+            return $this->_redirect('braintree/express/error');
         }
 
         // Check paypal sent an address
         if (!isset($paypal['details']['shippingAddress']) || !isset($paypal['details']['email'])) {
             Mage::getSingleton('core/session')->addError(Mage::helper('gene_braintree')->__('Please provide a shipping address.'));
 
-            return $this->_redirect("braintree/express/error");
+            return $this->_redirect('braintree/express/error');
         }
 
         Mage::getModel('core/session')->setBraintreeNonce($paypal['nonce']);
@@ -134,10 +134,10 @@ class Gene_Braintree_ExpressController extends Mage_Core_Controller_Front_Action
             $product = Mage::getModel('catalog/product')->load($formData['product']);
             if (!$product->getId()) {
                 Mage::getSingleton('core/session')->addError(
-                    Mage::helper('gene_braintree')->__('We\'re unable to load that product.')
+                    Mage::helper('gene_braintree')->__('We\'re unable to load that product.'),
                 );
 
-                return $this->_redirect("braintree/express/error");
+                return $this->_redirect('braintree/express/error');
             }
 
             // Build up the add request
@@ -149,11 +149,11 @@ class Gene_Braintree_ExpressController extends Mage_Core_Controller_Front_Action
             } catch (Exception $e) {
                 Mage::getSingleton('core/session')->addError(
                     Mage::helper('gene_braintree')->__(
-                        'Sorry, we were unable to process your request. Please try again.'
-                    )
+                        'Sorry, we were unable to process your request. Please try again.',
+                    ),
                 );
 
-                return $this->_redirect("braintree/express/error");
+                return $this->_redirect('braintree/express/error');
             }
         }
 
@@ -162,7 +162,7 @@ class Gene_Braintree_ExpressController extends Mage_Core_Controller_Front_Action
             $firstName = $paypalData['firstName'];
             $lastName = $paypalData['lastName'];
         } elseif (isset($paypalData['shippingAddress']['recipientName'])) {
-            list($firstName, $lastName) = explode(" ", $paypalData['shippingAddress']['recipientName'], 2);
+            [$firstName, $lastName] = explode(' ', $paypalData['shippingAddress']['recipientName'], 2);
         }
 
         // Retrieve the street
@@ -178,7 +178,7 @@ class Gene_Braintree_ExpressController extends Mage_Core_Controller_Front_Action
             ->setCity($paypalData['shippingAddress']['city'])
             ->setCountryId($paypalData['shippingAddress']['countryCode'])
             ->setPostcode($paypalData['shippingAddress']['postalCode'])
-            ->setTelephone(isset($paypalData['phone']) ? $paypalData['phone'] : '00000000000');
+            ->setTelephone($paypalData['phone'] ?? '00000000000');
 
         // Determine if a region is required for the selected country
         if (Mage::helper('directory')->isRegionRequired($address->getCountryId()) && isset($paypalData['shippingAddress']['state'])) {
@@ -196,7 +196,7 @@ class Gene_Braintree_ExpressController extends Mage_Core_Controller_Front_Action
         Mage::getSingleton('core/session')->setBraintreeExpressQuote($quote->getId());
 
         // redirect to choose shipping method
-        return $this->_redirect("braintree/express/shipping");
+        return $this->_redirect('braintree/express/shipping');
     }
 
     /**
@@ -212,11 +212,11 @@ class Gene_Braintree_ExpressController extends Mage_Core_Controller_Front_Action
         $region = Mage::getResourceModel('directory/region_collection')
             ->addFieldToFilter('country_id', $address->getCountryId())
             ->addFieldToFilter(
-                array('code', 'default_name'),
-                array(
-                    array('eq' => $regionId),
-                    array('eq' => $regionId)
-                )
+                ['code', 'default_name'],
+                [
+                    ['eq' => $regionId],
+                    ['eq' => $regionId],
+                ],
             );
 
         // Check we have a region
@@ -255,7 +255,7 @@ class Gene_Braintree_ExpressController extends Mage_Core_Controller_Front_Action
         if (!empty($submitShipping)) {
             // If the quote is virtual process the order without a shipping method
             if ($quote->isVirtual()) {
-                return $this->_redirect("braintree/express/process");
+                return $this->_redirect('braintree/express/process');
             }
 
             // Check the shipping rate we want to use is available
@@ -265,7 +265,7 @@ class Gene_Braintree_ExpressController extends Mage_Core_Controller_Front_Action
                 $quote->setTotalsCollectedFlag(false)->collectTotals()->save();
 
                 // Redirect to confirm payment
-                return $this->_redirect("braintree/express/process");
+                return $this->_redirect('braintree/express/process');
             }
 
             // Missing a valid shipping method
@@ -314,10 +314,10 @@ class Gene_Braintree_ExpressController extends Mage_Core_Controller_Front_Action
             }
         }
 
-        return $this->_returnJson(array(
+        return $this->_returnJson([
             'success' => true,
-            'totals'  => $this->_returnTotals()
-        ));
+            'totals'  => $this->_returnTotals(),
+        ]);
     }
 
     /**
@@ -334,9 +334,9 @@ class Gene_Braintree_ExpressController extends Mage_Core_Controller_Front_Action
         // Don't try and re-apply the already applied coupon
         if ($couponCode == $oldCoupon) {
             // Just alert the front-end the response was a success
-            return $this->_returnJson(array(
-                'success' => true
-            ));
+            return $this->_returnJson([
+                'success' => true,
+            ]);
         }
 
         // If the user is trying to remove the coupon code allow them to
@@ -345,9 +345,9 @@ class Gene_Braintree_ExpressController extends Mage_Core_Controller_Front_Action
         }
 
         // Build our response in an array to be returned as JSON
-        $response = array(
-            'success' => false
-        );
+        $response = [
+            'success' => false,
+        ];
 
         try {
             $codeLength = strlen($couponCode);

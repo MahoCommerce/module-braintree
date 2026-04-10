@@ -8,7 +8,6 @@
  */
 class Gene_Braintree_SavedController extends Mage_Core_Controller_Front_Action
 {
-
     /**
      * Retrieve customer session object
      *
@@ -22,6 +21,7 @@ class Gene_Braintree_SavedController extends Mage_Core_Controller_Front_Action
     /**
      * Validate that the user is logged in
      */
+    #[\Override]
     public function preDispatch()
     {
         parent::preDispatch();
@@ -136,11 +136,11 @@ class Gene_Braintree_SavedController extends Mage_Core_Controller_Front_Action
         $payment = $this->getRequest()->getParam('payment');
 
         // Build up the array of updates we're wanting to complete
-        $updateMethod = array(
+        $updateMethod = [
             'billingAddress' => $braintreeAddress,
             'expirationMonth' => $payment['cc_exp_month'],
-            'expirationYear' => $payment['cc_exp_year']
-        );
+            'expirationYear' => $payment['cc_exp_year'],
+        ];
 
         try {
             // Update the payment method
@@ -148,10 +148,9 @@ class Gene_Braintree_SavedController extends Mage_Core_Controller_Front_Action
             if ($result->success == true) {
                 $this->_getSession()->addSuccess($this->__('The payment method has been updated successfully.'));
                 return $this->_redirect('*/*/index');
-            } else {
-                $this->_getSession()->addSuccess($this->__('An error has occurred whilst updating your payment method: ' . $result->message));
-                return $this->_redirect('*/*/index');
             }
+            $this->_getSession()->addSuccess($this->__('An error has occurred whilst updating your payment method: ' . $result->message));
+            return $this->_redirect('*/*/index');
         } catch (Exception $e) {
             $this->_getSession()->addError($this->__('An error has occurred whilst trying to update the payment method: %s', $e->getMessage()));
             return $this->_redirect('*/*/index');

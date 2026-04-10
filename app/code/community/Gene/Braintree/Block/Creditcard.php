@@ -16,6 +16,7 @@ class Gene_Braintree_Block_Creditcard extends Mage_Payment_Block_Form_Cc
     /**
      * Set the template
      */
+    #[\Override]
     protected function _construct()
     {
         parent::_construct();
@@ -54,10 +55,11 @@ class Gene_Braintree_Block_Creditcard extends Mage_Payment_Block_Form_Cc
      */
     public function hasSavedDetails()
     {
-        if (Mage::getSingleton('customer/session')->isLoggedIn() || Mage::app()->getStore()->isAdmin()) {
-            if ($this->getSavedDetails()) {
-                return sizeof($this->getSavedDetails());
-            }
+        if (!(Mage::getSingleton('customer/session')->isLoggedIn() || Mage::app()->getStore()->isAdmin())) {
+            return false;
+        }
+        if ($this->getSavedDetails()) {
+            return sizeof($this->getSavedDetails());
         }
 
         return false;
@@ -115,6 +117,7 @@ class Gene_Braintree_Block_Creditcard extends Mage_Payment_Block_Form_Cc
      *
      * @return string
      */
+    #[\Override]
     public function getCcAvailableTypes()
     {
         // Collect the types from the core method
@@ -131,29 +134,20 @@ class Gene_Braintree_Block_Creditcard extends Mage_Payment_Block_Form_Cc
      *
      * @return string
      */
-    static public function getCardIcon($cardType)
+    public static function getCardIcon($cardType)
     {
         // Convert the card type to lower case, no spaces
-        switch (str_replace(' ', '', strtolower($cardType))) {
-            case 'mastercard':
-                return 'MC.png';
-            case 'visa':
-                return 'VI.png';
-            case 'americanexpress':
-            case 'amex':
-                return 'AE.png';
-            case 'discover':
-                return 'DI.png';
-            case 'jcb':
-                return 'JCB.png';
-            case 'maestro':
-                return 'ME.png';
-            case 'paypal':
-                return 'PP.png';
-        }
-
-        // Otherwise return the standard card image
-        return 'card.png';
+        return match (str_replace(' ', '', strtolower($cardType))) {
+            'mastercard' => 'MC.png',
+            'visa' => 'VI.png',
+            'americanexpress', 'amex' => 'AE.png',
+            'discover' => 'DI.png',
+            'jcb' => 'JCB.png',
+            'maestro' => 'ME.png',
+            'paypal' => 'PP.png',
+            // Otherwise return the standard card image
+            default => 'card.png',
+        };
     }
 
     /**
@@ -187,15 +181,15 @@ class Gene_Braintree_Block_Creditcard extends Mage_Payment_Block_Form_Cc
      */
     protected function getAllowedCards()
     {
-        $allowed = explode(",", Mage::getModel('gene_braintree/paymentmethod_creditcard')->getConfigData('cctypes'));
-        $cards = array();
+        $allowed = explode(',', Mage::getModel('gene_braintree/paymentmethod_creditcard')->getConfigData('cctypes'));
+        $cards = [];
 
         foreach (Mage::getSingleton('payment/config')->getCcTypes() as $code => $name) {
             if (in_array($code, $allowed) && $code != 'OT') {
-                $cards[] = array(
+                $cards[] = [
                     'value' => $code,
-                    'label' => $name
-                );
+                    'label' => $name,
+                ];
             }
         }
 

@@ -4,18 +4,17 @@
  * @author Dave Macaulay <braintreesupport@gene.co.uk>
  * @license https://opensource.org/licenses/osl-3.0.php Open Software License (OSL 3.0)
  */
-class Gene_Braintree_Block_Adminhtml_System_Config_Braintree_Config
-    extends Mage_Adminhtml_Block_Abstract implements Varien_Data_Form_Element_Renderer_Interface
+class Gene_Braintree_Block_Adminhtml_System_Config_Braintree_Config extends Mage_Adminhtml_Block_Abstract implements Varien_Data_Form_Element_Renderer_Interface
 {
     /**
      * Render element html
      *
-     * @param Varien_Data_Form_Element_Abstract $element
      * @return string
      */
     public function render(Varien_Data_Form_Element_Abstract $element)
     {
-        return sprintf('<tr id="row_%s">
+        return sprintf(
+            '<tr id="row_%s">
                 <td class="label">
                     <strong id="%s">%s</strong>
                 </td>
@@ -23,7 +22,10 @@ class Gene_Braintree_Block_Adminhtml_System_Config_Braintree_Config
                     %s
                 </td>
             </tr>',
-            $element->getHtmlId(), $element->getHtmlId(), $element->getLabel(), $this->getValidConfigHtml()
+            $element->getHtmlId(),
+            $element->getHtmlId(),
+            $element->getLabel(),
+            $this->getValidConfigHtml(),
         );
     }
 
@@ -34,7 +36,7 @@ class Gene_Braintree_Block_Adminhtml_System_Config_Braintree_Config
     protected function getValidConfigHtml()
     {
         $response = Mage::getModel('gene_braintree/wrapper_braintree')->validateCredentials(true);
-        $response.= '
+        $response .= '
 <script type="text/javascript">
 
 // Set the config timeout
@@ -47,7 +49,7 @@ function checkConfig() {
     clearTimeout(configTimeout);
 
     // Place a loading gif into the config area
-    $(\'row_payment_gene_braintree_valid_config\').down(\'td.value\').innerHTML = \'<div style="line-height: 18px;margin: 6px 0;"><img src="' . $this->getSkinUrl('images/gene/loader.gif') . '" height="18" style="float: left;margin-right: 8px;" /> '. $this->__('Validating Credentials...') . '</center>\';
+    $(\'row_payment_gene_braintree_valid_config\').down(\'td.value\').innerHTML = \'<div style="line-height: 18px;margin: 6px 0;"><img src="' . $this->getSkinUrl('images/gene/loader.gif') . '" height="18" style="float: left;margin-right: 8px;" /> ' . $this->__('Validating Credentials...') . '</center>\';
 
     // Defined the configTimeout
     configTimeout = setTimeout(function() {

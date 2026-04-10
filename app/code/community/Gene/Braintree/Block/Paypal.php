@@ -8,7 +8,6 @@
  */
 class Gene_Braintree_Block_Paypal extends Mage_Payment_Block_Form
 {
-
     /**
      * Store this so we don't load it multiple times
      */
@@ -17,6 +16,7 @@ class Gene_Braintree_Block_Paypal extends Mage_Payment_Block_Form
     /**
      * Internal constructor. Set template
      */
+    #[\Override]
     protected function _construct()
     {
         parent::_construct();
@@ -55,10 +55,11 @@ class Gene_Braintree_Block_Paypal extends Mage_Payment_Block_Form
      */
     public function hasSavedDetails()
     {
-        if (Mage::getSingleton('customer/session')->isLoggedIn() || Mage::app()->getStore()->isAdmin()) {
-            if ($this->getSavedDetails()) {
-                return sizeof($this->getSavedDetails());
-            }
+        if (!(Mage::getSingleton('customer/session')->isLoggedIn() || Mage::app()->getStore()->isAdmin())) {
+            return false;
+        }
+        if ($this->getSavedDetails()) {
+            return sizeof($this->getSavedDetails());
         }
 
         return false;

@@ -21,11 +21,14 @@ class Gene_Braintree_Block_Info extends Mage_Payment_Block_Info
         // Return the invoice first
         if (Mage::registry('current_invoice')) {
             return Mage::registry('current_invoice');
-        } else if (Mage::registry('current_creditmemo')) {
+        }
+        if (Mage::registry('current_creditmemo')) {
             return Mage::registry('current_creditmemo');
-        } else if (Mage::registry('current_order')) {
+        }
+        if (Mage::registry('current_order')) {
             return Mage::registry('current_order');
-        } else if (Mage::registry('current_shipment')) {
+        }
+        if (Mage::registry('current_shipment')) {
             return Mage::registry('current_shipment')->getOrder();
         }
 
@@ -43,7 +46,7 @@ class Gene_Braintree_Block_Info extends Mage_Payment_Block_Info
         $order = $this->getViewedObject();
 
         // Sometimes orders may not have transaction Id's
-        $transactionIds = array();
+        $transactionIds = [];
 
         // If we're viewing a single invoice change the response
         if ($this->isSingleInvoice()) {
@@ -51,15 +54,15 @@ class Gene_Braintree_Block_Info extends Mage_Payment_Block_Info
             $data[$this->__('Braintree Transaction ID')] = $this->getTransactionId();
 
             // Build an array of transaction ID's
-            $transactionIds = array($this->getTransactionId());
+            $transactionIds = [$this->getTransactionId()];
 
         } elseif ($order) {
 
             /* @var $invoices Mage_Sales_Model_Resource_Order_Invoice_Collection */
             $invoices = $order->getInvoiceCollection();
-            if($invoices->getSize() > 1) {
+            if ($invoices->getSize() > 1) {
                 // Build up our array
-                foreach($invoices as $invoice) {
+                foreach ($invoices as $invoice) {
                     $transactionIds[] = $invoice->getTransactionId();
                 }
             } else {
@@ -70,14 +73,14 @@ class Gene_Braintree_Block_Info extends Mage_Payment_Block_Info
         }
 
         // Do we have any transaction ID's
-        if(!empty($transactionIds)) {
+        if (!empty($transactionIds)) {
             // Start a count
             $count = 1;
 
             // Iterate through transaction ID's
             foreach ($transactionIds as $transactionId) {
                 // Add in another label
-                if(count($transactionIds) > 1) {
+                if (count($transactionIds) > 1) {
                     $data[$this->__('Braintree Transaction #%d', $count)] = '';
                 }
 
@@ -100,7 +103,7 @@ class Gene_Braintree_Block_Info extends Mage_Payment_Block_Info
             }
         }
 
-        if(count($transactionIds) == 1 && isset($transaction)) {
+        if (count($transactionIds) == 1 && isset($transaction)) {
             return $transaction;
         }
 
@@ -115,7 +118,7 @@ class Gene_Braintree_Block_Info extends Mage_Payment_Block_Info
     protected function isSingleInvoice()
     {
         // Caching on the check
-        if($this->_singleInvoice === null) {
+        if ($this->_singleInvoice === null) {
             $this->_singleInvoice = $this->getViewedObject()
                 && ($this->getViewedObject() instanceof Mage_Sales_Model_Order
                     && $this->getViewedObject()->getInvoiceCollection()->getSize() <= 1)
@@ -134,31 +137,29 @@ class Gene_Braintree_Block_Info extends Mage_Payment_Block_Info
     protected function getTransactionId()
     {
         // If the viewed object is an order or it's an invoice but the order doesn't have any invoices
-        if($this->getViewedObject() && $this->getViewedObject() instanceof Mage_Sales_Model_Order
-            || ($this->getViewedObject() instanceof Mage_Sales_Model_Order_Invoice && !$this->getViewedObject()->getTransactionId()))
-        {
+        if ($this->getViewedObject() && $this->getViewedObject() instanceof Mage_Sales_Model_Order
+            || ($this->getViewedObject() instanceof Mage_Sales_Model_Order_Invoice && !$this->getViewedObject()->getTransactionId())) {
 
             // Return the transaction ID from the info
             return $this->_getWrapper()->getCleanTransactionId($this->getInfo()->getLastTransId());
 
             // Else if we're viewing an invoice or a credit memo
-        } else if($this->getViewedObject() && ($this->getViewedObject() instanceof Mage_Sales_Model_Order_Invoice
-                || $this->getViewedObject() instanceof Mage_Sales_Model_Order_Creditmemo))
-        {
+        } elseif ($this->getViewedObject() && ($this->getViewedObject() instanceof Mage_Sales_Model_Order_Invoice
+                || $this->getViewedObject() instanceof Mage_Sales_Model_Order_Creditmemo)) {
 
-            // If the creditmemo is being created it has no transaction ID
-            if($this->getViewedObject() instanceof Mage_Sales_Model_Order_Creditmemo && !$this->getViewedObject()->getTransactionId()) {
-
-                // If the creditmemo has an invoice use that transaction ID, otherwise we're viewing an order wide credit memo
-                if($this->getViewedObject()->getInvoice() && $this->getViewedObject()->getInvoice()->getTransactionId()) {
-                    return $this->_getWrapper()->getCleanTransactionId($this->getViewedObject()->getInvoice()->getTransactionId());
-                } else {
-                    return $this->_getWrapper()->getCleanTransactionId($this->getInfo()->getLastTransId());
-                }
+            if (!$this->getViewedObject() instanceof Mage_Sales_Model_Order_Creditmemo) {
+                return $this->_getWrapper()->getCleanTransactionId($this->getViewedObject()->getTransactionId());
             }
-
+            if (!!$this->getViewedObject()->getTransactionId()) {
+                return $this->_getWrapper()->getCleanTransactionId($this->getViewedObject()->getTransactionId());
+            }
+            // If the creditmemo has an invoice use that transaction ID, otherwise we're viewing an order wide credit memo
+            if ($this->getViewedObject()->getInvoice() && $this->getViewedObject()->getInvoice()->getTransactionId()) {
+                return $this->_getWrapper()->getCleanTransactionId($this->getViewedObject()->getInvoice()->getTransactionId());
+            }
+            return $this->_getWrapper()->getCleanTransactionId($this->getInfo()->getLastTransId());
             return $this->_getWrapper()->getCleanTransactionId($this->getViewedObject()->getTransactionId());
-        } else if(!$this->getViewedObject()) {
+        } elseif (!$this->getViewedObject()) {
             // If we don't have a viewed object just utilise the information in the model
             $info = $this->getData('info');
             if ($info instanceof Mage_Payment_Model_Info && $this->getInfo()->getLastTransId()) {
@@ -178,20 +179,14 @@ class Gene_Braintree_Block_Info extends Mage_Payment_Block_Info
      */
     protected function convertStatus($status)
     {
-        switch($status){
-            case 'authorized':
-                return '<span style="color: #40A500;"> ' . Mage::helper('gene_braintree')->__('Authorized') . '</span>';
-            case 'submitted_for_settlement':
-                return '<span style="color: #40A500;">' . Mage::helper('gene_braintree')->__('Submitted For Settlement') . '</span>';
-            case 'settling':
-                return '<span style="color: #40A500;">' . Mage::helper('gene_braintree')->__('Settling') . '</span>';
-            case 'settled':
-                return '<span style="color: #40A500;">' . Mage::helper('gene_braintree')->__('Settled') . '</span>';
-            case 'voided':
-                return '<span style="color: #ed4737;">' . Mage::helper('gene_braintree')->__('Voided') . '</span>';
-        }
-
-        return ucwords($status);
+        return match ($status) {
+            'authorized' => '<span style="color: #40A500;"> ' . Mage::helper('gene_braintree')->__('Authorized') . '</span>',
+            'submitted_for_settlement' => '<span style="color: #40A500;">' . Mage::helper('gene_braintree')->__('Submitted For Settlement') . '</span>',
+            'settling' => '<span style="color: #40A500;">' . Mage::helper('gene_braintree')->__('Settling') . '</span>',
+            'settled' => '<span style="color: #40A500;">' . Mage::helper('gene_braintree')->__('Settled') . '</span>',
+            'voided' => '<span style="color: #ed4737;">' . Mage::helper('gene_braintree')->__('Voided') . '</span>',
+            default => ucwords($status),
+        };
     }
 
     /**

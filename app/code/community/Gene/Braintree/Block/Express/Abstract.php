@@ -84,39 +84,39 @@ class Gene_Braintree_Block_Express_Abstract extends Mage_Core_Block_Template
     public function getFunding()
     {
         $funding = Mage::getStoreConfig('payment/gene_braintree_paypal/disabled_funding');
-        $funding = explode(",", $funding);
-        $disallowed = $allowed = array();
+        $funding = explode(',', $funding);
+        $disallowed = $allowed = [];
 
         // Credit (only for USD currencies)
         // We don't explicitly disable this as it causes a JS error with the button
-        if (!(in_array("credit", $funding) || $this->getStoreCurrency() != "USD")) {
+        if (!(in_array('credit', $funding) || $this->getStoreCurrency() != 'USD')) {
             $allowed[] = "'credit'";
         }
 
         // Cards
-        if (in_array("card", $funding)) {
+        if (in_array('card', $funding)) {
             $disallowed[] = "'card'";
         }
 
         // German ELV
-        if (in_array("elv", $funding)) {
+        if (in_array('elv', $funding)) {
             $disallowed[] = "'elv'";
         }
 
-        $return = array();
+        $return = [];
         if ($disallowed) {
-            $return[] = 'disallowed: [' . implode(",", $disallowed) . ']';
+            $return[] = 'disallowed: [' . implode(',', $disallowed) . ']';
         } else {
             $return[] = 'disallowed: []';
         }
         if ($allowed) {
-            $return[] = 'allowed: [' . implode(",", $allowed) . ']';
+            $return[] = 'allowed: [' . implode(',', $allowed) . ']';
         } else {
             $return[] = 'allowed: []';
         }
 
         if ($return) {
-            return implode(",", $return);
+            return implode(',', $return);
         }
         return '';
     }

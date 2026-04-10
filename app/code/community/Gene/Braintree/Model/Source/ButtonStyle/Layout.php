@@ -6,9 +6,8 @@
  */
 class Gene_Braintree_Model_Source_ButtonStyle_Layout
 {
-
-    const LAYOUT_VERTICAL = 'vertical';
-    const LAYOUT_HORIZONTAL = 'horizontal';
+    public const LAYOUT_VERTICAL = 'vertical';
+    public const LAYOUT_HORIZONTAL = 'horizontal';
 
 
     /**
@@ -18,15 +17,15 @@ class Gene_Braintree_Model_Source_ButtonStyle_Layout
      */
     public function toOptionArray()
     {
-        return array(
-            array(
+        return [
+            [
                 'value' => self::LAYOUT_VERTICAL,
-                'label' => Mage::helper('gene_braintree')->__('Vertical (All buttons)')
-            ),
-            array(
+                'label' => Mage::helper('gene_braintree')->__('Vertical (All buttons)'),
+            ],
+            [
                 'value' => self::LAYOUT_HORIZONTAL,
-                'label' => Mage::helper('gene_braintree')->__('Horizontal (Max 2 Buttons)')
-            ),
-        );
+                'label' => Mage::helper('gene_braintree')->__('Horizontal (Max 2 Buttons)'),
+            ],
+        ];
     }
 }

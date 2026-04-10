@@ -13,14 +13,14 @@ class Gene_Braintree_Model_Source_Googlepay_AcceptedCards
      */
     public function getArray()
     {
-        return array(
+        return [
             'AMEX' => Mage::helper('gene_braintree')->__('American Express'),
             'DISCOVER' => Mage::helper('gene_braintree')->__('Discovery'),
             'INTERAC' => Mage::helper('gene_braintree')->__('Interac'),
             'JCB' => Mage::helper('gene_braintree')->__('JCB'),
             'MASTERCARD' => Mage::helper('gene_braintree')->__('Mastercard'),
-            'VISA' => Mage::helper('gene_braintree')->__('Visa')
-        );
+            'VISA' => Mage::helper('gene_braintree')->__('Visa'),
+        ];
     }
 
     /**
@@ -30,12 +30,12 @@ class Gene_Braintree_Model_Source_Googlepay_AcceptedCards
      */
     public function toOptionArray()
     {
-        $response = array();
-        foreach($this->getArray() as $key => $value) {
-            $response[] = array(
+        $response = [];
+        foreach ($this->getArray() as $key => $value) {
+            $response[] = [
                 'value' => $key,
-                'label' => $value
-            );
+                'label' => $value,
+            ];
         }
         return $response;
     }

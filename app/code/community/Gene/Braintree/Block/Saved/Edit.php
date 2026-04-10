@@ -14,6 +14,7 @@ class Gene_Braintree_Block_Saved_Edit extends Mage_Customer_Block_Address_Edit
     /**
      * Set the _address to null after the parent has initialized
      */
+    #[\Override]
     protected function _prepareLayout()
     {
         parent::_prepareLayout();
@@ -35,9 +36,10 @@ class Gene_Braintree_Block_Saved_Edit extends Mage_Customer_Block_Address_Edit
      *
      * @return string
      */
+    #[\Override]
     public function getSaveUrl()
     {
-        return $this->getUrl('*/*/save', array('_secure' => true));
+        return $this->getUrl('*/*/save', ['_secure' => true]);
     }
 
     /**
@@ -45,9 +47,10 @@ class Gene_Braintree_Block_Saved_Edit extends Mage_Customer_Block_Address_Edit
      *
      * @return string
      */
+    #[\Override]
     public function getBackUrl()
     {
-        return $this->getUrl('*/*/index', array('_secure' => true));
+        return $this->getUrl('*/*/index', ['_secure' => true]);
     }
 
     /**
@@ -55,6 +58,7 @@ class Gene_Braintree_Block_Saved_Edit extends Mage_Customer_Block_Address_Edit
      *
      * @return \Mage_Customer_Model_Address|null
      */
+    #[\Override]
     public function getAddress()
     {
         if (is_null($this->_address)) {
@@ -74,6 +78,7 @@ class Gene_Braintree_Block_Saved_Edit extends Mage_Customer_Block_Address_Edit
      *
      * @return string
      */
+    #[\Override]
     public function getTitle()
     {
         return $this->__('Edit Payment Method');
@@ -106,7 +111,7 @@ class Gene_Braintree_Block_Saved_Edit extends Mage_Customer_Block_Address_Edit
         $years = $this->getData('cc_years');
         if (is_null($years)) {
             $years = Mage::getSingleton('payment/config')->getYears();
-            $years = array(0 => $this->__('Year')) + $years;
+            $years = [0 => $this->__('Year')] + $years;
             $this->setData('cc_years', $years);
         }
 
@@ -118,6 +123,7 @@ class Gene_Braintree_Block_Saved_Edit extends Mage_Customer_Block_Address_Edit
      *
      * @return mixed
      */
+    #[\Override]
     public function getCountryId()
     {
         return $this->getAddress()->getCountry();

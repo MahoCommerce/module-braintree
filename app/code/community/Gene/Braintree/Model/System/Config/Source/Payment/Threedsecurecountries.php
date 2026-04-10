@@ -8,8 +8,8 @@
  */
 class Gene_Braintree_Model_System_Config_Source_Payment_Threedsecurecountries
 {
-    const ALL_COUNTRIES = 0;
-    const SPECIFIC_COUNTRIES = 1;
+    public const ALL_COUNTRIES = 0;
+    public const SPECIFIC_COUNTRIES = 1;
 
     /**
      * Return options for 3D secure specific countries option
@@ -18,9 +18,9 @@ class Gene_Braintree_Model_System_Config_Source_Payment_Threedsecurecountries
      */
     public function toOptionArray()
     {
-        return array(
-            array('value' => self::ALL_COUNTRIES, 'label' => Mage::helper('adminhtml')->__('All Countries')),
-            array('value' => self::SPECIFIC_COUNTRIES, 'label' => Mage::helper('adminhtml')->__('Specific Countries')),
-        );
+        return [
+            ['value' => self::ALL_COUNTRIES, 'label' => Mage::helper('adminhtml')->__('All Countries')],
+            ['value' => self::SPECIFIC_COUNTRIES, 'label' => Mage::helper('adminhtml')->__('Specific Countries')],
+        ];
     }
 }

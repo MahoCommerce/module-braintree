@@ -8,10 +8,9 @@
  */
 class Gene_Braintree_Model_Source_ButtonStyle_Size
 {
-
-    const SIZE_MEDIUM       = 'medium';
-    const SIZE_LARGE        = 'large';
-    const SIZE_RESPONSIVE   = 'responsive';
+    public const SIZE_MEDIUM       = 'medium';
+    public const SIZE_LARGE        = 'large';
+    public const SIZE_RESPONSIVE   = 'responsive';
 
     /**
      * Possible actions on order place
@@ -20,19 +19,19 @@ class Gene_Braintree_Model_Source_ButtonStyle_Size
      */
     public function toOptionArray()
     {
-        return array(
-            array(
+        return [
+            [
                 'value' => self::SIZE_MEDIUM,
-                'label' => Mage::helper('gene_braintree')->__('Medium')
-            ),
-            array(
+                'label' => Mage::helper('gene_braintree')->__('Medium'),
+            ],
+            [
                 'value' => self::SIZE_LARGE,
-                'label' => Mage::helper('gene_braintree')->__('Large')
-            ),
-            array(
+                'label' => Mage::helper('gene_braintree')->__('Large'),
+            ],
+            [
                 'value' => self::SIZE_RESPONSIVE,
-                'label' => Mage::helper('gene_braintree')->__('Responsive (Recommended)')
-            ),
-        );
+                'label' => Mage::helper('gene_braintree')->__('Responsive (Recommended)'),
+            ],
+        ];
     }
 }

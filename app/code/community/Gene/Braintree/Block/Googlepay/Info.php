@@ -9,6 +9,7 @@ class Gene_Braintree_Block_Googlepay_Info extends Gene_Braintree_Block_Info
     /**
      * Class Construct
      */
+    #[\Override]
     protected function _construct()
     {
         parent::_construct();
@@ -20,6 +21,7 @@ class Gene_Braintree_Block_Googlepay_Info extends Gene_Braintree_Block_Info
      * @param null $transport
      * @return Varien_Object
      */
+    #[\Override]
     protected function _prepareSpecificInformation($transport = null)
     {
         // Get the original transport data
@@ -42,7 +44,7 @@ class Gene_Braintree_Block_Googlepay_Info extends Gene_Braintree_Block_Info
         } else {
 
             // Never leave an empty array
-            $data = array();
+            $data = [];
         }
 
         // Check we're in the admin area

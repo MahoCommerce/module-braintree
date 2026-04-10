@@ -9,7 +9,7 @@ class Gene_Braintree_Helper_Data extends Mage_Core_Helper_Abstract
     /**
      * Store if the migration has ran in the system config
      */
-    const MIGRATION_COMPLETE = 'payment/gene_braintree/migration_ran';
+    public const MIGRATION_COMPLETE = 'payment/gene_braintree/migration_ran';
 
     /**
      * Return all of the possible statuses as an array
@@ -18,7 +18,7 @@ class Gene_Braintree_Helper_Data extends Mage_Core_Helper_Abstract
      */
     public function getStatusesAsArray()
     {
-        return array(
+        return [
             Braintree\Transaction::AUTHORIZATION_EXPIRED => $this->__('Authorization Expired'),
             Braintree\Transaction::AUTHORIZING => $this->__('Authorizing'),
             Braintree\Transaction::AUTHORIZED => $this->__('Authorized'),
@@ -31,8 +31,8 @@ class Gene_Braintree_Helper_Data extends Mage_Core_Helper_Abstract
             Braintree\Transaction::VOIDED => $this->__('Voided'),
             Braintree\Transaction::UNRECOGNIZED => $this->__('Unrecognized'),
             Braintree\Transaction::SETTLEMENT_DECLINED => $this->__('Settlement Declined'),
-            Braintree\Transaction::SETTLEMENT_PENDING => $this->__('Settlement Pending')
-        );
+            Braintree\Transaction::SETTLEMENT_PENDING => $this->__('Settlement Pending'),
+        ];
     }
 
     /**
@@ -64,14 +64,14 @@ class Gene_Braintree_Helper_Data extends Mage_Core_Helper_Abstract
             return $addressModel;
         }
 
-        $addressModel->addData(array(
+        $addressModel->addData([
             'firstname' => $address->firstName,
             'lastname' => $address->lastName,
             'street' => $address->streetAddress . (isset($address->extendedAddress) ? "\n" . $address->extendedAddress : ''),
             'city' => $address->locality,
             'postcode' => $address->postalCode,
-            'country' => $address->countryCodeAlpha2
-        ));
+            'country' => $address->countryCodeAlpha2,
+        ]);
 
         if (isset($address->region)) {
             $addressModel->setData('region_code', $address->region);
@@ -95,14 +95,14 @@ class Gene_Braintree_Helper_Data extends Mage_Core_Helper_Abstract
     {
         if (is_object($address)) {
             // Build up the initial array
-            $return = array(
+            $return = [
                 'firstName'         => $address->getFirstname(),
                 'lastName'          => $address->getLastname(),
                 'streetAddress'     => $address->getStreet1(),
                 'locality'          => $address->getCity(),
                 'postalCode'        => $address->getPostcode(),
-                'countryCodeAlpha2' => $address->getCountry()
-            );
+                'countryCodeAlpha2' => $address->getCountry(),
+            ];
 
             // Any extended address?
             if ($address->getStreet2()) {
@@ -263,7 +263,7 @@ class Gene_Braintree_Helper_Data extends Mage_Core_Helper_Abstract
     {
         $values = $this->getStyleConfigArray($scope);
 
-        return "{layout: '" . $values['layout'] ."',
+        return "{layout: '" . $values['layout'] . "',
                 size: '" . $values['size'] . "',
                 shape: '" . $values['shape'] . "',
                 color: '" . $values['color'] . "',
@@ -273,10 +273,10 @@ class Gene_Braintree_Helper_Data extends Mage_Core_Helper_Abstract
     public function log($data)
     {
         // Check the debug flag in the admin
-        if(Mage::getStoreConfigFlag('payment/gene_braintree/debug')) {
+        if (Mage::getStoreConfigFlag('payment/gene_braintree/debug')) {
 
             // If the data is an exception convert it to a string
-            if($data instanceof Exception) {
+            if ($data instanceof Exception) {
                 $data = $data->getMessage() . $data->getTraceAsString();
             }
 

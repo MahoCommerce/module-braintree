@@ -6,11 +6,10 @@
  */
 class Gene_Braintree_Model_Source_Paypal_CaptureAction
 {
+    public const CAPTURE_ACTION_XML_PATH = 'payment/gene_braintree_creditcard/capture_action';
 
-    const CAPTURE_ACTION_XML_PATH = 'payment/gene_braintree_creditcard/capture_action';
-
-    const CAPTURE_INVOICE = 'invoice';
-    const CAPTURE_SHIPMENT = 'shipment';
+    public const CAPTURE_INVOICE = 'invoice';
+    public const CAPTURE_SHIPMENT = 'shipment';
 
     /**
      * Possible actions on order place
@@ -19,15 +18,15 @@ class Gene_Braintree_Model_Source_Paypal_CaptureAction
      */
     public function toOptionArray()
     {
-        return array(
-            array(
+        return [
+            [
                 'value' => self::CAPTURE_INVOICE,
-                'label' => Mage::helper('gene_braintree')->__('Invoice')
-            ),
-            array(
+                'label' => Mage::helper('gene_braintree')->__('Invoice'),
+            ],
+            [
                 'value' => self::CAPTURE_SHIPMENT,
-                'label' => Mage::helper('gene_braintree')->__('Shipment')
-            ),
-        );
+                'label' => Mage::helper('gene_braintree')->__('Shipment'),
+            ],
+        ];
     }
 }

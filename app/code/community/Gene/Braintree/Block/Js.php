@@ -242,6 +242,7 @@ class Gene_Braintree_Block_Js extends Gene_Braintree_Block_Assets
      *
      * @return string
      */
+    #[\Override]
     protected function _toHtml()
     {
         // Check the payment method is active, block duplicate rendering of this block
@@ -272,38 +273,38 @@ class Gene_Braintree_Block_Js extends Gene_Braintree_Block_Assets
     public function getFunding()
     {
         $funding = Mage::getStoreConfig('payment/gene_braintree_paypal/disabled_funding');
-        $funding = explode(",", $funding);
-        $disallowed = $allowed = array();
+        $funding = explode(',', $funding);
+        $disallowed = $allowed = [];
 
         // Credit (only for USD currencies)
-        if (!(in_array("credit", $funding) || Mage::app()->getStore()->getCurrentCurrencyCode() != "USD")) {
+        if (!(in_array('credit', $funding) || Mage::app()->getStore()->getCurrentCurrencyCode() != 'USD')) {
             $allowed[] = "'credit'";
         }
 
         // Cards
-        if (in_array("card", $funding)) {
+        if (in_array('card', $funding)) {
             $disallowed[] = "'card'";
         }
 
         // German ELV
-        if (in_array("elv", $funding)) {
+        if (in_array('elv', $funding)) {
             $disallowed[] = "'elv'";
         }
 
         $return = [];
         if ($disallowed) {
-            $return[] = 'disallowed: [' . implode(",", $disallowed) . ']';
+            $return[] = 'disallowed: [' . implode(',', $disallowed) . ']';
         } else {
             $return[] = 'disallowed: []';
         }
         if ($allowed) {
-            $return[] = 'allowed: [' . implode(",", $allowed) . ']';
+            $return[] = 'allowed: [' . implode(',', $allowed) . ']';
         } else {
             $return[] = 'allowed: []';
         }
 
         if ($return) {
-            return implode(",", $return);
+            return implode(',', $return);
         }
         return '';
     }
@@ -328,7 +329,8 @@ class Gene_Braintree_Block_Js extends Gene_Braintree_Block_Assets
         return Mage::helper('gene_braintree')->getStyleConfig($scope);
     }
 
-    public function getUrl($route = '', $params = array())
+    #[\Override]
+    public function getUrl($route = '', $params = [])
     {
         // Always force secure on getUrl calls
         if (!isset($params['_forced_secure'])) {

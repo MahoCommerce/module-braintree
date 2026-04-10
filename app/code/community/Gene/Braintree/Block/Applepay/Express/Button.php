@@ -9,6 +9,7 @@ class Gene_Braintree_Block_Applepay_Express_Button extends Gene_Braintree_Block_
     /**
      * Generate braintree token
      */
+    #[\Override]
     protected function _construct()
     {
         parent::_construct();
@@ -21,7 +22,8 @@ class Gene_Braintree_Block_Applepay_Express_Button extends Gene_Braintree_Block_
      *
      * @return string
      */
-    public function _afterToHtml($html)
+    #[\Override]
+    protected function _afterToHtml($html)
     {
         if ($this->isEnabled()) {
             // Never show the Apple Pay button for free products

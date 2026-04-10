@@ -8,9 +8,8 @@
  */
 class Gene_Braintree_Model_Source_ButtonStyle_Shape
 {
-
-    const SHAPE_PILL = 'pill';
-    const SHAPE_RECTANGLE = 'rect';
+    public const SHAPE_PILL = 'pill';
+    public const SHAPE_RECTANGLE = 'rect';
 
     /**
      * Possible actions on order place
@@ -19,15 +18,15 @@ class Gene_Braintree_Model_Source_ButtonStyle_Shape
      */
     public function toOptionArray()
     {
-        return array(
-            array(
+        return [
+            [
                 'value' => self::SHAPE_PILL,
-                'label' => Mage::helper('gene_braintree')->__('Pill')
-            ),
-            array(
+                'label' => Mage::helper('gene_braintree')->__('Pill'),
+            ],
+            [
                 'value' => self::SHAPE_RECTANGLE,
-                'label' => Mage::helper('gene_braintree')->__('Rectangle (Recommended)')
-            ),
-        );
+                'label' => Mage::helper('gene_braintree')->__('Rectangle (Recommended)'),
+            ],
+        ];
     }
 }

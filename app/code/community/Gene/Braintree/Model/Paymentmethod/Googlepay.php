@@ -105,6 +105,7 @@ class Gene_Braintree_Model_Paymentmethod_Googlepay extends Gene_Braintree_Model_
      * @param null $quote
      * @return bool
      */
+    #[\Override]
     public function isAvailable($quote = null)
     {
         if (parent::isAvailable($quote)) {
@@ -118,6 +119,7 @@ class Gene_Braintree_Model_Paymentmethod_Googlepay extends Gene_Braintree_Model_
      * @param $data
      * @return $this
      */
+    #[\Override]
     public function assignData($data)
     {
         if (!($data instanceof Varien_Object)) {
@@ -142,11 +144,11 @@ class Gene_Braintree_Model_Paymentmethod_Googlepay extends Gene_Braintree_Model_
     /**
      * Authorize the requested amount
      *
-     * @param Varien_Object $payment
      * @param float $amount
      * @return Gene_Braintree_Model_Paymentmethod_Googlepay
      * @throws Mage_Core_Exception
      */
+    #[\Override]
     public function authorize(Varien_Object $payment, $amount)
     {
         return $this->_authorize($payment, $amount);
@@ -155,10 +157,10 @@ class Gene_Braintree_Model_Paymentmethod_Googlepay extends Gene_Braintree_Model_
     /**
      * Process capturing of a payment
      *
-     * @param Varien_Object $payment
      * @param float $amount
      * @return $this
      */
+    #[\Override]
     public function capture(Varien_Object $payment, $amount)
     {
         return $this->_captureAuthorized($payment, $amount);
@@ -167,7 +169,6 @@ class Gene_Braintree_Model_Paymentmethod_Googlepay extends Gene_Braintree_Model_
     /**
      * Pseudo _authorize function so we can pass in extra data
      *
-     * @param Varien_Object $payment
      * @param $amount
      * @param bool|false $shouldCapture
      * @param bool|false $token
@@ -180,7 +181,7 @@ class Gene_Braintree_Model_Paymentmethod_Googlepay extends Gene_Braintree_Model_
         // We cannot utilise the validate() function as these checks need to happen at the capture point
         if (!$this->getPaymentMethodNonce()) {
             Mage::throwException(
-                $this->_getHelper()->__('There has been an issue processing your Google Pay payment, please try again.')
+                $this->_getHelper()->__('There has been an issue processing your Google Pay payment, please try again.'),
             );
         }
 
@@ -198,28 +199,28 @@ class Gene_Braintree_Model_Paymentmethod_Googlepay extends Gene_Braintree_Model_
                 $this->_buildPaymentRequest($token),
                 $payment->getOrder(),
                 $shouldCapture,
-                $this->getInfoInstance()->getAdditionalInformation('device_data')
+                $this->getInfoInstance()->getAdditionalInformation('device_data'),
             );
 
             // Attempt to make the sale, firstly dispatching an event
             $result = $this->_getWrapper()->makeSale(
-                $this->_dispatchSaleArrayEvent('gene_braintree_googlepay_sale_array', $saleArray, $payment)
+                $this->_dispatchSaleArrayEvent('gene_braintree_googlepay_sale_array', $saleArray, $payment),
             );
 
         } catch (Exception $e) {
             // Dispatch an event for when a payment fails
-            Mage::dispatchEvent('gene_braintree_googlepay_failed_exception', array('payment' => $payment, 'exception' => $e));
+            Mage::dispatchEvent('gene_braintree_googlepay_failed_exception', ['payment' => $payment, 'exception' => $e]);
 
             return $this->_processFailedResult($this->_getHelper()->__('We were unable to complete your purchase through Google Pay, please try again or an alternative payment method.'), $e);
         }
 
         // Log the result
-        Gene_Braintree_Model_Debug::log(array('result' => $result));
+        Gene_Braintree_Model_Debug::log(['result' => $result]);
 
         // If the sale has failed
         if ($result->success !== true) {
             // Dispatch an event for when a payment fails
-            Mage::dispatchEvent('gene_braintree_googlepay_failed', array('payment' => $payment, 'result' => $result));
+            Mage::dispatchEvent('gene_braintree_googlepay_failed', ['payment' => $payment, 'result' => $result]);
 
             // Return a friendly message for processor declined transactions
             if (isset($result->transaction->status)
@@ -227,10 +228,10 @@ class Gene_Braintree_Model_Paymentmethod_Googlepay extends Gene_Braintree_Model_
             ) {
                 return $this->_processFailedResult(
                     $this->_getHelper()->__(
-                        'Your transaction has been declined, please try another payment method or contacting your issuing bank.'
+                        'Your transaction has been declined, please try another payment method or contacting your issuing bank.',
                     ),
                     false,
-                    $result
+                    $result,
                 );
             }
 
@@ -243,7 +244,6 @@ class Gene_Braintree_Model_Paymentmethod_Googlepay extends Gene_Braintree_Model_
     }
 
     /**
-     * @param Varien_Object $payment
      * @param $amount
      * @return $this
      */
@@ -301,19 +301,18 @@ class Gene_Braintree_Model_Paymentmethod_Googlepay extends Gene_Braintree_Model_
                     // We pass $amount instead of $captureAmount as the authorize function contains the conversion
                     $this->_authorize($payment, $amount, true, $token);
                     return $this;
-                } else {
-                    // Attempt to clone the transaction
-                    $result = $this->_getWrapper()
-                        ->init($payment->getOrder()->getStoreId())
-                        ->cloneTransaction($lastTransactionId, $captureAmount);
                 }
+                // Attempt to clone the transaction
+                $result = $this->_getWrapper()
+                    ->init($payment->getOrder()->getStoreId())
+                    ->cloneTransaction($lastTransactionId, $captureAmount);
             } else {
                 // Init the environment
                 $result = $this->_getWrapper()
                     ->init($payment->getOrder()->getStoreId())
                     ->submitForSettlement($payment->getCcTransId(), $captureAmount);
                 // Log the result
-                Gene_Braintree_Model_Debug::log(array('capture:submitForSettlement' => $result));
+                Gene_Braintree_Model_Debug::log(['capture:submitForSettlement' => $result]);
             }
             if ($result->success) {
                 $this->_updateKountStatus($payment);
@@ -326,8 +325,8 @@ class Gene_Braintree_Model_Paymentmethod_Googlepay extends Gene_Braintree_Model_
                 // Clean up
                 Gene_Braintree_Model_Wrapper_Braintree::cleanUp();
                 Mage::throwException(
-                    $result->transaction->processorSettlementResponseCode.':
-                    '.$result->transaction->processorSettlementResponseText
+                    $result->transaction->processorSettlementResponseCode . ':
+                    ' . $result->transaction->processorSettlementResponseText,
                 );
             }
         } else {
@@ -345,7 +344,7 @@ class Gene_Braintree_Model_Paymentmethod_Googlepay extends Gene_Braintree_Model_
     protected function _buildPaymentRequest($token)
     {
         // Build our payment array with either our token, or nonce
-        $paymentArray = array();
+        $paymentArray = [];
 
         // If we have an original token use that for the subsequent requests
         if ($originalToken = $this->_getOriginalToken()) {
@@ -368,7 +367,6 @@ class Gene_Braintree_Model_Paymentmethod_Googlepay extends Gene_Braintree_Model_
     }
 
     /**
-     * @param Varien_Object $payment
      * @param $result
      * @param $amount
      * @return Varien_Object
@@ -376,11 +374,11 @@ class Gene_Braintree_Model_Paymentmethod_Googlepay extends Gene_Braintree_Model_
     protected function _processSuccessResult(Varien_Object $payment, $result, $amount)
     {
         // Pass an event if the payment was a success
-        Mage::dispatchEvent('gene_braintree_googlepay_success', array(
+        Mage::dispatchEvent('gene_braintree_googlepay_success', [
             'payment' => $payment,
             'result' => $result,
-            'amount' => $amount
-        ));
+            'amount' => $amount,
+        ]);
 
         // Set some basic things
         $payment->setStatus(self::STATUS_APPROVED)

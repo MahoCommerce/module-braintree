@@ -78,7 +78,8 @@ class Gene_Braintree_Block_Express_Setup extends Gene_Braintree_Block_Express_Ab
      *
      * @return string
      */
-    public function _afterToHtml($html)
+    #[\Override]
+    protected function _afterToHtml($html)
     {
         if (!$this->hasBeenSetup()) {
             Mage::register('gene_braintree_btn_loaded', true);
@@ -107,7 +108,7 @@ class Gene_Braintree_Block_Express_Setup extends Gene_Braintree_Block_Express_Ab
         $cart = Mage::getModel('checkout/cart')->getQuote();
         $cartTotal = 0;
         foreach ($cart->getAllItems() as $item) {
-            $cartTotal += ($item->getProduct()->getPrice() * $item->getQty() );
+            $cartTotal += ($item->getProduct()->getPrice() * $item->getQty());
         }
         return $cartTotal;
     }

@@ -6,10 +6,10 @@
  */
 class Gene_Braintree_Block_Creditcard_Info extends Gene_Braintree_Block_Info
 {
-
     /**
      * Use a custom template
      */
+    #[\Override]
     protected function _construct()
     {
         parent::_construct();
@@ -23,6 +23,7 @@ class Gene_Braintree_Block_Creditcard_Info extends Gene_Braintree_Block_Info
      *
      * @return Varien_Object
      */
+    #[\Override]
     protected function _prepareSpecificInformation($transport = null)
     {
         // Get the original transport data
@@ -32,15 +33,15 @@ class Gene_Braintree_Block_Creditcard_Info extends Gene_Braintree_Block_Info
         if ($this->isSingleInvoice() || ($this->getInfo()->getCcLast4() && $this->getInfo()->getCcType())) {
 
             // Build up the data we wish to pass through
-            $data = array(
+            $data = [
                 $this->__('Card Number (Last 4)') => $this->getInfo()->getCcLast4(),
-                $this->__('Credit Card Type')     => $this->getInfo()->getCcType()
-            );
+                $this->__('Credit Card Type')     => $this->getInfo()->getCcType(),
+            ];
 
         } else {
 
             // Never leave an empty array
-            $data = array();
+            $data = [];
         }
 
         // Check we're in the admin area
@@ -53,7 +54,7 @@ class Gene_Braintree_Block_Creditcard_Info extends Gene_Braintree_Block_Info
             if ($this->isSingleInvoice()) {
 
                 // What additional information should we show
-                $additionalInfoHeadings = array(
+                $additionalInfoHeadings = [
                     'avsErrorResponseCode'         => $this->__('AVS Error Response Code'),
                     'avsPostalCodeResponseCode'    => $this->__('AVS Postal Response Code'),
                     'avsStreetAddressResponseCode' => $this->__('AVS Street Address Response Code'),
@@ -62,8 +63,8 @@ class Gene_Braintree_Block_Creditcard_Info extends Gene_Braintree_Block_Info
                     'processorAuthorizationCode'   => $this->__('Processor Autorization Code'),
                     'processorResponseCode'        => $this->__('Processor Response Code'),
                     'processorResponseText'        => $this->__('Processor Response Text'),
-                    'threeDSecure'                 => $this->__('3D Secure')
-                );
+                    'threeDSecure'                 => $this->__('3D Secure'),
+                ];
 
                 // Add any of the data that we've recorded into the view
                 foreach ($additionalInfoHeadings as $key => $heading) {

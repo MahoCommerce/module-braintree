@@ -79,7 +79,8 @@ class Gene_Braintree_Block_Applepay_Express_Setup extends Gene_Braintree_Block_A
      *
      * @return string
      */
-    public function _afterToHtml($html)
+    #[\Override]
+    protected function _afterToHtml($html)
     {
         if (!$this->hasBeenSetup()) {
             Mage::register('gene_braintree_applepay_btn_loaded', true);

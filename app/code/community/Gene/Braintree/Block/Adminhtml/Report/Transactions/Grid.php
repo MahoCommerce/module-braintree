@@ -42,19 +42,19 @@ class Gene_Braintree_Block_Adminhtml_Report_Transactions_Grid extends Mage_Admin
     protected function _prepareBraintreeSearchQuery()
     {
         // Has the search query been set already?
-        if($this->searchQuery) {
+        if ($this->searchQuery) {
             return $this->searchQuery;
         }
 
-        $searchArray = array();
+        $searchArray = [];
 
         // Init some times
         $to = new DateTime();
         $from = clone $to;
-        $from = $from->modify("-24 hour");
+        $from = $from->modify('-24 hour');
 
         // If a from and to date are set modify things
-        if(Mage::app()->getRequest()->getParam('from_date') && Mage::app()->getRequest()->getParam('to_date')) {
+        if (Mage::app()->getRequest()->getParam('from_date') && Mage::app()->getRequest()->getParam('to_date')) {
             $from = new DateTime(Mage::app()->getRequest()->getParam('from_date'));
             $to = new DateTime(Mage::app()->getRequest()->getParam('to_date'));
         }
@@ -63,17 +63,17 @@ class Gene_Braintree_Block_Adminhtml_Report_Transactions_Grid extends Mage_Admin
         $searchArray[] = Braintree\TransactionSearch::createdAt()->between($from, $to);
 
         // Type search
-        if($type = Mage::app()->getRequest()->getParam('type')) {
+        if ($type = Mage::app()->getRequest()->getParam('type')) {
             $searchArray[] = Braintree\TransactionSearch::type()->is($type);
         }
 
         // Allow searching upon the status
-        if($status = Mage::app()->getRequest()->getParam('status')) {
+        if ($status = Mage::app()->getRequest()->getParam('status')) {
             $searchArray[] = Braintree\TransactionSearch::status()->is($status);
         }
 
         // Order ID searching can be helpful
-        if($orderId = Mage::app()->getRequest()->getParam('order_id')) {
+        if ($orderId = Mage::app()->getRequest()->getParam('order_id')) {
             $searchArray[] = Braintree\TransactionSearch::orderId()->is($orderId);
         }
 
@@ -88,6 +88,7 @@ class Gene_Braintree_Block_Adminhtml_Report_Transactions_Grid extends Mage_Admin
      *
      * @return $this|false
      */
+    #[\Override]
     protected function _prepareCollection()
     {
         // Add in a new collection
@@ -97,20 +98,20 @@ class Gene_Braintree_Block_Adminhtml_Report_Transactions_Grid extends Mage_Admin
         $wrapper = Mage::getModel('gene_braintree/wrapper_braintree');
 
         // Validate the credentials
-        if($wrapper->validateCredentials()) {
+        if ($wrapper->validateCredentials()) {
 
             // Grab all transactions
             $transactions = Braintree\Transaction::search($this->_prepareBraintreeSearchQuery());
 
             // Retrieve the order IDs
-            $orderIds = array();
+            $orderIds = [];
             /* @var $transaction Braintree\Transaction */
             foreach ($transactions as $transaction) {
                 $orderIds[] = $transaction->orderId;
             }
 
             // Retrieve all of the orders from a collection
-            $orders = Mage::getResourceModel('sales/order_collection')->addAttributeToFilter('increment_id', array('in' => $orderIds));
+            $orders = Mage::getResourceModel('sales/order_collection')->addAttributeToFilter('increment_id', ['in' => $orderIds]);
 
             /* @var $transaction Braintree\Transaction */
             foreach ($transactions as $transaction) {
@@ -163,91 +164,92 @@ class Gene_Braintree_Block_Adminhtml_Report_Transactions_Grid extends Mage_Admin
      *
      * @throws Exception
      */
+    #[\Override]
     protected function _prepareColumns()
     {
         $helper = Mage::helper('gene_braintree');
 
-        $this->addColumn('id', array(
+        $this->addColumn('id', [
             'header' => $helper->__('ID'),
             'index'  => 'id',
             'width' => 120,
             'filter' => false,
-            'sortable' => false
-        ));
+            'sortable' => false,
+        ]);
 
-        $this->addColumn('created_at', array(
+        $this->addColumn('created_at', [
             'header' => $helper->__('Transaction Date'),
             'index'  => 'created_at',
             'type' => 'datetime',
-            'frame_callback' => array($this, 'handleDate'),
+            'frame_callback' => [$this, 'handleDate'],
             'filter' => false,
-            'sortable' => false
-        ));
+            'sortable' => false,
+        ]);
 
-        $this->addColumn('orderId', array(
+        $this->addColumn('orderId', [
             'header' => $helper->__('Magento Order ID'),
             'index'  => 'orderId',
             'width' => 120,
             'filter' => false,
-            'sortable' => false
-        ));
+            'sortable' => false,
+        ]);
 
-        $this->addColumn('order_status', array(
+        $this->addColumn('order_status', [
             'header' => $helper->__('Magento Status'),
             'index'  => 'order_status',
             'type'  => 'options',
             'options' => Mage::getSingleton('sales/order_config')->getStatuses(),
             'filter' => false,
-            'sortable' => false
-        ));
+            'sortable' => false,
+        ]);
 
-        $this->addColumn('merchantAccountId', array(
+        $this->addColumn('merchantAccountId', [
             'header' => $helper->__('Merchant Account ID'),
             'index'  => 'merchantAccountId',
             'filter' => false,
-            'sortable' => false
-        ));
+            'sortable' => false,
+        ]);
 
-        $this->addColumn('type', array(
+        $this->addColumn('type', [
             'header' => $helper->__('Type'),
             'index'  => 'type',
-            'frame_callback' => array($this, 'handleType'),
+            'frame_callback' => [$this, 'handleType'],
             'filter' => false,
-            'sortable' => false
-        ));
+            'sortable' => false,
+        ]);
 
-        $this->addColumn('payment_information', array(
+        $this->addColumn('payment_information', [
             'header' => $helper->__('Payment Information'),
             'index'  => 'payment_information',
-            'frame_callback' => array($this, 'handlePaymentInformation'),
+            'frame_callback' => [$this, 'handlePaymentInformation'],
             'filter' => false,
-            'sortable' => false
-        ));
+            'sortable' => false,
+        ]);
 
-        $this->addColumn('amount', array(
+        $this->addColumn('amount', [
             'header' => $helper->__('Amount'),
             'index'  => 'amount',
             'type' => 'number',
-            'frame_callback' => array($this, 'handleAmount'),
+            'frame_callback' => [$this, 'handleAmount'],
             'filter' => false,
-            'sortable' => false
-        ));
+            'sortable' => false,
+        ]);
 
-        $this->addColumn('currencyIsoCode', array(
+        $this->addColumn('currencyIsoCode', [
             'header' => $helper->__('Currency'),
             'index'  => 'currencyIsoCode',
             'filter' => false,
-            'sortable' => false
-        ));
+            'sortable' => false,
+        ]);
 
-        $this->addColumn('status', array(
+        $this->addColumn('status', [
             'header' => $helper->__('Braintree Status'),
             'type' => 'options',
             'options' => $helper->getStatusesAsArray(),
             'index'  => 'status',
             'filter' => false,
-            'sortable' => false
-        ));
+            'sortable' => false,
+        ]);
 
         // Allow the admin to export this viewed data
         $this->addExportType('*/*/exportCsv', $helper->__('CSV'));
@@ -318,19 +320,19 @@ class Gene_Braintree_Block_Adminhtml_Report_Transactions_Grid extends Mage_Admin
     {
         // Grab the image associated with this payment
         $image = false;
-        if(!$isExport) {
+        if (!$isExport) {
             $image = '<img height="26" align="left" src=' . (isset($row['paymentInstrumentType']) && $row['paymentInstrumentType'] == 'paypal_account' ? $row['paypal']['imageUrl'] : $row['creditCard']['imageUrl']) . '" />&nbsp;&nbsp;';
         }
 
         // Display the actual payment information
         $response = false;
-        if(isset($row['paymentInstrumentType']) && $row['paymentInstrumentType'] == 'paypal_account') {
+        if (isset($row['paymentInstrumentType']) && $row['paymentInstrumentType'] == 'paypal_account') {
             $response = $image . $row['paypal']['payerEmail'];
-        } else if(isset($row['paymentInstrumentType']) && $row['paymentInstrumentType'] == 'credit_card') {
+        } elseif (isset($row['paymentInstrumentType']) && $row['paymentInstrumentType'] == 'credit_card') {
             $response = $image . $row['creditCard']['bin'] . '******' . $row['creditCard']['last4'];
         }
 
-        return (!$isExport ? '<span style="line-height: 26px;">' : '') . $response . (!$isExport ? '</span>' : '');
+        return ($isExport ? '' : '<span style="line-height: 26px;">') . $response . ($isExport ? '' : '</span>');
     }
 
     /**
@@ -340,10 +342,11 @@ class Gene_Braintree_Block_Adminhtml_Report_Transactions_Grid extends Mage_Admin
      *
      * @return string
      */
+    #[\Override]
     public function getRowUrl($row)
     {
-        if($row->getMagentoOrderId()) {
-            return $this->getUrl('*/sales_order/view', array('order_id' => $row->getMagentoOrderId()));
+        if ($row->getMagentoOrderId()) {
+            return $this->getUrl('*/sales_order/view', ['order_id' => $row->getMagentoOrderId()]);
         }
         return false;
     }

@@ -37,6 +37,7 @@ class Gene_Braintree_Block_Saved extends Mage_Core_Block_Template
      *
      * @return int
      */
+    #[\Override]
     public function getCacheLifetime()
     {
         return null;

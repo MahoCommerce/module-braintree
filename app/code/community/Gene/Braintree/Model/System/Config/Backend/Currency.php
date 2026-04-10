@@ -6,10 +6,10 @@
  */
 class Gene_Braintree_Model_System_Config_Backend_Currency extends Mage_Core_Model_Config_Data
 {
-
     /**
      * Json decode the value
      */
+    #[\Override]
     protected function _afterLoad()
     {
         if (!is_array($this->getValue())) {
@@ -21,6 +21,7 @@ class Gene_Braintree_Model_System_Config_Backend_Currency extends Mage_Core_Mode
     /**
      * Json encode the value to be stored in the database
      */
+    #[\Override]
     protected function _beforeSave()
     {
         if (is_array($this->getValue())) {
