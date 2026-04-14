@@ -517,6 +517,7 @@ class vZero {
                 this.integration.setLoading();
             }
 
+            const bin = (payload.details && payload.details.bin) ? payload.details.bin : undefined;
             this.verify3dSecureNonce(payload.nonce, {
                 onSuccess: (response) => {
                     this.updateNonce(response.nonce);
@@ -529,7 +530,7 @@ class vZero {
                         options.onFailure();
                     }
                 }
-            });
+            }, bin);
         } else {
             this.updateNonce(payload.nonce);
             if (typeof options.onSuccess === 'function') {
@@ -1037,7 +1038,7 @@ class vZero {
      * @param {string} nonce
      * @param {Object} options
      */
-    verify3dSecureNonce(nonce, options) {
+    verify3dSecureNonce(nonce, options, bin) {
         this.getClient((clientInstance) => {
             braintree.threeDSecure.create({
                 version: 2,
@@ -1045,6 +1046,9 @@ class vZero {
             }, (threeDSecureError, threeDSecureInstance) => {
                 if (threeDSecureError) {
                     console.error(threeDSecureError);
+                    if (options.onFailure) {
+                        options.onFailure(null, threeDSecureError);
+                    }
                     return;
                 }
 
@@ -1081,36 +1085,21 @@ class vZero {
                 }
 
                 const verifyOptions = {
-                    amount: this.amount,
+                    amount: String(this.amount),
                     nonce: nonce,
+                    bin: bin,
                     billingAddress: billingAddress,
-                    additionalInformation: additionalInformation,
-                    onLookupComplete: (data, next) => {
-                        next();
-                    },
-                    addFrame: (err, iframe) => {
-                        const modalBody = document.querySelector('#three-d-modal .bt-modal-body');
-                        if (modalBody) {
-                            modalBody.appendChild(iframe);
-                        }
-                        const modal = document.getElementById('three-d-modal');
-                        if (modal) {
-                            modal.classList.remove('hidden');
-                        }
-                    },
-                    removeFrame: () => {
-                        const iframe = document.querySelector('#three-d-modal .bt-modal-body iframe');
-                        if (iframe) {
-                            iframe.remove();
-                        }
-                        const modal = document.getElementById('three-d-modal');
-                        if (modal) {
-                            modal.classList.add('hidden');
-                        }
-                    }
+                    additionalInformation: additionalInformation
                 };
 
+                threeDSecureInstance.on('lookup-complete', (data, next) => {
+                    next();
+                });
+
                 threeDSecureInstance.verifyCard(verifyOptions, (verifyError, payload) => {
+                    // Tear down to allow re-creation on next attempt
+                    threeDSecureInstance.teardown();
+
                     if (!verifyError) {
                         if (payload.liabilityShifted) {
                             if (options.onSuccess) {
