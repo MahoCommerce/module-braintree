@@ -73,7 +73,7 @@ abstract class Gene_Braintree_Model_Paymentmethod_Abstract extends Mage_Payment_
         if (!$transaction) {
             return $this;
         }
-        $riskData = $transaction->riskData;
+        $riskData = $transaction->riskData ?? null;
         if ($riskData && $riskData->decision) {
             // If the merchant has specified the merchant and website ID we can update the payments status
             if (Mage::helper('gene_braintree')->canUpdateKount() && $riskData->id) {
