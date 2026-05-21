@@ -68,17 +68,17 @@ class Gene_Braintree_Helper_Data extends Mage_Core_Helper_Abstract
             'firstname' => $address->firstName, // @phpstan-ignore property.notFound
             'lastname' => $address->lastName, // @phpstan-ignore property.notFound
             'street' => $address->streetAddress . // @phpstan-ignore property.notFound
-                (isset($address->extendedAddress) ? "\n" . $address->extendedAddress : ''), // @phpstan-ignore property.notFound
+                (isset($address->extendedAddress) ? "\n" . $address->extendedAddress : ''),
             'city' => $address->locality, // @phpstan-ignore property.notFound
             'postcode' => $address->postalCode, // @phpstan-ignore property.notFound
             'country' => $address->countryCodeAlpha2, // @phpstan-ignore property.notFound
         ]);
 
-        if (isset($address->region)) { // @phpstan-ignore property.notFound
+        if (isset($address->region)) {
             $addressModel->setData('region_code', $address->region);
         }
 
-        if (isset($address->company)) { // @phpstan-ignore property.notFound
+        if (isset($address->company)) {
             $addressModel->setData('company', $address->company);
         }
 

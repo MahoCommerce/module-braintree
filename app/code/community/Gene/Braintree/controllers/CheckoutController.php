@@ -174,7 +174,6 @@ class Gene_Braintree_CheckoutController extends Mage_Core_Controller_Front_Actio
                     ) {
                         // Store this customers ID in the session so we can remove the customer at the end of the
                         // checkout
-                        /** @phpstan-ignore property.notFound */
                         if (isset($response->customer->id)) {
                             Mage::getSingleton('checkout/session')->setGuestBraintreeCustomerId(
                                 $response->customer->id,
