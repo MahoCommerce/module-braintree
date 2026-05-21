@@ -1,5 +1,10 @@
 # Braintree Payment Module for Maho Commerce
 
+![Maho Commerce](https://img.shields.io/badge/Maho_Commerce-module-orange)
+![License](https://img.shields.io/badge/license-OSL--3.0-blue)
+![PHP](https://img.shields.io/badge/php-%3E%3D8.3-8892BF)
+![PHPStan Level](https://img.shields.io/badge/PHPStan-level%208-brightgreen)
+
 A comprehensive Braintree payment integration for Maho Commerce, supporting multiple payment methods including Credit Card, PayPal, Apple Pay, and Google Pay.
 
 ## Requirements
