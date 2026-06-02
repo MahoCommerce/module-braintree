@@ -24,6 +24,7 @@ class Gene_Braintree_Adminhtml_Braintree_MigrationController extends Mage_Adminh
      *
      * @return $this
      */
+    #[Maho\Config\Route('/admin/braintree_migration/run')]
     public function runAction()
     {
         // If the system shouldn't run the migration don't allow this controller to initialize
@@ -70,6 +71,7 @@ class Gene_Braintree_Adminhtml_Braintree_MigrationController extends Mage_Adminh
      *
      * @return \Gene_Braintree_Adminhtml_Braintree_MigrationController
      */
+    #[Maho\Config\Route('/admin/braintree_migration/cancel')]
     public function cancelAction()
     {
         // Update the configuration to log that the migration is complete

@@ -2,7 +2,7 @@
 <config>
     <modules>
         <Gene_Braintree>
-            <version>5.0.4</version>
+            <version>7.0.0</version>
         </Gene_Braintree>
     </modules>
     <global>
@@ -157,16 +157,6 @@
             </updates>
         </layout>
 
-        <routers>
-            <braintree>
-                <use>standard</use>
-                <args>
-                    <module>Gene_Braintree</module>
-                    <frontName>braintree</frontName>
-                </args>
-            </braintree>
-        </routers>
-
         <translate>
             <modules>
                 <Gene_Braintree>
@@ -176,58 +166,6 @@
                 </Gene_Braintree>
             </modules>
         </translate>
-
-        <events>
-            <checkout_submit_all_after>
-                <observers>
-                    <gene_braintree_save_customer_id>
-                        <type>singleton</type>
-                        <class>gene_braintree/observer</class>
-                        <method>completeCheckout</method>
-                    </gene_braintree_save_customer_id>
-                </observers>
-            </checkout_submit_all_after>
-
-            <controller_action_layout_load_before>
-                <observers>
-                    <gene_braintree_detect_checkout>
-                        <type>singleton</type>
-                        <class>gene_braintree/observer</class>
-                        <method>addLayoutHandle</method>
-                    </gene_braintree_detect_checkout>
-                </observers>
-            </controller_action_layout_load_before>
-
-            <core_block_abstract_to_html_before>
-                <observers>
-                    <gene_braintree_saved_child>
-                        <type>singleton</type>
-                        <class>gene_braintree/observer</class>
-                        <method>addSavedChild</method>
-                    </gene_braintree_saved_child>
-                </observers>
-            </core_block_abstract_to_html_before>
-
-            <controller_action_predispatch_checkout_multishipping_overviewPost>
-                <observers>
-                    <gene_braintree_reset_multishipping>
-                        <type>singleton</type>
-                        <class>gene_braintree/observer</class>
-                        <method>resetMultishipping</method>
-                    </gene_braintree_reset_multishipping>
-                </observers>
-            </controller_action_predispatch_checkout_multishipping_overviewPost>
-
-            <checkout_type_multishipping_create_orders_single>
-                <observers>
-                    <gene_braintree_multishipping>
-                        <type>singleton</type>
-                        <class>gene_braintree/observer</class>
-                        <method>handleMultishipping</method>
-                    </gene_braintree_multishipping>
-                </observers>
-            </checkout_type_multishipping_create_orders_single>
-        </events>
     </frontend>
 
     <adminhtml>
@@ -249,50 +187,6 @@
             </modules>
         </translate>
 
-        <events>
-            <!-- Check whether we should capture the payment on shipment -->
-            <sales_order_shipment_save_after>
-                <observers>
-                    <capture_braintree_payment>
-                        <class>gene_braintree/observer</class>
-                        <method>captureBraintreePayment</method>
-                    </capture_braintree_payment>
-                </observers>
-            </sales_order_shipment_save_after>
-
-            <core_block_abstract_to_html_before>
-                <observers>
-                    <gene_braintree_saved_child>
-                        <type>singleton</type>
-                        <class>gene_braintree/observer</class>
-                        <method>addSavedChild</method>
-                    </gene_braintree_saved_child>
-                </observers>
-            </core_block_abstract_to_html_before>
-
-            <!-- Update each invoice with its corresponding transaction_id -->
-            <sales_order_invoice_save_before>
-                <observers>
-                    <gene_braintree_sales_order_invoice_save_before>
-                        <type>singleton</type>
-                        <class>gene_braintree/observer</class>
-                        <method>updateInvoiceTransactionId</method>
-                    </gene_braintree_sales_order_invoice_save_before>
-                </observers>
-            </sales_order_invoice_save_before>
-        </events>
     </adminhtml>
-
-    <admin>
-        <routers>
-            <adminhtml>
-                <args>
-                    <modules>
-                        <Gene_Braintree before="Mage_Adminhtml">Gene_Braintree_Adminhtml</Gene_Braintree>
-                    </modules>
-                </args>
-            </adminhtml>
-        </routers>
-    </admin>
 
 </config>

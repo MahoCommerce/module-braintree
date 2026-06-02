@@ -36,7 +36,6 @@ class Gene_Braintree_Model_Paymentmethod_Creditcard extends Gene_Braintree_Model
     protected $_canVoid = true;
     protected $_canUseInternal = true;
     protected $_canUseCheckout = true;
-    protected $_canUseForMultishipping = true;
     protected $_isInitializeNeeded = false;
     protected $_canFetchTransactionInfo = false;
     protected $_canReviewPayment = true;
@@ -170,19 +169,8 @@ class Gene_Braintree_Model_Paymentmethod_Creditcard extends Gene_Braintree_Model
      *
      * @return mixed
      */
-    public function shouldSaveMethod($payment, bool $skipMultishipping = false)
+    public function shouldSaveMethod($payment)
     {
-        if ($skipMultishipping === false) {
-            // We must always save the method for multi shipping requests
-            if ($payment->getMultiShipping() && !$this->_getOriginalToken()) {
-                return true;
-            }
-            if ($this->_getOriginalToken()) {
-                // If we have an original token, there is no need to save the same payment method again
-                return false;
-            }
-        }
-
         // Retrieve whether or not we should save the card from the info instance
         $saveCard = $this->getInfoInstance()->getAdditionalInformation('save_card');
 
@@ -573,13 +561,6 @@ class Gene_Braintree_Model_Paymentmethod_Creditcard extends Gene_Braintree_Model
         /** @var array<string, mixed> $paymentArray */
         $paymentArray = [];
 
-        // If we have an original token use that for the subsequent requests
-        if ($originalToken = $this->_getOriginalToken()) {
-            $paymentArray['paymentMethodToken'] = $originalToken;
-
-            return $paymentArray;
-        }
-
         // Check to see whether we're using a payment method token?
         if ($this->getPaymentMethodToken() &&
             !in_array($this->getPaymentMethodToken(), ['other', 'threedsecure'])
@@ -617,10 +598,6 @@ class Gene_Braintree_Model_Paymentmethod_Creditcard extends Gene_Braintree_Model
      */
     protected function _is3DEnabled()
     {
-        // If we're creating the transaction from an original token we cannot use 3Ds currently
-        if ($this->_getOriginalToken()) {
-            return false;
-        }
         if ($this->getPaymentMethodToken() && $this->getPaymentMethodToken() == 'threedsecure') {
             return true;
         }
@@ -733,19 +710,6 @@ class Gene_Braintree_Model_Paymentmethod_Creditcard extends Gene_Braintree_Model
         if (isset($result->transaction->creditCard['token']) && $result->transaction->creditCard['token']) {
             /** @var Mage_Sales_Model_Order_Payment $payment */
             $payment->setAdditionalInformation('token', $result->transaction->creditCard['token']);
-
-            // If the transaction is part of a multi shipping transaction store the token for the next order
-            if ($payment->getMultiShipping() && !$this->_getOriginalToken()) {
-                $this->_setOriginalToken($result->transaction->creditCard['token']);
-
-                // If we shouldn't have this method saved, add it into the session to be removed once the request is
-                // complete
-                if (!$this->shouldSaveMethod($payment, true)) {
-                    Mage::getSingleton('checkout/session')->setTemporaryPaymentToken(
-                        $result->transaction->creditCard['token'],
-                    );
-                }
-            }
         }
 
         return $payment;

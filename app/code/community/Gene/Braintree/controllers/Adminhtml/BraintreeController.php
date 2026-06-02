@@ -22,6 +22,7 @@ class Gene_Braintree_Adminhtml_BraintreeController extends Mage_Adminhtml_Contro
      *
      * @return void
      */
+    #[Maho\Config\Route('/admin/braintree/transactions')]
     public function transactionsAction()
     {
         $this->loadLayout();
@@ -67,6 +68,7 @@ class Gene_Braintree_Adminhtml_BraintreeController extends Mage_Adminhtml_Contro
      *
      * @return void
      */
+    #[Maho\Config\Route('/admin/braintree/exportCsv')]
     public function exportCsvAction()
     {
         $this->_prepareExport('csv');
@@ -77,6 +79,7 @@ class Gene_Braintree_Adminhtml_BraintreeController extends Mage_Adminhtml_Contro
      *
      * @return void
      */
+    #[Maho\Config\Route('/admin/braintree/exportExcel')]
     public function exportExcelAction()
     {
         $this->_prepareExport('xml');
@@ -87,6 +90,7 @@ class Gene_Braintree_Adminhtml_BraintreeController extends Mage_Adminhtml_Contro
      *
      * @return void
      */
+    #[Maho\Config\Route('/admin/braintree/validateConfig')]
     public function validateConfigAction()
     {
         // Grab the post data from the request

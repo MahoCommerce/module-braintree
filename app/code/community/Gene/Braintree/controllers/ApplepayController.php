@@ -36,6 +36,7 @@ class Gene_Braintree_ApplepayController extends Mage_Core_Controller_Front_Actio
      *
      * @return Gene_Braintree_ApplepayController
      */
+    #[Maho\Config\Route('/braintree/applepay/clientToken')]
     public function clientTokenAction()
     {
         try {
@@ -56,6 +57,7 @@ class Gene_Braintree_ApplepayController extends Mage_Core_Controller_Front_Actio
      *
      * @return void
      */
+    #[Maho\Config\Route('/braintree/applepay/fetchShippingMethods')]
     public function fetchShippingMethodsAction()
     {
         $express = $this->_setupExpress();
@@ -92,6 +94,7 @@ class Gene_Braintree_ApplepayController extends Mage_Core_Controller_Front_Actio
      *
      * @return $this
      */
+    #[Maho\Config\Route('/braintree/applepay/submit')]
     public function submitAction()
     {
         $express = $this->_setupExpress();

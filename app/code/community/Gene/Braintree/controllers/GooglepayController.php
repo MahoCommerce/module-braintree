@@ -16,6 +16,7 @@ class Gene_Braintree_GooglepayController extends Mage_Core_Controller_Front_Acti
      *
      * @return Gene_Braintree_GooglepayController
      */
+    #[Maho\Config\Route('/braintree/googlepay/clientToken')]
     public function clientTokenAction()
     {
         try {
@@ -35,6 +36,7 @@ class Gene_Braintree_GooglepayController extends Mage_Core_Controller_Front_Acti
      * @return Mage_Core_Controller_Varien_Action
      * @throws Mage_Core_Model_Store_Exception
      */
+    #[Maho\Config\Route('/braintree/googlepay/authorization')]
     public function authorizationAction()
     {
         parse_str($this->getRequest()->getParam('form_data'), $formData);
@@ -169,6 +171,7 @@ class Gene_Braintree_GooglepayController extends Mage_Core_Controller_Front_Acti
      * @return $this|Mage_Core_Controller_Varien_Action
      * @throws Mage_Core_Model_Store_Exception
      */
+    #[Maho\Config\Route('/braintree/googlepay/shipping')]
     public function shippingAction()
     {
         $quote = $this->getQuote();
@@ -232,6 +235,7 @@ class Gene_Braintree_GooglepayController extends Mage_Core_Controller_Front_Acti
      * @return void
      * @throws Mage_Core_Model_Store_Exception
      */
+    #[Maho\Config\Route('/braintree/googlepay/process')]
     public function processAction()
     {
         $quote = $this->getQuote();

@@ -72,11 +72,6 @@ class Gene_Braintree_Model_Paymentmethod_Googlepay extends Gene_Braintree_Model_
     protected $_canUseCheckout = true;
 
     /**
-     * @var bool $_canUseForMultishipping
-     */
-    protected $_canUseForMultishipping = true;
-
-    /**
      * @var bool $_isInitializeNeeded
      */
     protected $_isInitializeNeeded = false;
@@ -343,12 +338,6 @@ class Gene_Braintree_Model_Paymentmethod_Googlepay extends Gene_Braintree_Model_
     {
         // Build our payment array with either our token, or nonce
         $paymentArray = [];
-
-        // If we have an original token use that for the subsequent requests
-        if ($originalToken = $this->_getOriginalToken()) {
-            $paymentArray['paymentMethodToken'] = $originalToken;
-            return $paymentArray;
-        }
 
         $paymentArray['paymentMethodNonce'] = $this->getPaymentMethodNonce();
 

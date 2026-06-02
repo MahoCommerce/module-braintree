@@ -11,6 +11,7 @@ class Gene_Braintree_CheckoutController extends Mage_Core_Controller_Front_Actio
      *
      * @return $this
      */
+    #[Maho\Config\Route('/braintree/checkout/clientToken')]
     public function clientTokenAction()
     {
         try {
@@ -38,6 +39,7 @@ class Gene_Braintree_CheckoutController extends Mage_Core_Controller_Front_Actio
      *
      * @return $this
      */
+    #[Maho\Config\Route('/braintree/checkout/quoteTotal')]
     public function quoteTotalAction()
     {
         // Grab the quote
@@ -91,6 +93,7 @@ class Gene_Braintree_CheckoutController extends Mage_Core_Controller_Front_Actio
      *
      * @return $this
      */
+    #[Maho\Config\Route('/braintree/checkout/tokenizeCard')]
     public function tokenizeCardAction()
     {
         // Are tokens set in the request
@@ -123,6 +126,7 @@ class Gene_Braintree_CheckoutController extends Mage_Core_Controller_Front_Actio
      *
      * @return $this
      */
+    #[Maho\Config\Route('/braintree/checkout/vaultToNonce')]
     public function vaultToNonceAction()
     {
         // Check we have a nonce in the request
@@ -135,10 +139,8 @@ class Gene_Braintree_CheckoutController extends Mage_Core_Controller_Front_Actio
                 ]);
             }
 
-            // Pull the billing address from the multishipping experience
-            if ($this->getRequest()->getParam('billing') == 'multishipping') {
-                $billing = Mage::getSingleton('checkout/type_multishipping')->getQuote()->getBillingAddress();
-            } elseif ($this->getRequest()->getParam('billing') == 'quote') {
+            // Pull the billing address from the quote, otherwise use the address from the request
+            if ($this->getRequest()->getParam('billing') == 'quote') {
                 $billing = Mage::getSingleton('checkout/session')->getQuote()->getBillingAddress();
             } else {
                 $billing = $this->getRequest()->getParam('billing');

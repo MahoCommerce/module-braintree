@@ -11,7 +11,6 @@ abstract class Gene_Braintree_Model_Paymentmethod_Abstract extends Mage_Payment_
      */
     public const ADVANCED_FRAUD_REVIEW = 'Review';
     public const ADVANCED_FRAUD_DECLINE = 'Decline';
-    public const BRAINTREE_ORIGINAL_TOKEN = 'gene_braintree_original_token';
 
     /**
      * Verify that the module has been setup
@@ -436,28 +435,6 @@ abstract class Gene_Braintree_Model_Paymentmethod_Abstract extends Mage_Payment_
         // Use Mage_Payment_Model_Info_Exception for expected payment failures (e.g. processor
         // declines) so they are not logged as exceptions in exception.log
         throw new Mage_Payment_Model_Info_Exception($message);
-    }
-
-    /**
-     * Return the token generated from the initial transaction
-     *
-     * @return mixed
-     */
-    protected function _getOriginalToken()
-    {
-        return Mage::registry(self::BRAINTREE_ORIGINAL_TOKEN);
-    }
-
-    /**
-     * Set the original token
-     *
-     * @return $this
-     */
-    protected function _setOriginalToken(string $token)
-    {
-        Mage::register(self::BRAINTREE_ORIGINAL_TOKEN, $token);
-
-        return $this;
     }
 
     /**
