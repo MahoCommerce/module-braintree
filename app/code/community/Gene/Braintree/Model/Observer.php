@@ -13,6 +13,7 @@ class Gene_Braintree_Model_Observer
      *
      * @return Varien_Event_Observer
      */
+    #[Maho\Config\Observer('sales_order_invoice_save_before', area: 'adminhtml', type: 'singleton')]
     public function updateInvoiceTransactionId(Varien_Event_Observer $observer)
     {
         return $observer;
@@ -23,6 +24,7 @@ class Gene_Braintree_Model_Observer
      *
      * @return $this
      */
+    #[Maho\Config\Observer('controller_action_layout_load_before', area: 'frontend', type: 'singleton')]
     public function addLayoutHandle(Varien_Event_Observer $observer)
     {
         /* @var $action Mage_Core_Controller_Varien_Action */
@@ -97,6 +99,7 @@ class Gene_Braintree_Model_Observer
      *
      * @return $this
      */
+    #[Maho\Config\Observer('checkout_submit_all_after', area: 'frontend', type: 'singleton')]
     public function completeCheckout(Varien_Event_Observer $observer)
     {
         // Do we have a customer ID within the session?
@@ -124,6 +127,7 @@ class Gene_Braintree_Model_Observer
      *
      * @return $this
      */
+    #[Maho\Config\Observer('sales_order_shipment_save_after', area: 'adminhtml')]
     public function captureBraintreePayment(Varien_Event_Observer $observer)
     {
         /* @var $shipment Mage_Sales_Model_Order_Shipment */
@@ -170,6 +174,8 @@ class Gene_Braintree_Model_Observer
     /**
      * Add in the saved block
      */
+    #[Maho\Config\Observer('core_block_abstract_to_html_before', area: 'frontend', type: 'singleton')]
+    #[Maho\Config\Observer('core_block_abstract_to_html_before', area: 'adminhtml', type: 'singleton')]
     public function addSavedChild(Varien_Event_Observer $observer): void
     {
         $block = $observer->getEvent()->getBlock();

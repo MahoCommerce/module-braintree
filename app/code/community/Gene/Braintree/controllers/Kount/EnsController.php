@@ -12,6 +12,8 @@ class Gene_Braintree_Kount_EnsController extends Mage_Core_Controller_Front_Acti
      * @return Mage_Core_Controller_Response_Http
      * @throws Mage_Core_Exception
      */
+    #[Maho\Config\Route('/braintree/kount_ens', name: 'gene.braintree.kount_ens')]
+    #[Maho\Config\Route('/braintree/kount_ens/index', name: 'gene.braintree.kount_ens.index')]
     public function indexAction()
     {
         /* @var $ens Gene_Braintree_Model_Kount_Ens */

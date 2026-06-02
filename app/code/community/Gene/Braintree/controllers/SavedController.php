@@ -40,6 +40,7 @@ class Gene_Braintree_SavedController extends Mage_Core_Controller_Front_Action
      *
      * @return $this|Mage_Core_Controller_Varien_Action|null
      */
+    #[Maho\Config\Route('/braintree/saved/index')]
     public function indexAction()
     {
         $this->loadLayout();
@@ -62,6 +63,7 @@ class Gene_Braintree_SavedController extends Mage_Core_Controller_Front_Action
      *
      * @throws Exception
      */
+    #[Maho\Config\Route('/braintree/saved/remove')]
     public function removeAction()
     {
         // Init the payment method
@@ -86,6 +88,7 @@ class Gene_Braintree_SavedController extends Mage_Core_Controller_Front_Action
      *
      * @return $this|false|void
      */
+    #[Maho\Config\Route('/braintree/saved/edit')]
     public function editAction()
     {
         // Init the payment method
@@ -122,6 +125,7 @@ class Gene_Braintree_SavedController extends Mage_Core_Controller_Front_Action
      *
      * @return $this|false
      */
+    #[Maho\Config\Route('/braintree/saved/save')]
     public function saveAction()
     {
         // Init the payment method

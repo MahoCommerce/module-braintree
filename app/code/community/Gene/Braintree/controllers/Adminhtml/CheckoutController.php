@@ -18,6 +18,7 @@ class Gene_Braintree_Adminhtml_CheckoutController extends Mage_Adminhtml_Control
      *
      * @return $this
      */
+    #[Maho\Config\Route('/admin/checkout/clientToken')]
     public function clientTokenAction()
     {
         try {
