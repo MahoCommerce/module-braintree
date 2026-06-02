@@ -2,7 +2,7 @@
 <config>
     <modules>
         <Gene_Braintree>
-            <version>5.0.4</version>
+            <version>5.0.5</version>
         </Gene_Braintree>
     </modules>
     <global>
