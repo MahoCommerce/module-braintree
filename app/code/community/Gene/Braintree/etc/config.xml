@@ -207,26 +207,6 @@
                     </gene_braintree_saved_child>
                 </observers>
             </core_block_abstract_to_html_before>
-
-            <controller_action_predispatch_checkout_multishipping_overviewPost>
-                <observers>
-                    <gene_braintree_reset_multishipping>
-                        <type>singleton</type>
-                        <class>gene_braintree/observer</class>
-                        <method>resetMultishipping</method>
-                    </gene_braintree_reset_multishipping>
-                </observers>
-            </controller_action_predispatch_checkout_multishipping_overviewPost>
-
-            <checkout_type_multishipping_create_orders_single>
-                <observers>
-                    <gene_braintree_multishipping>
-                        <type>singleton</type>
-                        <class>gene_braintree/observer</class>
-                        <method>handleMultishipping</method>
-                    </gene_braintree_multishipping>
-                </observers>
-            </checkout_type_multishipping_create_orders_single>
         </events>
     </frontend>
 

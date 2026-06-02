@@ -135,12 +135,8 @@ class Gene_Braintree_CheckoutController extends Mage_Core_Controller_Front_Actio
                 ]);
             }
 
-            // Pull the billing address from the multishipping experience
-            if ($this->getRequest()->getParam('billing') == 'multishipping') {
-                /** @var Mage_Checkout_Model_Type_Multishipping $multishipping */
-                $multishipping = Mage::getSingleton('checkout/type_multishipping');
-                $billing = $multishipping->getQuote()->getBillingAddress();
-            } elseif ($this->getRequest()->getParam('billing') == 'quote') {
+            // Pull the billing address from the quote, otherwise use the address from the request
+            if ($this->getRequest()->getParam('billing') == 'quote') {
                 $billing = Mage::getSingleton('checkout/session')->getQuote()->getBillingAddress();
             } else {
                 $billing = $this->getRequest()->getParam('billing');

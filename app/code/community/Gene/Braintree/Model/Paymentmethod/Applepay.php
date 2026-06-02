@@ -37,7 +37,6 @@ class Gene_Braintree_Model_Paymentmethod_Applepay extends Gene_Braintree_Model_P
     protected $_canVoid = true;
     protected $_canUseInternal = false;
     protected $_canUseCheckout = true;
-    protected $_canUseForMultishipping = true;
     protected $_isInitializeNeeded = false;
     protected $_canFetchTransactionInfo = false;
     protected $_canReviewPayment = true;
@@ -185,13 +184,6 @@ class Gene_Braintree_Model_Paymentmethod_Applepay extends Gene_Braintree_Model_P
     {
         // Build our payment array with either our token, or nonce
         $paymentArray = [];
-
-        // If we have an original token use that for the subsequent requests
-        if ($originalToken = $this->_getOriginalToken()) {
-            $paymentArray['paymentMethodToken'] = $originalToken;
-
-            return $paymentArray;
-        }
 
         $paymentArray['paymentMethodNonce'] = $this->getPaymentMethodNonce();
 

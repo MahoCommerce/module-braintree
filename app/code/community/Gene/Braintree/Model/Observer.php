@@ -200,36 +200,4 @@ class Gene_Braintree_Model_Observer
         return false;
     }
 
-    /**
-     * Unregister the original token from the request
-     *
-     * @return $this
-     */
-    public function resetMultishipping()
-    {
-        Mage::unregister(Gene_Braintree_Model_Paymentmethod_Abstract::BRAINTREE_ORIGINAL_TOKEN);
-
-        return $this;
-    }
-
-    /**
-     * Handle multi shipping orders
-     *
-     * @return $this
-     */
-    public function handleMultishipping(Varien_Event_Observer $observer)
-    {
-        /* @var $order Mage_Sales_Model_Order */
-        $order = $observer->getEvent()->getOrder();
-
-        // Let the payment method know the transaction is a multi shipping transaction
-        // Braintree don't allow multiple transactions from one authorization, however they do allow the vaulting
-        // of the initial transaction, then using the token from that transaction to take repeat payments.
-        // Due to this the payment method needs to be aware if it's expecting to take multiple transactions from one
-        // authorization.
-        $order->getPayment()->setMultiShipping(true);
-
-        return $this;
-    }
-
 }

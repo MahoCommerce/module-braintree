@@ -184,17 +184,6 @@
         </reference>
     </fancycheckout_index_index>
 
-    <!-- Add in support for Magento's mutli shipping checkout -->
-    <checkout_multishipping_billing>
-        <update handle="gene_braintree_assets" />
-        <reference name="head">
-            <action method="addCss"><file>css/gene_braintree/default.css</file></action>
-        </reference>
-        <reference name="before_body_end">
-            <block type="gene_braintree/js" name="gene_braintree_js" template="gene/braintree/js/multishipping.phtml" />
-        </reference>
-    </checkout_multishipping_billing>
-
     <checkout_onepage_paymentmethod>
         <reference name="root">
             <block type="core/text_list" name="additional" as="additional">
