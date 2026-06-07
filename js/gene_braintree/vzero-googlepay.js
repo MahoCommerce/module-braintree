@@ -130,9 +130,24 @@ class vZeroGooglePay {
      * Add button
      */
     addButton() {
-        if (this.isGooglePayActive()) {
-            this.attachGooglePayEvent();
+        if (!this.isGooglePayActive()) {
+            return;
         }
+
+        // Reuse the button if it has already been rendered into the review container
+        if (this.button && document.body.contains(this.button)) {
+            this.button.style.display = '';
+            this._toggleCheckoutButton(true);
+            return;
+        }
+
+        // A button is already being created asynchronously, don't start a second build
+        if (this.buttonBuilding) {
+            return;
+        }
+        this.buttonBuilding = true;
+
+        this.attachGooglePayEvent();
     }
 
     /**
@@ -141,6 +156,19 @@ class vZeroGooglePay {
     hideButton() {
         if (this.button) {
             this.button.style.display = 'none';
+        }
+        this._toggleCheckoutButton(false);
+    }
+
+    /**
+     * Show or hide the native checkout button
+     *
+     * @param {boolean} hidden
+     */
+    _toggleCheckoutButton(hidden) {
+        const checkoutBtn = document.querySelector('#review-buttons-container .btn-checkout');
+        if (checkoutBtn) {
+            checkoutBtn.style.display = hidden ? 'none' : '';
         }
     }
 
@@ -164,6 +192,7 @@ class vZeroGooglePay {
             braintree.googlePayment.create(googlePayConfig, (googlePaymentErr, googlePaymentInstance) => {
                 if (googlePaymentErr) {
                     console.error('Error creating google pay instance:', googlePaymentErr);
+                    this.buttonBuilding = false;
                     return;
                 }
 
@@ -222,19 +251,24 @@ class vZeroGooglePay {
 
                         if (button) {
                             button.id = 'co-google-pay-btn';
-                            const checkoutBtn = document.querySelector('#review-buttons-container .btn-checkout');
-                            if (checkoutBtn) {
-                                checkoutBtn.style.display = 'none';
-                            }
+                            this.button = button;
+                            this._toggleCheckoutButton(true);
 
                             const container = document.getElementById('review-buttons-container');
                             if (container) {
+                                // Remove a previously rendered button before re-adding to avoid duplicates
+                                const existing = container.querySelector('#co-google-pay-btn');
+                                if (existing && existing !== button) {
+                                    existing.remove();
+                                }
                                 container.appendChild(button);
                             }
                         }
                     }
+                    this.buttonBuilding = false;
                 }).catch((err) => {
                     console.error(err);
+                    this.buttonBuilding = false;
                 });
             });
         });
