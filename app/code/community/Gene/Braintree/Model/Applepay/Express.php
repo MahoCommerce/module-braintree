@@ -95,7 +95,7 @@ class Gene_Braintree_Model_Applepay_Express extends Mage_Core_Model_Abstract
         }
 
         // Retrieve the countryId from the request
-        $countryId = strtoupper($address['countryCode']);
+        $countryId = strtoupper((string) $address['countryCode']);
         if (!$countryId && ($countryName = $address['country'])) {
             $countryCollection = Mage::getModel('directory/country')->getCollection();
             if (!$countryCollection) {
@@ -103,7 +103,7 @@ class Gene_Braintree_Model_Applepay_Express extends Mage_Core_Model_Abstract
             }
             foreach ($countryCollection as $country) {
                 if ($countryName == $country->getName()) {
-                    $countryId = strtoupper($country->getCountryId());
+                    $countryId = strtoupper((string) $country->getCountryId());
                     break;
                 }
             }

@@ -190,7 +190,7 @@ class Gene_Braintree_Block_Creditcard extends Mage_Payment_Block_Form_Cc
      */
     protected function getAllowedCards()
     {
-        $allowed = explode(',', Mage::getModel('gene_braintree/paymentmethod_creditcard')->getConfigData('cctypes'));
+        $allowed = explode(',', (string) Mage::getModel('gene_braintree/paymentmethod_creditcard')->getConfigData('cctypes'));
         $cards = [];
 
         foreach (Mage::getSingleton('payment/config')->getCcTypes() as $code => $name) {
