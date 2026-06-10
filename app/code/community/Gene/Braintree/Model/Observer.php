@@ -51,7 +51,7 @@ class Gene_Braintree_Model_Observer
                         $layout->getUpdate()->addHandle('unicode_onestep_checkout');
                     }
                 }
-            } catch (\Exception $e) {
+            } catch (\Exception) {
                 // Module not installed
             }
 
