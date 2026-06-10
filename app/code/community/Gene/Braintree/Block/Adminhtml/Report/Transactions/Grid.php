@@ -179,7 +179,7 @@ class Gene_Braintree_Block_Adminhtml_Report_Transactions_Grid extends Mage_Admin
             'header' => $helper->__('Transaction Date'),
             'index'  => 'created_at',
             'type' => 'datetime',
-            'frame_callback' => [$this, 'handleDate'],
+            'frame_callback' => $this->handleDate(...),
             'filter' => false,
             'sortable' => false,
         ]);
@@ -211,7 +211,7 @@ class Gene_Braintree_Block_Adminhtml_Report_Transactions_Grid extends Mage_Admin
         $this->addColumn('type', [
             'header' => $helper->__('Type'),
             'index'  => 'type',
-            'frame_callback' => [$this, 'handleType'],
+            'frame_callback' => $this->handleType(...),
             'filter' => false,
             'sortable' => false,
         ]);
@@ -219,7 +219,7 @@ class Gene_Braintree_Block_Adminhtml_Report_Transactions_Grid extends Mage_Admin
         $this->addColumn('payment_information', [
             'header' => $helper->__('Payment Information'),
             'index'  => 'payment_information',
-            'frame_callback' => [$this, 'handlePaymentInformation'],
+            'frame_callback' => $this->handlePaymentInformation(...),
             'filter' => false,
             'sortable' => false,
         ]);
@@ -228,7 +228,7 @@ class Gene_Braintree_Block_Adminhtml_Report_Transactions_Grid extends Mage_Admin
             'header' => $helper->__('Amount'),
             'index'  => 'amount',
             'type' => 'number',
-            'frame_callback' => [$this, 'handleAmount'],
+            'frame_callback' => $this->handleAmount(...),
             'filter' => false,
             'sortable' => false,
         ]);
@@ -286,7 +286,7 @@ class Gene_Braintree_Block_Adminhtml_Report_Transactions_Grid extends Mage_Admin
      */
     public function handleType(mixed $value, mixed $row, mixed $column, bool $isExport)
     {
-        return ucfirst($value);
+        return ucfirst((string) $value);
     }
 
     /**

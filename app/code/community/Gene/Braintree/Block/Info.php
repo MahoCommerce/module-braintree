@@ -98,7 +98,7 @@ class Gene_Braintree_Block_Info extends Mage_Payment_Block_Info
                     } else {
                         $data[$label] = $this->__('<span style="color:red;"><strong>Warning:</strong> Cannot load payment in Braintree.</span>');
                     }
-                } catch (Exception $e) {
+                } catch (Exception) {
                     $data[$label] = $this->__('<span style="color:red;"><strong>Warning:</strong> Unable to connect to Braintree to load transaction.</span>');
                 }
 

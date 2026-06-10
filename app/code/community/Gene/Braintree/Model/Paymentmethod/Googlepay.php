@@ -167,7 +167,8 @@ class Gene_Braintree_Model_Paymentmethod_Googlepay extends Gene_Braintree_Model_
      * @return $this
      * @throws Mage_Core_Exception
      */
-    protected function _authorize(Varien_Object $payment, string|float $amount, bool $shouldCapture = false, string|false $token = false)
+    protected function _authorize(Varien_Object $payment, string|float $amount, bool $shouldCapture = false, #[\SensitiveParameter]
+        string|false $token = false)
     {
         // Confirm that we have a nonce from Braintree
         // We cannot utilise the validate() function as these checks need to happen at the capture point
@@ -227,7 +228,7 @@ class Gene_Braintree_Model_Paymentmethod_Googlepay extends Gene_Braintree_Model_
                 );
             }
 
-            return $this->_processFailedResult($this->_getHelper()->__('%s. Please try again or attempt refreshing the page.', rtrim($result->message, '.')));
+            return $this->_processFailedResult($this->_getHelper()->__('%s. Please try again or attempt refreshing the page.', rtrim((string) $result->message, '.')));
         }
 
         $this->_processSuccessResult($payment, $result, $amount);
@@ -265,7 +266,7 @@ class Gene_Braintree_Model_Paymentmethod_Googlepay extends Gene_Braintree_Model_
                         $payment->setStatus(self::STATUS_APPROVED);
                         return $this;
                     }
-                } catch (Exception $e) {
+                } catch (Exception) {
                     // Unable to load transaction, so process as below
                 }
             }
@@ -282,7 +283,7 @@ class Gene_Braintree_Model_Paymentmethod_Googlepay extends Gene_Braintree_Model_
                         Braintree\PaymentMethod::find($additionalInfoToken);
                         // Set the token if a success
                         $token = $additionalInfoToken;
-                    } catch (Exception $e) {
+                    } catch (Exception) {
                         $token = false;
                     }
                 }
@@ -334,7 +335,8 @@ class Gene_Braintree_Model_Paymentmethod_Googlepay extends Gene_Braintree_Model_
     /**
      * @return array
      */
-    protected function _buildPaymentRequest(string|false $token)
+    protected function _buildPaymentRequest(#[\SensitiveParameter]
+        string|false $token)
     {
         // Build our payment array with either our token, or nonce
         $paymentArray = [];
