@@ -197,7 +197,7 @@ class Gene_Braintree_SavedController extends Mage_Core_Controller_Front_Action
         // Load the payment method from Braintree
         try {
             $paymentMethod = Braintree\PaymentMethod::find($token);
-        } catch (Exception $e) {
+        } catch (Exception) {
             $this->_getSession()->addError($this->__('The requested payment method cannot be found.'));
 
             $this->_redirectReferer();

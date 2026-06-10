@@ -126,7 +126,7 @@ class Gene_Braintree_Model_Wrapper_Braintree extends Mage_Core_Model_Abstract
                     return false;
                 }
                 $this->_customer[$braintreeCustomerId] = $customer;
-            } catch (Exception $e) {
+            } catch (Exception) {
                 return false;
             }
         }
@@ -147,7 +147,7 @@ class Gene_Braintree_Model_Wrapper_Braintree extends Mage_Core_Model_Abstract
                 // Proxy this request to the other method which has caching
                 return $this->getCustomer((string) $braintreeId);
             }
-        } catch (Exception $e) {
+        } catch (Exception) {
             return false;
         }
 
@@ -766,7 +766,8 @@ class Gene_Braintree_Model_Wrapper_Braintree extends Mage_Core_Model_Abstract
      *
      * @return bool
      */
-    public function checkPaymentMethod(string $token)
+    public function checkPaymentMethod(#[\SensitiveParameter]
+        string $token)
     {
         try {
             // Attempt to load the temporary payment method
@@ -774,7 +775,7 @@ class Gene_Braintree_Model_Wrapper_Braintree extends Mage_Core_Model_Abstract
             if (isset($paymentMethod->token) && $paymentMethod->token == $token) {
                 return true;
             }
-        } catch (Exception $e) {
+        } catch (Exception) {
             return false;
         }
 
@@ -945,7 +946,7 @@ class Gene_Braintree_Model_Wrapper_Braintree extends Mage_Core_Model_Abstract
                 if (isset($mapping[$currency]) && !empty($mapping[$currency])) {
 
                     // These should never have spaces in so make sure we trim it
-                    return trim($mapping[$currency]);
+                    return trim((string) $mapping[$currency]);
                 }
             }
         }
@@ -1070,7 +1071,8 @@ class Gene_Braintree_Model_Wrapper_Braintree extends Mage_Core_Model_Abstract
      *
      * @return \Braintree\Result\Successful|false
      */
-    public function deletePaymentMethod(string $token)
+    public function deletePaymentMethod(#[\SensitiveParameter]
+        string $token)
     {
         try {
             return Braintree\PaymentMethod::delete($token);

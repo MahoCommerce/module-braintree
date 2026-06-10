@@ -65,7 +65,7 @@ class Gene_Braintree_Model_Observer
                         $layout->getUpdate()->addHandle('oye_onestep_checkout');
                     }
                 }
-            } catch (\Exception $e) {
+            } catch (\Exception) {
                 // Module not installed
             }
         }
@@ -80,7 +80,7 @@ class Gene_Braintree_Model_Observer
                     if ($onestepcheckoutHelper && method_exists($onestepcheckoutHelper, 'enabledOnestepcheckout') && $onestepcheckoutHelper->enabledOnestepcheckout()) {
                         $layout->getUpdate()->addHandle('magestore_onestepcheckout_index');
                     }
-                } catch (\Exception $e) {
+                } catch (\Exception) {
                     // Module not installed
                 }
             }

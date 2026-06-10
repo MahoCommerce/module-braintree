@@ -22,7 +22,7 @@ class Gene_Braintree_ApplepayController extends Mage_Core_Controller_Front_Actio
             $express->setProductId($productId);
             try {
                 $express->initProductQuote($this->getRequest()->getParam('productForm'));
-            } catch (Exception $e) {
+            } catch (Exception) {
                 $this->errorAction(Mage::helper('gene_braintree')->__('We\'re unable to load that product.'));
                 return null;
             }
@@ -138,9 +138,7 @@ class Gene_Braintree_ApplepayController extends Mage_Core_Controller_Front_Actio
         try {
             $express->submit();
             return $this->_returnJson(['success' => true]);
-        } catch (Mage_Core_Exception $e) {
-            return $this->errorAction($e->getMessage());
-        } catch (Exception $e) {
+        } catch (Mage_Core_Exception|Exception $e) {
             return $this->errorAction($e->getMessage());
         }
     }

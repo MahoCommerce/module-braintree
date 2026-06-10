@@ -49,7 +49,7 @@ class Gene_Braintree_Model_Kount_Rest extends Mage_Core_Model_Abstract
             } else {
                 $order->addStatusHistoryComment('Unable to update Kount order status.');
             }
-        } catch (Exception $e) {
+        } catch (Exception) {
             $order->addStatusHistoryComment('An exception was thrown whilst trying to update the Kount order status, please consult your developer to check the logs.');
         }
 
@@ -86,7 +86,7 @@ class Gene_Braintree_Model_Kount_Rest extends Mage_Core_Model_Abstract
             } else {
                 $order->addStatusHistoryComment('Unable to update Kount refund status.');
             }
-        } catch (Exception $e) {
+        } catch (Exception) {
             $order->addStatusHistoryComment('An exception was thrown whilst trying to update the Kount refund status, please consult your developer to check the logs.');
         }
 

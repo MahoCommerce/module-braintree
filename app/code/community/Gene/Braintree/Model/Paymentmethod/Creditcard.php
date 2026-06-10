@@ -253,7 +253,8 @@ class Gene_Braintree_Model_Paymentmethod_Creditcard extends Gene_Braintree_Model
      * @return $this
      * @throws \Mage_Core_Exception
      */
-    protected function _authorize(Varien_Object $payment, string|float $amount, bool $shouldCapture = false, string|false $token = false)
+    protected function _authorize(Varien_Object $payment, string|float $amount, bool $shouldCapture = false, #[\SensitiveParameter]
+        string|false $token = false)
     {
         // Init the environment
         $this->_getWrapper()->init($payment->getOrder()->getStoreId());
@@ -356,7 +357,7 @@ class Gene_Braintree_Model_Paymentmethod_Creditcard extends Gene_Braintree_Model
                             return $this;
                         }
                     }
-                } catch (Exception $e) {
+                } catch (Exception) {
                     // Unable to load transaction, so process as below
                 }
             }
@@ -378,7 +379,7 @@ class Gene_Braintree_Model_Paymentmethod_Creditcard extends Gene_Braintree_Model
                         // Set the token if a success
                         $token = $additionalInfoToken;
 
-                    } catch (Exception $e) {
+                    } catch (Exception) {
                         $token = false;
                     }
 
@@ -556,7 +557,8 @@ class Gene_Braintree_Model_Paymentmethod_Creditcard extends Gene_Braintree_Model
      *
      * @return array
      */
-    protected function _buildPaymentRequest(string|false $token)
+    protected function _buildPaymentRequest(#[\SensitiveParameter]
+        string|false $token)
     {
         /** @var array<string, mixed> $paymentArray */
         $paymentArray = [];

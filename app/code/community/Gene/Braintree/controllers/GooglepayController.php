@@ -39,7 +39,7 @@ class Gene_Braintree_GooglepayController extends Mage_Core_Controller_Front_Acti
     #[Maho\Config\Route('/braintree/googlepay/authorization')]
     public function authorizationAction()
     {
-        parse_str($this->getRequest()->getParam('form_data'), $formData);
+        parse_str((string) $this->getRequest()->getParam('form_data'), $formData);
 
         // Retrieve the form_key from the request
         $formKey = $this->getRequest()->getParam(
@@ -63,7 +63,7 @@ class Gene_Braintree_GooglepayController extends Mage_Core_Controller_Front_Acti
             $this->getRequest()->getParam('source', 'product'),
         );
 
-        $googlepay = json_decode($this->getRequest()->getParam('googlepay'), true);
+        $googlepay = json_decode((string) $this->getRequest()->getParam('googlepay'), true);
 
         // Check for a valid nonce
         if (!isset($googlepay['nonce']) || empty($googlepay['nonce'])) {
@@ -107,7 +107,7 @@ class Gene_Braintree_GooglepayController extends Mage_Core_Controller_Front_Acti
             // Attempt to add the product into the quote
             try {
                 $quote->addProduct($product, $request);
-            } catch (Exception $e) {
+            } catch (Exception) {
                 Mage::getSingleton('core/session')->addError(
                     Mage::helper('gene_braintree')->__('Sorry, we were unable to process your request. Please try again.'),
                 );
@@ -123,7 +123,7 @@ class Gene_Braintree_GooglepayController extends Mage_Core_Controller_Front_Acti
         $firstName = '';
         $lastName = '';
         if (isset($billingAddress['name'])) {
-            [$firstName, $lastName] = explode(' ', $billingAddress['name'], 2);
+            [$firstName, $lastName] = explode(' ', (string) $billingAddress['name'], 2);
         }
 
         // Retrieve the street
@@ -272,11 +272,7 @@ class Gene_Braintree_GooglepayController extends Mage_Core_Controller_Front_Acti
         $service = Mage::getModel('sales/service_quote', $order->getQuote());
         try {
             $service->submitAll();
-        } catch (Mage_Core_Exception $e) {
-            $this->errorAction($e->getMessage());
-
-            return;
-        } catch (Exception $e) {
+        } catch (Mage_Core_Exception|Exception $e) {
             $this->errorAction($e->getMessage());
 
             return;
