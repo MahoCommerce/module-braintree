@@ -1,9 +1,10 @@
 <?php
 
 /**
- * @license    https://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
- * Class Gene_Braintree_Block_Applepay_Setup
- *
+ * SPDX-License-Identifier: OSL-3.0
+ */
+
+/**
  * @author Dave Macaulay <dave@gene.co.uk>
  */
 class Gene_Braintree_Block_Applepay_Setup extends Mage_Core_Block_Template

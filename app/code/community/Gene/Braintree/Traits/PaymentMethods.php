@@ -3,8 +3,7 @@
 declare(strict_types=1);
 
 /**
- * @license    https://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
- * Trait Gene_Braintree_Traits_PaymentMethods
+ * SPDX-License-Identifier: OSL-3.0
  */
 trait Gene_Braintree_Traits_PaymentMethods
 {
