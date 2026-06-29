@@ -2,7 +2,6 @@
 
 /**
  * SPDX-License-Identifier: OSL-3.0
- *
  * @author Dave Macaulay <dave@gene.co.uk>
  */
 class Gene_Braintree_ApplepayController extends Mage_Core_Controller_Front_Action

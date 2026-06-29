@@ -2,7 +2,6 @@
 
 /**
  * SPDX-License-Identifier: OSL-3.0
- *
  * @author Dave Macaulay <braintreesupport@gene.co.uk>
  */
 class Gene_Braintree_Model_System_Config_Backend_Currency extends Mage_Core_Model_Config_Data

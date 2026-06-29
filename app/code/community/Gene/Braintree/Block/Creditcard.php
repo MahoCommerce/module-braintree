@@ -2,7 +2,6 @@
 
 /**
  * SPDX-License-Identifier: OSL-3.0
- *
  * @author Dave Macaulay <braintreesupport@gene.co.uk>
  */
 class Gene_Braintree_Block_Creditcard extends Mage_Payment_Block_Form_Cc

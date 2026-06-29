@@ -2,7 +2,6 @@
 
 /**
  * SPDX-License-Identifier: OSL-3.0
- *
  * @author Paul Canning <paul.canning@gene.co.uk>
  */
 class Gene_Braintree_Model_Source_Googlepay_AcceptedCards

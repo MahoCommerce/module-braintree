@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 /**
  * SPDX-License-Identifier: OSL-3.0
- *
  * @author Dave Macaulay <dave@gene.co.uk>
  */
 class Gene_Braintree_Block_Applepay_Express_Button extends Gene_Braintree_Block_Applepay_Express_Abstract
