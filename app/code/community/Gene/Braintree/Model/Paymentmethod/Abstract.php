@@ -2,9 +2,7 @@
 
 /**
  * SPDX-License-Identifier: OSL-3.0
- */
-
-/**
+ *
  * @author Dave Macaulay <braintreesupport@gene.co.uk>
  */
 abstract class Gene_Braintree_Model_Paymentmethod_Abstract extends Mage_Payment_Model_Method_Abstract

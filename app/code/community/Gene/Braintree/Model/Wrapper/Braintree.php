@@ -2,9 +2,7 @@
 
 /**
  * SPDX-License-Identifier: OSL-3.0
- */
-
-/**
+ *
  * @author Dave Macaulay <braintreesupport@gene.co.uk>
  */
 class Gene_Braintree_Model_Wrapper_Braintree extends Mage_Core_Model_Abstract

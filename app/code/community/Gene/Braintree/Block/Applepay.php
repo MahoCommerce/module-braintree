@@ -2,9 +2,7 @@
 
 /**
  * SPDX-License-Identifier: OSL-3.0
- */
-
-/**
+ *
  * @author Dave Macaulay <dave@gene.co.uk>
  */
 class Gene_Braintree_Block_Applepay extends Mage_Payment_Block_Form

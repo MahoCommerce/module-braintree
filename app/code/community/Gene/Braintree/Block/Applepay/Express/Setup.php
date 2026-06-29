@@ -2,9 +2,7 @@
 
 /**
  * SPDX-License-Identifier: OSL-3.0
- */
-
-/**
+ *
  * @author Aidan Threadgold <aidan@gene.co.uk>
  */
 class Gene_Braintree_Block_Applepay_Express_Setup extends Gene_Braintree_Block_Applepay_Express_Abstract

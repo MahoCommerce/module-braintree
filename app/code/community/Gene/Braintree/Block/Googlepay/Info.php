@@ -2,9 +2,7 @@
 
 /**
  * SPDX-License-Identifier: OSL-3.0
- */
-
-/**
+ *
  * @author Paul Canning <paul.canning@gene.co.uk>
  */
 class Gene_Braintree_Block_Googlepay_Info extends Gene_Braintree_Block_Info

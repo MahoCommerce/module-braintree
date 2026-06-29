@@ -2,9 +2,7 @@
 
 /**
  * SPDX-License-Identifier: OSL-3.0
- */
-
-/**
+ *
  * @author Paul Canning <paul.canning@gene.co.uk>
  * @author Dave Macaulay <dave@gene.co.uk>
  */

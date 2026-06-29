@@ -2,9 +2,7 @@
 
 /**
  * SPDX-License-Identifier: OSL-3.0
- */
-
-/**
+ *
  * @author Paul Canning <paul.canning@gene.co.uk>
  */
 class Gene_Braintree_GooglepayController extends Mage_Core_Controller_Front_Action

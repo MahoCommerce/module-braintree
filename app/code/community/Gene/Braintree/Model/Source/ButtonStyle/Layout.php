@@ -2,9 +2,7 @@
 
 /**
  * SPDX-License-Identifier: OSL-3.0
- */
-
-/**
+ *
  * @author Craig Newbury <braintreesupport@gene.co.uk>
  */
 class Gene_Braintree_Model_Source_ButtonStyle_Layout
