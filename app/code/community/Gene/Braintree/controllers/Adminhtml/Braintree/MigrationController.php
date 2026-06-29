@@ -1,9 +1,7 @@
 <?php
 
 /**
- * @license    https://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
- * Class Gene_Braintree_Adminhtml_Braintree_MigrationController
- *
+ * SPDX-License-Identifier: OSL-3.0
  * @author Dave Macaulay <braintreesupport@gene.co.uk>
  */
 class Gene_Braintree_Adminhtml_Braintree_MigrationController extends Mage_Adminhtml_Controller_Action
