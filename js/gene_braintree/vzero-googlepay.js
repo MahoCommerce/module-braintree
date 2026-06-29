@@ -308,6 +308,7 @@ class vZeroGooglePay {
                 }, (clientErr, clientInstance) => {
                     if (clientErr) {
                         console.error(clientErr);
+                        this.buttonBuilding = false;
                         return;
                     }
 
@@ -345,9 +346,11 @@ class vZeroGooglePay {
                     if (response.error) {
                         console.error(response.error);
                     }
+                    this.buttonBuilding = false;
                 }
             } catch (error) {
                 console.error('We were unable to retrieve a client token from the server to initialize the Braintree flow.');
+                this.buttonBuilding = false;
             }
         }
     }
