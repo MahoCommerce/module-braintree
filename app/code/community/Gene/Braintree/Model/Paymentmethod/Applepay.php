@@ -1,9 +1,9 @@
 <?php
 
 /**
+ * SPDX-License-Identifier: OSL-3.0
  * @author Dave Macaulay <dave@gene.co.uk>
  * @author Paul Canning <paul.canning@gene.co.uk>
- * @license https://opensource.org/licenses/osl-3.0.php Open Software License (OSL 3.0)
  */
 class Gene_Braintree_Model_Paymentmethod_Applepay extends Gene_Braintree_Model_Paymentmethod_Abstract
 {

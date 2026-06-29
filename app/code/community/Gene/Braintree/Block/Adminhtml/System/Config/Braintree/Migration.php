@@ -1,9 +1,7 @@
 <?php
 
 /**
- * @license    https://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
- * Class Gene_Braintree_Block_Adminhtml_System_Config_Braintree_Migration
- *
+ * SPDX-License-Identifier: OSL-3.0
  * @author Dave Macaulay <braintreesupport@gene.co.uk>
  */
 class Gene_Braintree_Block_Adminhtml_System_Config_Braintree_Migration extends Mage_Adminhtml_Block_Abstract implements Varien_Data_Form_Element_Renderer_Interface
