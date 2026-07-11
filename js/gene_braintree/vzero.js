@@ -1141,6 +1141,7 @@ class vZero {
     verify3dSecureVault(options) {
         const checkedRadio = document.querySelector('#creditcard-saved-accounts input:checked[type=radio]');
         const paymentNonce = checkedRadio ? checkedRadio.getAttribute('data-threedsecure-nonce') : null;
+        const bin = checkedRadio ? (checkedRadio.getAttribute('data-bin') || undefined) : undefined;
 
         if (paymentNonce) {
             this.verify3dSecureNonce(paymentNonce, {
@@ -1165,7 +1166,7 @@ class vZero {
                         checkout.setLoadWaiting(false);
                     }
                 }
-            });
+            }, bin);
         } else {
             alert('No payment nonce present.');
 
