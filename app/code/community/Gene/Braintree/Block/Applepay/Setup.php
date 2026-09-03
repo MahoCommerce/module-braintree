@@ -48,9 +48,7 @@ class Gene_Braintree_Block_Applepay_Setup extends Mage_Core_Block_Template
     public function getUrl($route = '', $params = [])
     {
         // Always force secure on getUrl calls
-        if (!isset($params['_forced_secure'])) {
-            $params['_forced_secure'] = true;
-        }
+        $params['_forced_secure'] ??= true;
 
         return parent::getUrl($route, $params);
     }
