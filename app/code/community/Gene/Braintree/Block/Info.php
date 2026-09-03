@@ -121,13 +121,11 @@ class Gene_Braintree_Block_Info extends Mage_Payment_Block_Info
     public function isSingleInvoice()
     {
         // Caching on the check
-        if ($this->_singleInvoice === null) {
-            $this->_singleInvoice = $this->getViewedObject()
-                && ($this->getViewedObject() instanceof Mage_Sales_Model_Order
-                    && $this->getViewedObject()->getInvoiceCollection()->getSize() <= 1)
-                || ($this->getViewedObject() instanceof Mage_Sales_Model_Order_Invoice)
-                || ($this->getViewedObject() instanceof Mage_Sales_Model_Order_Creditmemo);
-        }
+        $this->_singleInvoice ??= $this->getViewedObject()
+            && ($this->getViewedObject() instanceof Mage_Sales_Model_Order
+                && $this->getViewedObject()->getInvoiceCollection()->getSize() <= 1)
+            || ($this->getViewedObject() instanceof Mage_Sales_Model_Order_Invoice)
+            || ($this->getViewedObject() instanceof Mage_Sales_Model_Order_Creditmemo);
 
         return $this->_singleInvoice;
     }

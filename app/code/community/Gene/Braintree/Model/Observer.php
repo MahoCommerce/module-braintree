@@ -146,9 +146,7 @@ class Gene_Braintree_Model_Observer
                     $invoiceItems[$item->getOrderItemId()] = $item->getQty();
                 }
                 foreach ($order->getAllVisibleItems() as $item) {
-                    if (!isset($invoiceItems[$item->getId()])) {
-                        $invoiceItems[$item->getId()] = 0;
-                    }
+                    $invoiceItems[$item->getId()] ??= 0;
                 }
 
                 /* @var $invoice Mage_Sales_Model_Order_Invoice */

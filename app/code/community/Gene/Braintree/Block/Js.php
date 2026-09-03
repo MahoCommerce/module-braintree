@@ -31,9 +31,7 @@ class Gene_Braintree_Block_Js extends Gene_Braintree_Block_Assets
      */
     protected function isCreditCardActive()
     {
-        if (is_null($this->creditCardActive)) {
-            $this->creditCardActive = Mage::getModel('gene_braintree/paymentmethod_creditcard')->isAvailable();
-        }
+        $this->creditCardActive ??= Mage::getModel('gene_braintree/paymentmethod_creditcard')->isAvailable();
 
         return $this->creditCardActive;
     }
@@ -43,9 +41,7 @@ class Gene_Braintree_Block_Js extends Gene_Braintree_Block_Assets
      */
     protected function isApplepayActive()
     {
-        if (null === $this->applepayActive) {
-            $this->applepayActive = Mage::getModel('gene_braintree/paymentmethod_applepay')->isAvailable();
-        }
+        $this->applepayActive ??= Mage::getModel('gene_braintree/paymentmethod_applepay')->isAvailable();
 
         return $this->applepayActive;
     }
@@ -55,9 +51,7 @@ class Gene_Braintree_Block_Js extends Gene_Braintree_Block_Assets
      */
     protected function isGooglepayActive()
     {
-        if (null === $this->googlepayActive) {
-            $this->googlepayActive = Mage::getModel('gene_braintree/paymentmethod_googlepay')->isAvailable();
-        }
+        $this->googlepayActive ??= Mage::getModel('gene_braintree/paymentmethod_googlepay')->isAvailable();
 
         return $this->googlepayActive;
     }
@@ -201,9 +195,7 @@ class Gene_Braintree_Block_Js extends Gene_Braintree_Block_Assets
     public function getUrl($route = '', $params = [])
     {
         // Always force secure on getUrl calls
-        if (!isset($params['_forced_secure'])) {
-            $params['_forced_secure'] = true;
-        }
+        $params['_forced_secure'] ??= true;
 
         return parent::getUrl($route, $params);
     }
