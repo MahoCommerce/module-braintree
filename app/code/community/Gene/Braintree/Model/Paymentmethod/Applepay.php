@@ -12,7 +12,9 @@ class Gene_Braintree_Model_Paymentmethod_Applepay extends Gene_Braintree_Model_P
      *
      * @var string
      */
+    #[\Override]
     protected $_formBlockType = 'gene_braintree/applepay';
+    #[\Override]
     protected $_infoBlockType = 'gene_braintree/applepay_info';
 
     /**
@@ -20,6 +22,7 @@ class Gene_Braintree_Model_Paymentmethod_Applepay extends Gene_Braintree_Model_P
      *
      * @var string
      */
+    #[\Override]
     protected $_code = 'gene_braintree_applepay';
 
     /**
@@ -27,20 +30,35 @@ class Gene_Braintree_Model_Paymentmethod_Applepay extends Gene_Braintree_Model_P
      *
      * @var bool
      */
+    #[\Override]
     protected $_isGateway = false;
+    #[\Override]
     protected $_canOrder = false;
+    #[\Override]
     protected $_canAuthorize = true;
+    #[\Override]
     protected $_canCapture = true;
+    #[\Override]
     protected $_canCapturePartial = false;
+    #[\Override]
     protected $_canRefund = true;
+    #[\Override]
     protected $_canRefundInvoicePartial = true;
+    #[\Override]
     protected $_canVoid = true;
+    #[\Override]
     protected $_canUseInternal = false;
+    #[\Override]
     protected $_canUseCheckout = true;
+    #[\Override]
     protected $_isInitializeNeeded = false;
+    #[\Override]
     protected $_canFetchTransactionInfo = false;
+    #[\Override]
     protected $_canReviewPayment = true;
+    #[\Override]
     protected $_canCreateBillingAgreement = false;
+    #[\Override]
     protected $_canManageRecurringProfiles = false;
 
     /**
