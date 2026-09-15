@@ -11,7 +11,9 @@ class Gene_Braintree_Model_Paymentmethod_Creditcard extends Gene_Braintree_Model
      *
      * @var string
      */
+    #[\Override]
     protected $_formBlockType = 'gene_braintree/creditcard';
+    #[\Override]
     protected $_infoBlockType = 'gene_braintree/creditcard_info';
 
     /**
@@ -19,6 +21,7 @@ class Gene_Braintree_Model_Paymentmethod_Creditcard extends Gene_Braintree_Model
      *
      * @var string
      */
+    #[\Override]
     protected $_code = 'gene_braintree_creditcard';
 
     /**
@@ -26,20 +29,35 @@ class Gene_Braintree_Model_Paymentmethod_Creditcard extends Gene_Braintree_Model
      *
      * @var bool
      */
+    #[\Override]
     protected $_isGateway = false;
+    #[\Override]
     protected $_canOrder = false;
+    #[\Override]
     protected $_canAuthorize = true;
+    #[\Override]
     protected $_canCapture = true;
+    #[\Override]
     protected $_canCapturePartial = true;
+    #[\Override]
     protected $_canRefund = true;
+    #[\Override]
     protected $_canRefundInvoicePartial = true;
+    #[\Override]
     protected $_canVoid = true;
+    #[\Override]
     protected $_canUseInternal = true;
+    #[\Override]
     protected $_canUseCheckout = true;
+    #[\Override]
     protected $_isInitializeNeeded = false;
+    #[\Override]
     protected $_canFetchTransactionInfo = false;
+    #[\Override]
     protected $_canReviewPayment = true;
+    #[\Override]
     protected $_canCreateBillingAgreement = false;
+    #[\Override]
     protected $_canManageRecurringProfiles = false;
 
     /**

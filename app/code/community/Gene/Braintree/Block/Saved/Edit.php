@@ -9,6 +9,7 @@ class Gene_Braintree_Block_Saved_Edit extends Mage_Customer_Block_Address_Edit
     /**
      * @var Mage_Customer_Model_Address|null
      */
+    #[\Override]
     protected $_address = null;
 
     /**

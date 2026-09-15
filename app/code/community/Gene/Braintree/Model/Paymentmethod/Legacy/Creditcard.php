@@ -13,6 +13,7 @@ class Gene_Braintree_Model_Paymentmethod_Legacy_Creditcard extends Gene_Braintre
      *
      * @var string
      */
+    #[\Override]
     protected $_code = 'braintree_legacy';
 
     /**
