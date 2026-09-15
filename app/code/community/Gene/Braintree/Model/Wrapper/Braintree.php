@@ -1010,7 +1010,17 @@ class Gene_Braintree_Model_Wrapper_Braintree extends Mage_Core_Model_Abstract
     public function convertCaptureAmount(string $baseCurrencyCode, string $orderQuoteCurrencyCode, string|float $amount)
     {
         // Convert the current
-        $convertedCurrency = Mage::helper('directory')->currencyConvert((float) $amount, $baseCurrencyCode, $orderQuoteCurrencyCode);
+        $convertedCurrency = Mage::helper('directory')->convert((float) $amount, $baseCurrencyCode, $orderQuoteCurrencyCode);
+
+        // convert() answers null where the deprecated currencyConvert() threw. This is a
+        // capture amount, so a missing rate must stop the payment, not format null as 0.00.
+        if ($convertedCurrency === null) {
+            Mage::throwException(Mage::helper('directory')->__(
+                'Undefined rate from "%s-%s".',
+                $baseCurrencyCode,
+                $orderQuoteCurrencyCode,
+            ));
+        }
 
         // Always make sure the number has two decimal places
         return Mage::helper('gene_braintree')->formatPrice($convertedCurrency);
