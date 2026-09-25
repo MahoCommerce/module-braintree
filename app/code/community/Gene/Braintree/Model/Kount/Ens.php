@@ -292,13 +292,7 @@ class Gene_Braintree_Model_Kount_Ens extends Mage_Core_Model_Abstract
         $validIps = explode(',', (string) Mage::getStoreConfig('payment/gene_braintree_creditcard/kount_ens_ips'));
         if (count($validIps) > 0) {
             $validIps = array_map(trim(...), $validIps);
-            foreach ($validIps as $validIp) {
-                if ($this->isIpInRange($ip, $validIp)) {
-                    return true;
-                }
-            }
-
-            return false;
+            return array_any($validIps, fn($validIp) => $this->isIpInRange($ip, $validIp));
         }
 
         // If no IP's are set allow from all

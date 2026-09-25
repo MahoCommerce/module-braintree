@@ -9,91 +9,109 @@ class Gene_Braintree_Model_Paymentmethod_Googlepay extends Gene_Braintree_Model_
     /**
      * @var string $_code
      */
+    #[\Override]
     protected $_code = 'gene_braintree_googlepay';
 
     /**
      * @var string $_formBlockType
      */
+    #[\Override]
     protected $_formBlockType = 'gene_braintree/googlepay';
 
     /**
      * @var string $_infoBlockType
      */
+    #[\Override]
     protected $_infoBlockType = 'gene_braintree/googlepay_info';
 
     /**
      * @var bool $_isGateway
      */
+    #[\Override]
     protected $_isGateway = false;
 
     /**
      * @var bool $_canOrder
      */
+    #[\Override]
     protected $_canOrder = false;
 
     /**
      * @var bool $_canAuthorize
      */
+    #[\Override]
     protected $_canAuthorize = true;
 
     /**
      * @var bool $_canCapture
      */
+    #[\Override]
     protected $_canCapture = true;
 
     /**
      * @var bool $_canCapturePartial
      */
+    #[\Override]
     protected $_canCapturePartial = false;
 
     /**
      * @var bool $_canRefund
      */
+    #[\Override]
     protected $_canRefund = true;
 
     /**
      * @var bool $_canRefundInvoicePartial
      */
+    #[\Override]
     protected $_canRefundInvoicePartial = true;
 
     /**
      * @var bool $_canVoid
      */
+    #[\Override]
     protected $_canVoid = true;
 
     /**
      * @var bool $_canUseInternal
      */
+    #[\Override]
     protected $_canUseInternal = false;
 
     /**
      * @var bool $_canUseCheckout
      */
+    #[\Override]
     protected $_canUseCheckout = true;
 
     /**
      * @var bool $_isInitializeNeeded
      */
+    #[\Override]
     protected $_isInitializeNeeded = false;
 
     /**
      * @var bool $_canFetchTransactionInfo
      */
+    #[\Override]
     protected $_canFetchTransactionInfo = false;
 
     /**
      * @var bool $_canReviewPayment
      */
+    #[\Override]
     protected $_canReviewPayment = true;
 
     /**
      * @var bool $_canCreateBillingAgreement
      */
+    #[\Override]
     protected $_canCreateBillingAgreement = false;
 
     /**
      * @var bool $_canManageRecurringProfiles
      */
+    #[\Override]
     protected $_canManageRecurringProfiles = false;
 
     /**
