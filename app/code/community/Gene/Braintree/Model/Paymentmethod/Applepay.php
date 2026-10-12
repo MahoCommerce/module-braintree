@@ -119,16 +119,6 @@ class Gene_Braintree_Model_Paymentmethod_Applepay extends Gene_Braintree_Model_P
     }
 
     /**
-     * Return the Apple Pay network names that the store accepts. An empty array means every network of the Braintree account.
-     *
-     * @return list<string>
-     */
-    public function getSupportedNetworks(): array
-    {
-        return array_values(array_filter(explode(',', (string) $this->_getConfig('accepted_cards'))));
-    }
-
-    /**
      * Pseudo _authorize function so we can pass in extra data
      *
      * @return $this

@@ -37,7 +37,7 @@
                     environment: '<?php echo $this->jsQuoteEscape($this->getEnvironment()); ?>',
                     merchantAccountId: '<?php echo $this->jsQuoteEscape($this->getGoogleMerchantAccountID()); ?>',
                     currencyCode: '<?php echo $this->jsQuoteEscape($this->getStoreCurrency()); ?>',
-                    allowedCardNetworks: <?php echo $this->jsQuoteEscape($this->getAllowedCardNetworks()); ?>
+                    allowedCardNetworks: <?php echo $this->getAllowedCardNetworks(); ?>
                 }
             );
         });
