@@ -12,8 +12,9 @@ class vZeroApplePay {
      * @param {vZeroIntegration} integration
      * @param {string} appleButtonSelector
      * @param {string} clientTokenUrl
+     * @param {string[]} supportedNetworks Apple Pay network names, an empty array keeps the networks of the Braintree account
      */
-    constructor(clientToken, storeFrontName, integration, appleButtonSelector, clientTokenUrl) {
+    constructor(clientToken, storeFrontName, integration, appleButtonSelector, clientTokenUrl, supportedNetworks = []) {
         if (!window.ApplePaySession || (window.ApplePaySession && !ApplePaySession.canMakePayments())) {
             console.warn('This browser does not support Apple Pay, the method will be hidden.');
             return false;
@@ -24,6 +25,7 @@ class vZeroApplePay {
         this.integration = integration || false;
         this.appleButtonSelector = appleButtonSelector;
         this.clientTokenUrl = clientTokenUrl;
+        this.supportedNetworks = supportedNetworks;
 
         this.vzero = this.integration.vzero || false;
         this.methodCode = 'gene_braintree_applepay';
@@ -355,6 +357,10 @@ class vZeroApplePay {
                 amount: this.amount || this.vzero.amount
             }
         };
+
+        if (this.supportedNetworks.length) {
+            paymentRequest.supportedNetworks = this.supportedNetworks;
+        }
 
         if (typeof options.paymentRequest === 'object') {
             paymentRequest = Object.assign(paymentRequest, options.paymentRequest);

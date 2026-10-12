@@ -22,7 +22,8 @@ class BraintreeApplePayExpress extends BraintreeExpressAbstract {
             this.storeFrontName,
             false,
             false,
-            this.urls.clientTokenUrl
+            this.urls.clientTokenUrl,
+            this.config.supportedNetworks
         );
 
         this.selectedMethod = false;

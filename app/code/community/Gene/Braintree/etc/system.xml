@@ -634,6 +634,17 @@
                             <show_in_store>1</show_in_store>
                         </title>
 
+                        <accepted_cards translate="label comment">
+                            <label>Accepted Card Networks</label>
+                            <frontend_type>multiselect</frontend_type>
+                            <sort_order>35</sort_order>
+                            <source_model>gene_braintree/source_applepay_acceptedCards</source_model>
+                            <show_in_default>1</show_in_default>
+                            <show_in_website>1</show_in_website>
+                            <show_in_store>1</show_in_store>
+                            <comment>Apple Pay offers only the cards of the selected networks. If you select no network, Apple Pay offers every network that your Braintree account accepts.</comment>
+                        </accepted_cards>
+
                         <express_heading translate="label">
                             <label>Apple Pay Express</label>
                             <frontend_model>adminhtml/system_config_form_field_heading</frontend_model>
