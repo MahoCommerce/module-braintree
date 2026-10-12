@@ -42,7 +42,8 @@ if ($product->getTypeId() == Mage_Catalog_Model_Product_Type::TYPE_GROUPED) {
                 },
                 {
                     productId:      <?php echo (int) $product->getId(); ?>,
-                    virtual:        <?php echo $product->isVirtual() ? 'true' : 'false'; ?>
+                    virtual:        <?php echo $product->isVirtual() ? 'true' : 'false'; ?>,
+                    supportedNetworks: <?php echo Mage::helper('core')->jsonEncode(Mage::getModel('gene_braintree/paymentmethod_applepay')->getSupportedNetworks()); ?>
                 }
             );
 

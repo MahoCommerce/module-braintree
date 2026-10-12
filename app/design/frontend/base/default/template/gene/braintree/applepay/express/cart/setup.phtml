@@ -28,7 +28,8 @@
                     successUrl:     '<?php echo $this->getUrl('checkout/onepage/success'); ?>'
                 },
                 {
-                    virtual:        <?php echo $this->getQuote()->isVirtual() ? 'true' : 'false'; ?>
+                    virtual:        <?php echo $this->getQuote()->isVirtual() ? 'true' : 'false'; ?>,
+                    supportedNetworks: <?php echo Mage::helper('core')->jsonEncode(Mage::getModel('gene_braintree/paymentmethod_applepay')->getSupportedNetworks()); ?>
                 }
             );
 

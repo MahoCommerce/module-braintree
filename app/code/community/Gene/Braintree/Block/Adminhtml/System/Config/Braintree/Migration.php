@@ -19,7 +19,6 @@ class Gene_Braintree_Block_Adminhtml_System_Config_Braintree_Migration extends M
             return '';
         }
 
-        $useContainerId = $element->getData('use_container_id');
         return sprintf(
             '<tr id="row_%s">
                 <td class="label">

@@ -61,6 +61,16 @@ abstract class Gene_Braintree_Model_Paymentmethod_Abstract extends Mage_Payment_
     }
 
     /**
+     * Return the card networks that the store accepts for this method, from the Accepted Card Networks setting
+     *
+     * @return list<string>
+     */
+    public function getSupportedNetworks(): array
+    {
+        return array_values(array_filter(explode(',', (string) $this->_getConfig('accepted_cards'))));
+    }
+
+    /**
      * Handle any risk decision returned from Braintree
      *
      * @return $this
@@ -367,7 +377,7 @@ abstract class Gene_Braintree_Model_Paymentmethod_Abstract extends Mage_Payment_
     protected function _updateKountStatus(Varien_Object $payment, $status = 'A')
     {
         if (Mage::helper('gene_braintree')->canUpdateKount() &&
-            ($kountId = $payment->getAdditionalInformation('kount_id'))
+            $payment->getAdditionalInformation('kount_id')
         ) {
             $kountRest = Mage::getModel('gene_braintree/kount_rest');
             $kountRest->updateOrderStatus($payment->getOrder(), $status);
@@ -384,7 +394,7 @@ abstract class Gene_Braintree_Model_Paymentmethod_Abstract extends Mage_Payment_
     protected function _updateKountRefund(Varien_Object $payment)
     {
         if (Mage::helper('gene_braintree')->canUpdateKount()
-            && ($kountId = $payment->getAdditionalInformation('kount_id'))
+            && $payment->getAdditionalInformation('kount_id')
         ) {
             $kountRest = Mage::getModel('gene_braintree/kount_rest');
             $kountRest->updateOrderRefund($payment->getOrder());

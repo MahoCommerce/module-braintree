@@ -26,18 +26,10 @@ class Gene_Braintree_Block_Googlepay_Setup extends Mage_Core_Block_Template
     }
 
     /**
-     * @return string
+     * Return the accepted card networks as a JSON array
      */
-    public function getAllowedCardNetworks()
+    public function getAllowedCardNetworks(): string
     {
-        $allowedCardNetworks = Mage::getStoreConfig('payment/gene_braintree_googlepay/accepted_cards');
-
-        if ($allowedCardNetworks) {
-            $allowedCardNetworks = explode(',', $allowedCardNetworks);
-            $allowedCardNetworks = '["' . implode('", "', $allowedCardNetworks) . '"]';
-            return $allowedCardNetworks;
-        }
-
-        return '';
+        return Mage::helper('core')->jsonEncode(Mage::getModel('gene_braintree/paymentmethod_googlepay')->getSupportedNetworks());
     }
 }

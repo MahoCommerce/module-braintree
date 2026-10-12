@@ -38,7 +38,8 @@
                 '<?php echo $this->jsQuoteEscape($store->getFrontendName()); ?>',
                 this,
                 '#braintree-applepay-button',
-                '<?php echo Mage::getUrl('braintree/applepay/clientToken', array('_secure' => Mage::app()->getFrontController()->getRequest()->isSecure())); ?>'
+                '<?php echo Mage::getUrl('braintree/applepay/clientToken', array('_secure' => Mage::app()->getFrontController()->getRequest()->isSecure())); ?>',
+                <?php echo Mage::helper('core')->jsonEncode(Mage::getModel('gene_braintree/paymentmethod_applepay')->getSupportedNetworks()); ?>
             );
         });
     })();

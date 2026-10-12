@@ -217,8 +217,8 @@ class Gene_Braintree_Model_Wrapper_Braintree extends Mage_Core_Model_Abstract
                 $customer = Mage::getSingleton('customer/session')->getCustomer();
 
                 // Determine whether they have a braintree customer ID already
-                if ($brainteeId = $customer->getBraintreeCustomerId()) {
-                    $this->_braintreeId = $customer->getBraintreeCustomerId();
+                if ($braintreeId = $customer->getBraintreeCustomerId()) {
+                    $this->_braintreeId = $braintreeId;
                 } else {
                     // If not let's create them one
                     $this->_braintreeId = $this->buildCustomerId();
@@ -445,7 +445,7 @@ class Gene_Braintree_Model_Wrapper_Braintree extends Mage_Core_Model_Abstract
         ];
 
         if ($customerId = $this->getBraintreeId()) {
-            $paymentMethodCreate['customerId'] = $this->getBraintreeId();
+            $paymentMethodCreate['customerId'] = $customerId;
         }
 
         // Include billing address information into the payment method
