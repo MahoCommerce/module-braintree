@@ -398,7 +398,7 @@ class Gene_Braintree_Model_Paymentmethod_Creditcard extends Gene_Braintree_Model
                         $token = $additionalInfoToken;
 
                     } catch (Exception) {
-                        $token = false;
+                        // The saved token is not valid, so clone the transaction below
                     }
 
                 }

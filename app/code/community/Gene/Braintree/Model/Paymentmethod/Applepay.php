@@ -342,7 +342,7 @@ class Gene_Braintree_Model_Paymentmethod_Applepay extends Gene_Braintree_Model_P
                         // Set the token if a success
                         $token = $additionalInfoToken;
                     } catch (Exception) {
-                        $token = false;
+                        // The saved token is not valid, so clone the transaction below
                     }
                 }
                 // If we managed to find a token use that for the capture

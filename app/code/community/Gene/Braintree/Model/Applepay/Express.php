@@ -189,7 +189,7 @@ class Gene_Braintree_Model_Applepay_Express extends Mage_Core_Model_Abstract
         $currentRate = false;
 
         /* @var $shippingRate Mage_Sales_Model_Quote_Address_Rate */
-        foreach ($shippingRates as $carrier => $groupRates) {
+        foreach ($shippingRates as $groupRates) {
             foreach ($groupRates as $shippingRate) {
                 // Is this the current selected shipping method?
                 if ($quote->getShippingAddress()->getShippingMethod() == $shippingRate->getCode()) {
