@@ -131,7 +131,8 @@ class Gene_Braintree_Model_Kount_Ens extends Mage_Core_Model_Abstract
             Mage::register('kount_ens_update', true);
 
             // Retrieve the Braintree ID
-            $braintreeId = $order->getPayment()?->getCcTransId();
+            $payment = $order->getPayment();
+            $braintreeId = $payment ? $payment->getCcTransId() : null;
             if (!$braintreeId) {
                 return false;
             }
