@@ -935,7 +935,7 @@ class Gene_Braintree_Model_Wrapper_Braintree extends Mage_Core_Model_Abstract
                 } elseif (!$order && $this->getQuote()->getQuoteCurrencyCode()) {
                     // If we haven't been given an order use the quote currency code
                     $currency = $this->getQuote()->getQuoteCurrencyCode();
-                } elseif ($order) {
+                } elseif ($order && $order->getOrderCurrencyCode()) {
                     // Use the currency code for tomorrow
                     $currency = $order->getOrderCurrencyCode();
                 } else {
@@ -993,11 +993,11 @@ class Gene_Braintree_Model_Wrapper_Braintree extends Mage_Core_Model_Abstract
 
             // If we don't have an order yet get the quote capture amount
             if ($order === null) {
-                return $this->convertCaptureAmount($this->getQuote()->getBaseCurrencyCode(), $this->getQuote()->getQuoteCurrencyCode(), $amount);
+                return $this->convertCaptureAmount((string) $this->getQuote()->getBaseCurrencyCode(), (string) $this->getQuote()->getQuoteCurrencyCode(), $amount);
             }
 
             // Convert the capture amount
-            return $this->convertCaptureAmount($order->getBaseCurrencyCode(), $order->getOrderCurrencyCode(), $amount);
+            return $this->convertCaptureAmount((string) $order->getBaseCurrencyCode(), (string) $order->getOrderCurrencyCode(), $amount);
         }
 
         // Always make sure the number has two decimal places
