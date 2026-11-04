@@ -62,7 +62,7 @@
 
 <?php if (Mage::helper('gene_braintree')->shouldRunMigration()): ?>
 <script type="text/javascript">
-    document.observe("dom:loaded", function() {
+    mahoOnReady(function () {
         showMigration();
     });
 </script>
@@ -70,17 +70,27 @@
 
 <script type="text/javascript">
     /**
+     * Show or hide the text of the loading state
+     *
+     * @param {boolean} visible
+     */
+    function toggleMigrationLoadingText(visible) {
+        document.querySelectorAll('.braintree-migration-loading h3, .braintree-migration-loading p').forEach(function (element) {
+            element.style.display = visible ? '' : 'none';
+        });
+    }
+
+    /**
      * Show the migration
      *
      * @returns {boolean}
      */
     function showMigration() {
-        $$('.braintree-migration-loading h3').first().show();
-        $$('.braintree-migration-loading p').first().show();
-        $('braintree-migration').removeClassName('loading');
+        toggleMigrationLoadingText(true);
+        document.getElementById('braintree-migration').classList.remove('loading');
 
-        $('braintree-migration-overlay').addClassName('active');
-        $('braintree-migration').addClassName('active');
+        document.getElementById('braintree-migration-overlay').classList.add('active');
+        document.getElementById('braintree-migration').classList.add('active');
         return false;
     }
 
@@ -90,66 +100,48 @@
      * @returns {boolean}
      */
     function checkTransactionIsChecked() {
-        if ($('remove-legacy').checked) {
-            $('order-transaction-info').checked = true;
+        if (document.getElementById('remove-legacy').checked) {
+            document.getElementById('order-transaction-info').checked = true;
         }
     }
 
     // Migration submit action
-    Element.observe($$('.braintree-migration-content').first(), 'submit', function (event) {
-        Event.stop(event);
-        var form = Event.element(event),
-            action = form.readAttribute('action');
+    document.querySelector('.braintree-migration-content').addEventListener('submit', function (event) {
+        event.preventDefault();
+        var form = event.currentTarget;
 
         // Set the class name to loading to change the UI
-        $('braintree-migration').addClassName('loading');
+        document.getElementById('braintree-migration').classList.add('loading');
 
-        // Create an ajax request to the server
-        new Ajax.Request(
-            action,
-            {
-                method: 'post',
-                parameters: form.serialize(true),
-                onSuccess: function (transport) {
-                    if (transport && transport.responseJSON) {
-                        if (transport.responseJSON.success == true) {
-                            // The migration was a success, reload the page
-                            return location.reload();
-                        }
-                    }
-                }.bind(this),
-                onFailure: function () {
-                    alert('<?php $this->__('An issue has occurred whilst running the migration, please contact a member of support.'); ?>');
+        mahoFetch(form.getAttribute('action'), {method: 'post', body: new FormData(form), loaderArea: false})
+            .then(function (response) {
+                if (response && response.success === true) {
+                    // The migration was a success, reload the page
+                    location.reload();
                 }
-            }
-        );
+            })
+            .catch(function () {
+                alert('<?php echo $this->jsQuoteEscape($this->__('An issue has occurred whilst running the migration, please contact a member of support.')); ?>');
+            });
     });
 
     // Cancel action
-    Element.observe($$('.gene-migration-cancel').first(), 'click', function (event) {
-        Event.stop(event);
+    document.querySelector('.gene-migration-cancel').addEventListener('click', function (event) {
+        event.preventDefault();
 
         // Show a loading state
-        $$('.braintree-migration-loading h3').first().hide();
-        $$('.braintree-migration-loading p').first().hide();
-        $('braintree-migration').addClassName('loading');
+        toggleMigrationLoadingText(false);
+        document.getElementById('braintree-migration').classList.add('loading');
 
-        new Ajax.Request(
-            '<?php echo Mage::helper('adminhtml')->getUrl('adminhtml/braintree_migration/cancel'); ?>',
-            {
-                method: 'get',
-                onSuccess: function (transport) {
-                    if (transport && transport.responseJSON) {
-                        if (transport.responseJSON.success == true) {
-                            $('braintree-migration-overlay').removeClassName('active');
-                            $('braintree-migration').removeClassName('active');
-                        }
-                    }
-                },
-                onFailure: function () {
-                    alert('<?php $this->__('An issue has occurred whilst cancelling the migration, please contact a member of support.'); ?>');
+        mahoFetch('<?php echo Mage::helper('adminhtml')->getUrl('adminhtml/braintree_migration/cancel'); ?>', {loaderArea: false})
+            .then(function (response) {
+                if (response && response.success === true) {
+                    document.getElementById('braintree-migration-overlay').classList.remove('active');
+                    document.getElementById('braintree-migration').classList.remove('active');
                 }
-            }
-        );
+            })
+            .catch(function () {
+                alert('<?php echo $this->jsQuoteEscape($this->__('An issue has occurred whilst cancelling the migration, please contact a member of support.')); ?>');
+            });
     });
 </script>
