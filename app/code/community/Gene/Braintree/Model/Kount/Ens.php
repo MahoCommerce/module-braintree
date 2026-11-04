@@ -132,10 +132,10 @@ class Gene_Braintree_Model_Kount_Ens extends Mage_Core_Model_Abstract
 
             // Retrieve the Braintree ID
             $payment = $order->getPayment();
-            if (!$payment) {
+            $braintreeId = $payment ? $payment->getCcTransId() : null;
+            if (!$braintreeId) {
                 return false;
             }
-            $braintreeId = $payment->getCcTransId();
 
             try {
                 /* @var $wrapper Gene_Braintree_Model_Wrapper_Braintree */
@@ -239,7 +239,7 @@ class Gene_Braintree_Model_Kount_Ens extends Mage_Core_Model_Abstract
                     Mage::getModel('core/resource_transaction')
                         ->addObject($creditmemo)
                         ->addObject($creditmemo->getOrder())
-                        ->addObject($creditmemo->getInvoice())
+                        ->addObject($invoice)
                         ->save();
 
                     ++$refunded;

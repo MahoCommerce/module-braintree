@@ -176,7 +176,7 @@ class Gene_Braintree_Model_Applepay_Express extends Mage_Core_Model_Abstract
         // Recollect all totals for the quote
         $quote->setTotalsCollectedFlag(false);
         $quote->getBillingAddress();
-        $quote->getShippingAddress()->setCollectShippingRates(1);
+        $quote->getShippingAddress()->setCollectShippingRates(true);
         $quote->collectTotals();
         $quote->save();
 
@@ -224,7 +224,7 @@ class Gene_Braintree_Model_Applepay_Express extends Mage_Core_Model_Abstract
         return [
             'label' => $shippingRate->getCarrierTitle(),
             'amount' =>
-                (float) number_format(Mage::helper('core')->currency($shippingRate->getPrice(), false, false), 2),
+                (float) number_format(Mage::helper('core')->currency((float) $shippingRate->getPrice(), false, false), 2),
             'detail' => $detail,
             'identifier' => $shippingRate->getCode(),
         ];
@@ -314,7 +314,7 @@ class Gene_Braintree_Model_Applepay_Express extends Mage_Core_Model_Abstract
         // Resolve issues with certain table rates modules
         $quote->setTotalsCollectedFlag(false);
         $quote->getBillingAddress();
-        $quote->getShippingAddress()->setCollectShippingRates(1);
+        $quote->getShippingAddress()->setCollectShippingRates(true);
         $quote->collectTotals();
         $quote->save();
 
@@ -387,7 +387,7 @@ class Gene_Braintree_Model_Applepay_Express extends Mage_Core_Model_Abstract
 
         // Set the order as complete
         /* @var $service Mage_Sales_Model_Service_Quote */
-        $service = Mage::getModel('sales/service_quote', $order->getQuote());
+        $service = Mage::getModel('sales/service_quote', $quote);
         $service->submitAll();
 
         $order = $service->getOrder();

@@ -40,7 +40,7 @@ class Gene_Braintree_Helper_Data extends Mage_Core_Helper_Abstract
      * Magento sometimes doesn't return certain totals in the correct format, yet Braintree requires them to always
      * be in two decimal places, thus the need for this function
      *
-     * @param float|string $price
+     * @param float|string|null $price
      *
      * @return string
      */

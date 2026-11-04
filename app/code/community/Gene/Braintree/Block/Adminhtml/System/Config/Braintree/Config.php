@@ -50,38 +50,31 @@ function checkConfig() {
     clearTimeout(configTimeout);
 
     // Place a loading gif into the config area
-    $(\'row_payment_gene_braintree_valid_config\').down(\'td.value\').innerHTML = \'<div style="line-height: 18px;margin: 6px 0;"><img src="' . $this->getSkinUrl('images/gene/loader.gif') . '" height="18" style="float: left;margin-right: 8px;" /> ' . $this->__('Validating Credentials...') . '</center>\';
+    var valueCell = document.querySelector(\'#row_payment_gene_braintree_valid_config td.value\');
+    valueCell.innerHTML = \'<div style="line-height: 18px;margin: 6px 0;"><img src="' . $this->getSkinUrl('images/gene/loader.gif') . '" height="18" style="float: left;margin-right: 8px;" /> ' . $this->__('Validating Credentials...') . '</div>\';
 
     // Defined the configTimeout
     configTimeout = setTimeout(function() {
-        // Make the request
-        new Ajax.Request(
-            "' . Mage::helper('adminhtml')->getUrl('adminhtml/braintree/validateConfig') . '",
-            {
-                method: "post",
-                onCreate: function (response) {
-                    // Disable the annoying loading modal
-                    Ajax.Responders.unregister(varienLoaderHandler.handler);
-                },
-                onSuccess: function(transport){
-                    $(\'row_payment_gene_braintree_valid_config\').down(\'td.value\').innerHTML = transport.responseText;
-                },
-                parameters: Form.serializeElements($$(\'.validate-config\'))
+        var body = new URLSearchParams();
+        document.querySelectorAll(\'.validate-config\').forEach(function(element) {
+            if (!element.disabled) {
+                body.append(element.name, element.value);
             }
-        );
+        });
+
+        mahoFetch("' . Mage::helper('adminhtml')->getUrl('adminhtml/braintree/validateConfig') . '", {method: "post", body: body, loaderArea: false})
+            .then(function(response) {
+                valueCell.innerHTML = response;
+            });
     }, 800);
 }
 
 // Observe the relevant form elements
-$$(\'input.validate-config\').each(function(element) {
-    Event.observe(element, \'keyup\', function() {
-        checkConfig();
-    });
+document.querySelectorAll(\'input.validate-config\').forEach(function(element) {
+    element.addEventListener(\'keyup\', checkConfig);
 });
-$$(\'select.validate-config\').each(function(element) {
-    Event.observe(element, \'change\', function() {
-        checkConfig();
-    });
+document.querySelectorAll(\'select.validate-config\').forEach(function(element) {
+    element.addEventListener(\'change\', checkConfig);
 });
 </script>';
         return $response;
