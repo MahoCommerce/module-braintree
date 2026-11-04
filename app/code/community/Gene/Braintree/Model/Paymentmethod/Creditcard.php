@@ -57,8 +57,6 @@ class Gene_Braintree_Model_Paymentmethod_Creditcard extends Gene_Braintree_Model
     protected $_canReviewPayment = true;
     #[\Override]
     protected $_canCreateBillingAgreement = false;
-    #[\Override]
-    protected $_canManageRecurringProfiles = false;
 
     /**
      * Are we submitting the payment after the initial payment validate?

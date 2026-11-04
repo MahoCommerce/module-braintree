@@ -109,12 +109,6 @@ class Gene_Braintree_Model_Paymentmethod_Googlepay extends Gene_Braintree_Model_
     protected $_canCreateBillingAgreement = false;
 
     /**
-     * @var bool $_canManageRecurringProfiles
-     */
-    #[\Override]
-    protected $_canManageRecurringProfiles = false;
-
-    /**
      * @param null $quote
      * @return bool
      */
