@@ -35,7 +35,7 @@
                 false,
                 <?php /** @var Mage_Core_Model_Store $store */ ?>
                 <?php $store = Mage::app()->getStore(); ?>
-                '<?php echo $this->jsQuoteEscape($store->getFrontendName()); ?>',
+                '<?php echo $this->jsQuoteEscape((string) $store->getFrontendName()); ?>',
                 this,
                 '#braintree-applepay-button',
                 '<?php echo Mage::getUrl('braintree/applepay/clientToken', array('_secure' => Mage::app()->getFrontController()->getRequest()->isSecure())); ?>',

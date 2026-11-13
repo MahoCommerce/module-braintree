@@ -17,12 +17,9 @@ class Gene_Braintree_Block_Googlepay_Setup extends Mage_Core_Block_Template
         return $model->isAvailable();
     }
 
-    /**
-     * @return mixed
-     */
-    public function getGoogleMerchantAccountID()
+    public function getGoogleMerchantAccountID(): string
     {
-        return Mage::getStoreConfig('payment/gene_braintree_googlepay/merchant_account_id');
+        return (string) Mage::getStoreConfig('payment/gene_braintree_googlepay/merchant_account_id');
     }
 
     /**
@@ -31,5 +28,20 @@ class Gene_Braintree_Block_Googlepay_Setup extends Mage_Core_Block_Template
     public function getAllowedCardNetworks(): string
     {
         return Mage::helper('core')->jsonEncode(Mage::getModel('gene_braintree/paymentmethod_googlepay')->getSupportedNetworks());
+    }
+
+    /**
+     * Only render if the payment method is active
+     *
+     * @return string
+     */
+    #[\Override]
+    protected function _toHtml()
+    {
+        if (!$this->isActive()) {
+            return '';
+        }
+
+        return parent::_toHtml();
     }
 }

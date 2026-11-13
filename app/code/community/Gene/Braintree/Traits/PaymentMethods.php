@@ -7,21 +7,16 @@ declare(strict_types=1);
  */
 trait Gene_Braintree_Traits_PaymentMethods
 {
-    /**
-     * @return mixed
-     */
-    public function getEnvironment()
+    public function getEnvironment(): string
     {
-        return Mage::getStoreConfig('payment/gene_braintree/environment');
+        return (string) Mage::getStoreConfig('payment/gene_braintree/environment');
     }
 
     /**
-     * @return string
      * @throws Mage_Core_Model_Store_Exception
      */
-    protected function getStoreCurrency()
+    protected function getStoreCurrency(): string
     {
-        $store = Mage::app()->getStore();
-        return $store ? $store->getCurrentCurrencyCode() : '';
+        return (string) Mage::app()->getStore()->getCurrentCurrencyCode();
     }
 }

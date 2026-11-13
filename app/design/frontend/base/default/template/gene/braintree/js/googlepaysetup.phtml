@@ -30,7 +30,7 @@
                 false,
                 <?php /** @var Mage_Core_Model_Store $store */ ?>
                 <?php $store = Mage::app()->getStore(); ?>
-                '<?php echo $this->jsQuoteEscape($store->getFrontendName()); ?>',
+                '<?php echo $this->jsQuoteEscape((string) $store->getFrontendName()); ?>',
                 this,
                 '<?php echo Mage::getUrl('braintree/googlepay/clientToken', array('_secure' => Mage::app()->getFrontController()->getRequest()->isSecure())); ?>',
                 {
