@@ -7,15 +7,20 @@
         "braintree/braintree_php": "^6",
         "php": ">=8.5.1"
     },
+    "conflict": {
+        "mahocommerce/maho": "<26.11"
+    },
     "require-dev": {
         "friendsofphp/php-cs-fixer": "*",
-        "mahocommerce/maho": ">=26.5",
+        "mahocommerce/maho": ">=26.11",
         "mahocommerce/maho-phpstan-plugin": "*",
         "phpstan/phpstan": "*",
         "phpstan/phpstan-deprecation-rules": "*",
         "phpstan/phpstan-strict-rules": "*",
         "rector/rector": "*"
     },
+    "minimum-stability": "dev",
+    "prefer-stable": true,
     "config": {
         "allow-plugins": {
             "mahocommerce/maho-composer-plugin": true
