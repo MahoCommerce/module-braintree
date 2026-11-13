@@ -85,6 +85,7 @@
         <payment>
             <!-- Core settings within the module -->
             <gene_braintree>
+                <environment>sandbox</environment>
                 <debug>0</debug>
                 <multi_currency_enable>0</multi_currency_enable>
             </gene_braintree>
