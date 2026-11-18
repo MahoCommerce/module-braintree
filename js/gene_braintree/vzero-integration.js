@@ -229,7 +229,7 @@ class vZeroIntegration {
             targetElement = '#credit-card-form';
         }
 
-        if (document.querySelector(parentElement)) {
+        if (parentElement && document.querySelector(parentElement)) {
             this.showHideOtherMethod(parentElement, targetElement);
         }
 

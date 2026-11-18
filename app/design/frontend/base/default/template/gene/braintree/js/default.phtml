@@ -106,6 +106,10 @@
             // Store a pointer to the vZero integration
             var vzeroIntegration = this;
 
+            // Init Hosted Fields when the customer selects the credit card method. The Maho onestep checkout
+            // loads the payment methods with innerHTML, so the inline creditCardLoaded() call does not run.
+            this.defaultPaymentMethodSwitch();
+
             // Store a pointer to the original review step
             var _originalReviewInitialize = Review.prototype.initialize;
 
