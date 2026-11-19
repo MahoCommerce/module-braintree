@@ -77,7 +77,11 @@ class BraintreeApplePayExpress extends BraintreeExpressAbstract {
      */
     setAmount(amount) {
         this.amount = amount;
-        this.vzeroApplePay.amount = amount;
+
+        // _init() does not create vzeroApplePay when the browser does not support Apple Pay
+        if (this.vzeroApplePay) {
+            this.vzeroApplePay.amount = amount;
+        }
     }
 
     /**
