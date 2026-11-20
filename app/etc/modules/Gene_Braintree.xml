@@ -4,6 +4,9 @@
         <Gene_Braintree>
             <active>true</active>
             <codePool>community</codePool>
+            <depends>
+                <Mage_Customer />
+            </depends>
         </Gene_Braintree>
     </modules>
 </config>
