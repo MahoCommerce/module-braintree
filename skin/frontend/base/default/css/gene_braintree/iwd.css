@@ -6,6 +6,14 @@
 /* Hosted Fields Loading State */
 #credit-card-form.loading {
   position: relative;
+  /* Maho themes have the DaisyUI .loading spinner component, which shrinks the form to a 24px masked spinner */
+  width: auto;
+  aspect-ratio: auto;
+  vertical-align: baseline;
+  pointer-events: auto;
+  background-color: transparent;
+  -webkit-mask: none;
+  mask: none;
 }
 #credit-card-form .braintree-hostedfield {
   opacity: 1;
